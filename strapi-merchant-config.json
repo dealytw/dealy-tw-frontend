@@ -1,0 +1,131 @@
+// Strapi v5 Merchant Collection Configuration
+// File: src/api/merchant/content-types/merchant/schema.json
+
+{
+  "kind": "collectionType",
+  "collectionName": "merchants",
+  "info": {
+    "singularName": "merchant",
+    "pluralName": "merchants",
+    "displayName": "Merchant",
+    "description": "Merchant information with selectable page layouts"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "pageLayout": {
+      "type": "enumeration",
+      "enum": ["coupon", "blog"],
+      "default": "coupon",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "website": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "affiliateLink": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "stats": {
+      "type": "component",
+      "repeatable": false,
+      "component": "merchant.stats"
+    },
+    "links": {
+      "type": "component",
+      "repeatable": true,
+      "component": "merchant.link"
+    },
+    "coupons": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::coupon.coupon",
+      "mappedBy": "merchant"
+    },
+    "blogPosts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::blog-post.blog-post",
+      "mappedBy": "merchant"
+    }
+  }
+}
+
+// Component: merchant.stats
+// File: src/components/merchant/stats.json
+{
+  "collectionName": "components_merchant_stats",
+  "info": {
+    "displayName": "Merchant Stats",
+    "description": "Merchant statistics and metrics"
+  },
+  "options": {},
+  "attributes": {
+    "totalCoupons": {
+      "type": "integer",
+      "default": 0
+    },
+    "activeCoupons": {
+      "type": "integer",
+      "default": 0
+    },
+    "discounts": {
+      "type": "integer",
+      "default": 0
+    },
+    "bestDiscount": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "lastUpdated": {
+      "type": "date"
+    }
+  }
+}
+
+// Component: merchant.link
+// File: src/components/merchant/link.json
+{
+  "collectionName": "components_merchant_links",
+  "info": {
+    "displayName": "Merchant Link",
+    "description": "Useful merchant links"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

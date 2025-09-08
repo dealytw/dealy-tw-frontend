@@ -1,0 +1,46 @@
+import { Search, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const Header = () => {
+  return (
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100">
+      <div className="container flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <div className="flex items-center">
+          <img 
+            src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
+            alt="dealy.hk logo"
+            className="h-8 w-auto"
+          />
+        </div>
+
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center space-x-6">
+          <a href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</a>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              placeholder="搜尋最抵Deal"
+              className="pl-10 pr-4 py-2 w-64 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+        </nav>
+
+        {/* Right Actions */}
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
+            最新快訊訊息
+          </Button>
+          <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
+            提交優惠券
+          </Button>
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

@@ -1,26 +1,148 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Coupon Site Design System - Professional & Clean */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Base colors */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+
+    /* Card system */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    /* Dealy pink branding */
+    --primary: 330 81% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 330 81% 55%;
+
+    /* Dealy secondary colors */
+    --secondary: 330 81% 97%;
+    --secondary-foreground: 330 81% 20%;
+
+    /* Success for discounts */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 96%;
+
+    /* Warning for limited offers */  
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 38 92% 96%;
+
+    /* Red for buttons and highlights */
+    --red: 0 84% 60%;
+    --red-foreground: 0 0% 100%;
+
+    /* Blue for Trip.com */
+    --blue: 214 100% 50%;
+    --blue-foreground: 0 0% 100%;
+
+    /* Muted for subtle elements */
+    --muted: 214 32% 95%;
+    --muted-foreground: 214 16% 46%;
+
+    /* Accent for highlights */
+    --accent: 214 32% 95%;
+    --accent-foreground: 214 47% 11%;
+
+    /* Borders and inputs */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 214 100% 40%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(214 100% 40%), hsl(214 100% 50%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
+    --gradient-hero: linear-gradient(135deg, hsl(214 100% 40%) 0%, hsl(214 100% 50%) 100%);
+
+    /* Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(214 32% 91%);
+    --shadow-elevated: 0 8px 24px -4px hsl(214 32% 85%);
+    --shadow-coupon: 0 4px 16px -2px hsl(214 100% 40% / 0.1);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 214 100% 50%;
+    --primary-foreground: 222 47% 11%;
+    --primary-hover: 214 100% 45%;
+
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --success: 142 76% 46%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 10%;
+
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 38 92% 10%;
+
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 214 100% 50%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Popover colors */
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

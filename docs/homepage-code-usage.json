@@ -1,0 +1,238 @@
+{
+  "entry": "app/page.tsx",
+  "components": [
+    {
+      "name": "Header",
+      "file": "components/Header.tsx",
+      "props": {},
+      "strings": [
+        { "value": "全部商店", "file": "components/Header.tsx", "line": 19 },
+        { "value": "搜尋最抵Deal", "file": "components/Header.tsx", "line": 23 },
+        { "value": "最新快訊訊息", "file": "components/Header.tsx", "line": 32 },
+        { "value": "提交優惠券", "file": "components/Header.tsx", "line": 35 }
+      ],
+      "images": [
+        { "src": "https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg", "alt": "dealy.hk logo" }
+      ],
+      "links": [
+        { "href": "/shop", "text": "全部商店" }
+      ]
+    },
+    {
+      "name": "DealySidebar",
+      "file": "components/DealySidebar.tsx",
+      "props": {},
+      "strings": [
+        { "value": "熱門商店", "file": "components/DealySidebar.tsx", "line": 52 },
+        { "value": "熱門分類", "file": "components/DealySidebar.tsx", "line": 75 }
+      ],
+      "images": [
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/adidas.png", "alt": "adidas HK" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/nike.png", "alt": "Nike HK" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/puma.png", "alt": "Puma" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/oliveyoung.png", "alt": "OLIVE YOUNG" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/sephora.png", "alt": "Sephora HK" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/tripcom.png", "alt": "Trip.com" }
+      ]
+    },
+    {
+      "name": "CouponModal",
+      "file": "components/CouponModal.tsx",
+      "props": {
+        "open": "boolean",
+        "onOpenChange": "function",
+        "coupon": "object"
+      },
+      "strings": [
+        { "value": "優惠碼已複製", "file": "components/CouponModal.tsx", "line": 39 },
+        { "value": "複製失敗", "file": "components/CouponModal.tsx", "line": 45 },
+        { "value": "已複製", "file": "components/CouponModal.tsx", "line": 98 },
+        { "value": "複製", "file": "components/CouponModal.tsx", "line": 98 },
+        { "value": "使用條款：", "file": "components/CouponModal.tsx", "line": 114 },
+        { "value": "優惠期限：", "file": "components/CouponModal.tsx", "line": 123 },
+        { "value": "前往購買", "file": "components/CouponModal.tsx", "line": 133 }
+      ]
+    },
+    {
+      "name": "Footer",
+      "file": "components/Footer.tsx",
+      "props": {},
+      "strings": [
+        { "value": "ReUbird", "file": "components/Footer.tsx", "line": 10 },
+        { "value": "最新優惠碼、折扣資訊一站式平台，幫你省更多！", "file": "components/Footer.tsx", "line": 12 },
+        { "value": "快速連結", "file": "components/Footer.tsx", "line": 32 },
+        { "value": "熱門商戶", "file": "components/Footer.tsx", "line": 43 },
+        { "value": "支援", "file": "components/Footer.tsx", "line": 54 },
+        { "value": "© 2025 ReUbird. 版權所有。", "file": "components/Footer.tsx", "line": 69 },
+        { "value": "透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。", "file": "components/Footer.tsx", "line": 73 }
+      ],
+      "links": [
+        { "href": "/shop", "text": "所有商戶" },
+        { "href": "/category/travel", "text": "旅遊優惠" },
+        { "href": "/category/shopping", "text": "購物優惠" },
+        { "href": "/special-offers", "text": "特別優惠" },
+        { "href": "/merchant/klook", "text": "Klook" },
+        { "href": "/merchant/trip", "text": "Trip.com" },
+        { "href": "/merchant/agoda", "text": "Agoda" },
+        { "href": "/merchant/booking", "text": "Booking.com" },
+        { "href": "/about", "text": "關於我們" },
+        { "href": "/contact", "text": "聯絡我們" },
+        { "href": "/privacy", "text": "私隱政策" },
+        { "href": "/terms", "text": "使用條款" }
+      ]
+    }
+  ],
+  "sections": {
+    "hero": {
+      "strings": [
+        { "value": "Dealy.TW 台灣每日最新優惠折扣平台", "file": "app/page.tsx", "line": 168 },
+        { "value": "NEVER Pay Full Price", "file": "app/page.tsx", "line": 171 },
+        { "value": "🛍 台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡", "file": "app/page.tsx", "line": 175 },
+        { "value": "📦 超過 100+ 熱門商店優惠 💸折扣、優惠碼、獨家Promo Code 一次睇哂！", "file": "app/page.tsx", "line": 178 },
+        { "value": "搜尋最抵Deal", "file": "app/page.tsx", "line": 190 },
+        { "value": "搜尋", "file": "app/page.tsx", "line": 194 }
+      ],
+      "images": [
+        { "src": "https://dealy.hk/wp-content/uploads/2025/06/backgroundtest1.webp", "alt": "Hero background" }
+      ]
+    },
+    "popularMerchants": {
+      "heading": "台灣最新折扣優惠",
+      "itemsShape": {
+        "id": "string",
+        "name": "string",
+        "logo": "string",
+        "description": "string"
+      },
+      "strings": [
+        { "value": "台灣最新折扣優惠", "file": "app/page.tsx", "line": 205 }
+      ],
+      "images": [
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/agoda.png", "alt": "Agoda" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/tripcom.png", "alt": "Trip.com" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/06/klook.png", "alt": "Klook" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/oliveyoung.png", "alt": "OLIVE YOUNG" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/adidas.png", "alt": "adidas TW" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/06/chowsangsang.png", "alt": "Chow Sang Sang 周生生" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/06/kkday.png", "alt": "KKday" }
+      ]
+    },
+    "categoryBlock": {
+      "heading": "2025優惠主題一覽",
+      "categoriesShape": {
+        "id": "string",
+        "name": "string",
+        "icon": "string"
+      },
+      "strings": [
+        { "value": "2025優惠主題一覽", "file": "app/page.tsx", "line": 232 },
+        { "value": "通過本站連結完成購物訂單，我們可能會因此獲得佣金，而您無需額外付費。", "file": "app/page.tsx", "line": 252 },
+        { "value": "了解更多", "file": "app/page.tsx", "line": 253 }
+      ],
+      "images": [
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/flashdeal.png", "alt": "最新快閃優惠" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/traveldeals.png", "alt": "旅遊優惠大集合" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/vday.png", "alt": "七夕情人節優惠" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/cosmetic.png", "alt": "美妝優惠專區" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/fashion.png", "alt": "時裝優惠專區" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/beauty.png", "alt": "美容護膚優惠專區" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/08/sport.png", "alt": "運動用品優惠專區" }
+      ]
+    },
+    "couponRail": {
+      "heading": "今日最新最受歡迎優惠券/Promo Code/優惠碼",
+      "itemShape": {
+        "id": "string",
+        "merchantId": "string",
+        "logo": "string",
+        "discount": "string",
+        "type": "string",
+        "couponType": "coupon|promo_code",
+        "title": "string",
+        "timeLeft": "string?",
+        "usageCount": "number",
+        "description": "string",
+        "terms": "string?",
+        "code": "string?",
+        "affiliateLink": "string"
+      },
+      "strings": [
+        { "value": "今日最新最受歡迎優惠券/Promo Code/優惠碼", "file": "app/page.tsx", "line": 263 },
+        { "value": "獲取優惠碼", "file": "app/page.tsx", "line": 311 },
+        { "value": "***", "file": "app/page.tsx", "line": 315 },
+        { "value": "COPY", "file": "app/page.tsx", "line": 329 },
+        { "value": "獲取優惠碼", "file": "app/page.tsx", "line": 341 },
+        { "value": "顯示優惠詳情", "file": "app/page.tsx", "line": 356 },
+        { "value": "折扣碼/ 優惠", "file": "app/page.tsx", "line": 286 }
+      ],
+      "images": [
+        { "src": "https://dealy.hk/wp-content/uploads/2025/07/oliveyoung-150x150.png", "alt": "Coupon logo" },
+        { "src": "https://dealy.hk/wp-content/uploads/2025/06/chowsangsang-150x150.png", "alt": "Coupon logo" }
+      ],
+      "links": [
+        { "href": "/merchant/[merchantId]#coupon-[couponId]", "text": "Merchant page with coupon hash" }
+      ]
+    }
+  },
+  "fetches": [],
+  "env": [],
+  "routes": [
+    "/shop",
+    "/merchant/[slug]",
+    "/category/[slug]",
+    "/special-offers",
+    "/about",
+    "/contact",
+    "/privacy",
+    "/terms"
+  ],
+  "conditionalRendering": [
+    {
+      "condition": "coupon.timeLeft exists",
+      "component": "CouponRail",
+      "description": "Only show time left if coupon has expiry time"
+    },
+    {
+      "condition": "coupon.terms exists",
+      "component": "CouponRail",
+      "description": "Only show terms if coupon has terms"
+    },
+    {
+      "condition": "coupon.couponType === 'promo_code'",
+      "component": "CouponRail",
+      "description": "Show different UI for promo codes vs regular coupons"
+    },
+    {
+      "condition": "revealedCodes.has(coupon.id)",
+      "component": "CouponRail",
+      "description": "Show code only after user clicks reveal button"
+    },
+    {
+      "condition": "lg:block",
+      "component": "DealySidebar",
+      "description": "Only show sidebar on large screens"
+    }
+  ],
+  "editorOrderRequirements": [
+    {
+      "section": "popularMerchants",
+      "requirement": "Preserve array order",
+      "description": "Merchants must maintain their order from the data source"
+    },
+    {
+      "section": "categoryBlock",
+      "requirement": "Preserve array order",
+      "description": "Categories must maintain their order from the data source"
+    },
+    {
+      "section": "couponRail",
+      "requirement": "Preserve array order",
+      "description": "Coupons must maintain their order from the data source"
+    },
+    {
+      "section": "pageLayout",
+      "requirement": "Fixed section order",
+      "description": "Hero → Popular Merchants → Categories → Coupons → Sidebar"
+    }
+  ]
+}
