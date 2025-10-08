@@ -33,9 +33,10 @@ export function buildHomepageParams(marketKey: string) {
   return {
     "filters[market][key][$eq]": marketKey,
     "populate[hero][populate]": "background",     // <- must match your field name
-    "populate[popularstore][populate]": "merchants",
-    "populate[coupon][populate]": "merchants",
-    "populate[category][populate]": "categories",
+    "populate[category][populate][merchants][populate]": "logo",
+    "populate[coupon][populate][merchants][populate]": "logo",
+    "populate[category][populate][categories]": "true",
+    "populate[topicpage][populate]": "topics",
     "populate[market]": "true",
     "pagination[pageSize]": "1",
     "fields": "title,seo_title,seo_description",
