@@ -5,6 +5,7 @@ import CouponModal from "@/components/CouponModal";
 import DealySidebar from "@/components/DealySidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import CouponCard from "@/components/CouponCard";
 import { Search } from "lucide-react";
 
 // Types matching homepage-code-usage.json
@@ -30,7 +31,7 @@ type CouponRailItem = {
   logo: string;
   discount: string;
   type: string;
-  couponType: "coupon" | "promo_code";
+  couponType: "coupon" | "promo_code" | "auto_discount";
   title: string;
   timeLeft?: string;
   usageCount: number;
@@ -309,102 +310,30 @@ const Index = () => {
               {/* Main Content */}
               <div className="flex-1 space-y-8">
                 {homepageData.couponRail.items.map((coupon) => (
-                  <Card key={coupon.id} className="overflow-hidden">
-                    <div className="flex flex-col md:flex-row">
-                      {/* Left: Logo and Badge */}
-                      <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
-                        <div className="w-20 h-20 mb-4 flex items-center justify-center">
-                          <img 
-                            src={coupon.logo} 
-                            alt="Coupon logo"
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-pink-600 mb-1">{coupon.discount}</div>
-                          <div className="text-sm text-gray-600 px-3 py-1 bg-white rounded-full">
-                            {coupon.type}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-2">折扣碼/ 優惠</div>
-                        </div>
-                      </div>
-                      
-                      {/* Right: Content */}
-                      <div className="flex-1 p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-3 leading-tight">
-                          {coupon.title}
-                        </h3>
-                        
-                        {calculateTimeLeft(coupon.expiresAt) && (
-                          <div className="text-sm text-orange-600 mb-3">
-                            ⏳ {calculateTimeLeft(coupon.expiresAt)}
-                          </div>
-                        )}
-                        
-                        <div className="flex items-center gap-4 mb-4">
-                          {coupon.couponType === "promo_code" ? (
-                            <div className="flex items-center">
-                              {!revealedCodes.has(coupon.id) ? (
-                                // Before click - button with white dashed end section
-                                <div className="inline-flex items-center cursor-pointer" onClick={() => handleCouponClick(coupon)}>
-                                  <Button 
-                                    className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-2.5 rounded-l-full border-0"
-                                  >
-                                    獲取優惠碼
-                                  </Button>
-                                  <div className="bg-white border-2 border-dashed border-gray-400 rounded-r-full px-3 py-2.5 flex items-center justify-center">
-                                    <span className="text-black text-xs font-bold">
-                                      ***
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                // After click - show full code with copy
-                                <div className="flex items-center border-2 border-dashed border-gray-400 rounded">
-                                  <span className="font-mono text-lg px-4 py-2 bg-gray-50">
-                                    {coupon.code}
-                                  </span>
-                                  <Button 
-                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-l-none"
-                                    onClick={() => copyToClipboard(coupon.code || "")}
-                                  >
-                                    COPY
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            // Regular coupon button - simple button only
-                            <Button 
-                              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0"
-                              onClick={() => handleCouponClick(coupon)}
-                            >
-                              獲取優惠碼
-                            </Button>
-                          )}
-                        </div>
-                        
-                        <div className="text-sm text-gray-600 mb-3">
-                          {coupon.usageCount} 人已使用
-                        </div>
-                        
-                        <div className="text-sm text-gray-700 leading-relaxed">
-                          {coupon.description}
-                        </div>
-                        
-                        {coupon.terms && (
-                          <details className="mt-4">
-                            <summary className="text-sm text-blue-600 cursor-pointer hover:underline">
-                              顯示優惠詳情
-                            </summary>
-                            <div className="mt-3 text-sm text-gray-600 whitespace-pre-line">
-                              {coupon.terms}
-                            </div>
-                          </details>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
+                  <CouponCard
+                    key={coupon.id}
+                    coupon={{
+                      id: coupon.id,
+                      coupon_title: coupon.title,
+                      coupon_type: coupon.couponType,
+                      value: coupon.discount,
+                      code: coupon.code,
+                      expires_at: coupon.expiresAt,
+                      user_count: coupon.usageCount,
+                      description: coupon.description,
+                      editor_tips: coupon.terms,
+                      affiliate_link: coupon.affiliateLink,
+                      merchant: {
+                        name: coupon.title.split(' ')[0], // Extract merchant name from title
+                        logo: coupon.logo,
+                      },
+                    }}
+                    onGetCode={(couponData) => {
+                      if (couponData.affiliate_link) {
+                        window.open(couponData.affiliate_link, '_blank');
+                      }
+                    }}
+                  />
                 ))}
               </div>
               {/* Sidebar */}

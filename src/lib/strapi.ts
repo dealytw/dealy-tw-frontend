@@ -9,7 +9,7 @@ function assertBase() {
   }
 }
 
-async function strapiGet(path: string, params?: Record<string, string>) {
+export async function strapiGet(path: string, params?: Record<string, string>) {
   assertBase();
   const url =
     BASE + path + (params ? `?${new URLSearchParams(params).toString()}` : "");

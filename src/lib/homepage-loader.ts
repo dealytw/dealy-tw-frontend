@@ -1,5 +1,20 @@
 // src/lib/homepage-loader.ts
+// Helper function to extract text from Strapi rich text
+function extractTextFromRichText(richText: any): string {
+  if (!richText) return "";
+  if (typeof richText === "string") return richText;
+  if (Array.isArray(richText)) {
+    return richText.map(item => {
+      if (item.children && Array.isArray(item.children)) {
+        return item.children.map((child: any) => child.text || "").join("");
+      }
+      return item.text || "";
+    }).join(" ");
+  }
+  return "";
+}
 import { absolutizeMedia, getHomePageByMarketKey } from "./strapi";
+import { getTopCouponForMerchant } from "./coupon-queries";
 import { mapHero, mapMerchantBasic, mapCategoryBasic } from "./mappers";
 
 export type HomePageData = {
@@ -114,19 +129,70 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     iconUrl: "", // Topics don't have icons yet
   })) || [];
 
-  // Process coupon rail merchants (for now, just use the same merchants as popular)
-  const couponItems = a.coupon?.merchants?.map((merchant: any) => ({
-    id: `merchant-${merchant.id}`,
-    merchantId: merchant.id.toString(),
-    logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
-    discount: "10% OFF", // TODO: Fetch actual coupon data
-    type: "discount",
-    couponType: "promo_code" as const,
-    title: `${merchant.merchant_name} 優惠券`,
-    usageCount: 0,
-    description: merchant.summary || "",
-    affiliateLink: merchant.default_affiliate_link || merchant.site_url || "",
-  })) || [];
+  // Process coupon rail merchants with real coupon data
+  const couponItems = [];
+  if (a.coupon?.merchants) {
+    for (const merchant of a.coupon.merchants) {
+      try {
+        // Fetch top coupon for this merchant using the coupon query function
+        const topCoupon = await getTopCouponForMerchant(merchant.id.toString(), marketKey);
+        
+        if (topCoupon) {
+          couponItems.push({
+            id: `coupon-${topCoupon.id}`,
+            merchantId: merchant.id.toString(),
+            logo: topCoupon.merchant.logo,
+            discount: topCoupon.value,
+            type: topCoupon.coupon_type === "promo_code" ? "優惠碼" : 
+                  topCoupon.coupon_type === "coupon" ? "優惠券" : "自動折扣",
+            couponType: topCoupon.coupon_type,
+            title: topCoupon.coupon_title,
+            usageCount: topCoupon.user_count,
+            description: extractTextFromRichText(topCoupon.description),
+            terms: extractTextFromRichText(topCoupon.editor_tips),
+            code: topCoupon.code,
+            affiliateLink: topCoupon.affiliate_link,
+            expiresAt: topCoupon.expires_at,
+          });
+        } else {
+          // No coupon found for this merchant, create placeholder
+          couponItems.push({
+            id: `merchant-${merchant.id}`,
+            merchantId: merchant.id.toString(),
+            logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+            discount: "10% OFF",
+            type: "優惠券",
+            couponType: "coupon" as const,
+            title: `${merchant.merchant_name} 優惠券`,
+            usageCount: 0,
+            description: merchant.summary || "",
+            terms: "",
+            code: "",
+            affiliateLink: merchant.default_affiliate_link || merchant.site_url || "",
+            expiresAt: undefined,
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching coupon for merchant ${merchant.id}:`, error);
+        // Fallback to placeholder
+        couponItems.push({
+          id: `merchant-${merchant.id}`,
+          merchantId: merchant.id.toString(),
+          logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+          discount: "10% OFF",
+          type: "優惠券",
+          couponType: "coupon" as const,
+          title: `${merchant.merchant_name} 優惠券`,
+          usageCount: 0,
+          description: merchant.summary || "",
+          terms: "",
+          code: "",
+          affiliateLink: merchant.default_affiliate_link || merchant.site_url || "",
+          expiresAt: undefined,
+        });
+      }
+    }
+  }
 
   return {
     seo: { 
