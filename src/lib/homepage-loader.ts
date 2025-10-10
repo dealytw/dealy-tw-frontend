@@ -69,6 +69,15 @@ export type HomePageData = {
       expiresAt?: string;
     }>;
   };
+  sidebarCategories: {
+    heading: string;
+    categories: Array<{
+      id: number;
+      name: string;
+      slug: string;
+      iconUrl: string;
+    }>;
+  };
 };
 
 export async function getHomePageData(marketKey: string): Promise<HomePageData> {

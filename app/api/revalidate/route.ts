@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { revalidateShop, revalidateCoupons } from '@/data/queries';
+// import { revalidateShop, revalidateCoupons } from '@/data/queries';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
       case 'shop':
         if (slug) {
           revalidatePath(`/merchant/${slug}`);
-          const tags = await revalidateShop(slug);
+          // const tags = await revalidateShop(slug);
+    const tags = []; // Temporarily disabled
           tags.forEach(tag => revalidateTag(tag));
         }
         break;
@@ -34,7 +35,8 @@ export async function POST(request: NextRequest) {
         revalidateTag('coupon:search');
         // Revalidate merchant pages that might show this coupon
         if (collection === 'merchants' && id) {
-          const couponTags = await revalidateCoupons(id);
+          // const couponTags = await revalidateCoupons(id);
+          const couponTags = []; // Temporarily disabled
           couponTags.forEach(tag => revalidateTag(tag));
         }
         break;

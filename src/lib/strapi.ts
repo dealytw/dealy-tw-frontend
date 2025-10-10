@@ -47,3 +47,28 @@ export async function getHomePageByMarketKey(marketKey: string) {
   const json = await strapiGet("/api/home-pages", buildHomepageParams(marketKey));
   return json?.data?.[0] ?? null;
 }
+
+// Legacy strapi function for compatibility with existing queries
+export async function strapi<T>(path: string, options?: any): Promise<T> {
+  const params: Record<string, string> = {};
+  
+  if (options?.query) {
+    // Convert query object to flat params
+    const convertQuery = (obj: any, prefix = '') => {
+      for (const [key, value] of Object.entries(obj)) {
+        const newKey = prefix ? `${prefix}[${key}]` : key;
+        if (typeof value === 'object' && value !== null) {
+          convertQuery(value, newKey);
+        } else {
+          params[newKey] = String(value);
+        }
+      }
+    };
+    convertQuery(options.query);
+  }
+  
+  // Note: tags and draft options are ignored for now since strapiGet doesn't support them
+  // This maintains compatibility with existing code
+  
+  return strapiGet(path, params) as Promise<T>;
+}

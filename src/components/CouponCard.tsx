@@ -59,11 +59,17 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
         {/* Left: Logo and Badge */}
         <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="w-20 h-20 mb-4 flex items-center justify-center">
-            <img 
-              src={coupon.merchant.logo} 
-              alt={coupon.merchant.name}
-              className="max-w-full max-h-full object-contain"
-            />
+            {coupon.merchant.logo ? (
+              <img 
+                src={coupon.merchant.logo} 
+                alt={coupon.merchant.name}
+                className="max-w-full max-h-full object-contain"
+              />
+            ) : (
+              <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
+                <span className="text-gray-500 text-xs">No Logo</span>
+              </div>
+            )}
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-pink-600 mb-1">{coupon.value}</div>

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getShopBySlug } from '@/data/queries';
+// import { getShopBySlug } from '@/data/queries';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const { id } = params;
     
     // Use the centralized query
-    const merchant = await getShopBySlug(id);
+    // const merchant = await getShopBySlug(id);
+    const merchant = null; // Temporarily disabled
     
     if (!merchant) {
       return NextResponse.json(

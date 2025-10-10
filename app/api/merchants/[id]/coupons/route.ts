@@ -3,13 +3,14 @@ import { getCouponsForMerchant } from "@/lib/coupon-queries";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { searchParams } = new URL(request.url);
     const marketKey = searchParams.get("market") || "tw";
     
-    const coupons = await getCouponsForMerchant(params.id, marketKey);
+    const coupons = await getCouponsForMerchant(id, marketKey);
     
     return NextResponse.json({
       ok: true,

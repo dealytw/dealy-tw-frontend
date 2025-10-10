@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getHome } from '@/data/queries';
+// import { getHome } from '@/data/queries';
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,7 +7,8 @@ export async function GET(request: NextRequest) {
     const draft = searchParams.get('draft') === 'true';
     
     // Use the centralized query
-    const homeData = await getHome({ draft });
+    // const homeData = await getHome({ draft });
+    const homeData = null; // Temporarily disabled
     
     return NextResponse.json(homeData);
     

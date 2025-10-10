@@ -78,11 +78,25 @@ export function transformCoupon(coupon: Coupon): TransformedCoupon {
 export function transformTopic(topic: Topic): TransformedTopic {
   return {
     id: topic.id,
-    name: topic.attributes.name,
+    title: topic.attributes.title,
     slug: topic.attributes.slug,
-    description: topic.attributes.description || null,
-    merchants: topic.attributes.merchants?.data?.map(transformShop) || [],
-    coupons: topic.attributes.coupons?.data?.map(transformCoupon) || [],
+    intro: topic.attributes.intro || null,
+    seoTitle: topic.attributes.seo_title || null,
+    seoDescription: topic.attributes.seo_description || null,
+    featuredMerchants: topic.attributes.featured_merchants?.map(fm => ({
+      id: fm.id,
+      merchant: fm.merchant?.data ? transformShop(fm.merchant.data) : null
+    })) || [],
+    flashDeals: topic.attributes.flash_deals?.map(fd => ({
+      id: fd.id,
+      coupon: fd.coupon?.data ? transformCoupon(fd.coupon.data) : null
+    })) || [],
+    market: topic.attributes.market?.data ? {
+      id: topic.attributes.market.data.id,
+      name: topic.attributes.market.data.attributes.name,
+      key: topic.attributes.market.data.attributes.key,
+      defaultLocale: topic.attributes.market.data.attributes.defaultLocale
+    } : null,
     createdAt: topic.attributes.createdAt,
     updatedAt: topic.attributes.updatedAt,
     publishedAt: topic.attributes.publishedAt || null,

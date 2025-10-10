@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTopicBySlug } from '@/data/queries';
+// import { getTopicBySlug } from '@/data/queries';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const { id } = params;
     
     // Use the centralized query
-    const topic = await getTopicBySlug(id);
+    // const topic = await getTopicBySlug(id);
+    const topic = null; // Temporarily disabled
     
     if (!topic) {
       return NextResponse.json(
