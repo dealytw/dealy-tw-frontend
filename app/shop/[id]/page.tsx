@@ -203,7 +203,20 @@ const Merchant = () => {
   }, []);
 
   const handleCouponClick = (coupon: any) => {
-    setSelectedCoupon(coupon);
+    // Transform the coupon for the modal
+    const transformedCoupon = {
+      id: coupon.id,
+      code: coupon.code,
+      title: coupon.title,
+      description: coupon.description, // Already transformed
+      discount: coupon.discount,
+      expiry: coupon.expiry,
+      terms: coupon.terms, // Already transformed
+      merchant: coupon.merchant,
+      affiliateLink: coupon.affiliateLink
+    };
+    
+    setSelectedCoupon(transformedCoupon);
     setIsModalOpen(true);
 
     // Open affiliate link in same tab and popup in new tab (as requested)
@@ -342,7 +355,7 @@ const Merchant = () => {
                           <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => window.open(coupon.affiliateLink, '_blank')}>
                             獲取優惠券 ➤
                           </Button>
-                          <p className="text-xs text-gray-600">{coupon.description}</p>
+                          <p className="text-xs text-gray-600">{extractTextFromRichText(coupon.description)}</p>
                         </div>
                       </div>
                     </div>
