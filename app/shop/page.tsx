@@ -142,7 +142,7 @@ const Shop = () => {
   }, {} as Record<string, Merchant[]>);
 
   const handleMerchantClick = (merchantId: string) => {
-    window.location.href = `/merchant/${merchantId}`;
+    window.location.href = `/shop/${merchantId}`;
   };
 
   return (

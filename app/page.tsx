@@ -153,7 +153,7 @@ const Index = () => {
     
     // Open merchant page in new tab with coupon hash for popup and auto-scroll
     setTimeout(() => {
-      window.open(`/merchant/${coupon.merchantId}#coupon-${coupon.id}`, '_blank');
+      window.open(`/shop/${coupon.merchantId}#coupon-${coupon.id}`, '_blank');
     }, 100);
   };
 

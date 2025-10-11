@@ -21,43 +21,43 @@ const SpecialOffers = () => {
       name: "adidas HK",
       title: "adidas APP 優惠券 | 首次下載送$800折扣",
       logo: "https://dealy.hk/wp-content/uploads/2025/07/adidas.png",
-      link: "/merchant/adidas"
+      link: "/shop/adidas"
     },
     {
       name: "OLIVE YOUNG",
       title: "Olive Young OY SALE 開跑🚨限時限量「最高6折」全單券+品牌加碼券🚨",
       logo: "https://dealy.hk/wp-content/uploads/2025/07/oliveyoung.png",
-      link: "/merchant/olive-young"
+      link: "/shop/olive-young"
     },
     {
       name: "Dyson",
       title: "Dyson優惠碼🧹最新無線吸塵機 早鳥折扣減$1000 Fluffycones™ 多向吸頭",
       logo: "https://dealy.hk/wp-content/uploads/2025/06/Dyson.png",
-      link: "/merchant/dyson"
+      link: "/shop/dyson"
     },
     {
       name: "Klook",
       title: "Klook 優惠碼 🏨🚗PayMe預訂酒店 & 全球租車 減 HK$100【最新】",
       logo: "https://dealy.hk/wp-content/uploads/2025/06/klook.png",
-      link: "/merchant/klook"
+      link: "/shop/klook"
     },
     {
       name: "Agoda",
       title: "Agoda 優惠碼🎟️—住宿即減高達 $40 🏨",
       logo: "https://dealy.hk/wp-content/uploads/2025/07/agoda.png",
-      link: "/merchant/agoda"
+      link: "/shop/agoda"
     },
     {
       name: "Trip.com",
       title: "Trip.com優惠碼｜Visa 訂酒店/機票即減高達HK$150（香港適用）【Promo Code】",
       logo: "https://dealy.hk/wp-content/uploads/2025/07/tripcom.png",
-      link: "/merchant/trip-com"
+      link: "/shop/trip-com"
     },
     {
       name: "iHerb",
       title: "iHerb優惠碼🛒29 周年食品百貨 71 折",
       logo: "https://dealy.hk/wp-content/uploads/2025/06/iherb.png",
-      link: "/merchant/iherb"
+      link: "/shop/iherb"
     }
   ];
 

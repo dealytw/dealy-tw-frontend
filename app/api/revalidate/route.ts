@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       case 'merchant':
       case 'shop':
         if (slug) {
-          revalidatePath(`/merchant/${slug}`);
+          revalidatePath(`/shop/${slug}`);
           // const tags = await revalidateShop(slug);
     const tags = []; // Temporarily disabled
           tags.forEach(tag => revalidateTag(tag));

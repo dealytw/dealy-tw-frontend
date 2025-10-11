@@ -36,7 +36,7 @@ const Merchant = () => {
   useEffect(() => {
     const fetchMerchant = async () => {
       try {
-        const response = await fetch(`/api/merchants/${id}`, {
+        const response = await fetch(`/api/shop/${id}`, {
           // Add cache control for preview mode
           cache: 'no-store',
           headers: {

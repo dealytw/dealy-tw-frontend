@@ -112,15 +112,36 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     showSearch: Boolean(rawHero?.showSearch),
   };
 
-  // Process popular merchants from category.merchants
-  const popularMerchants = a.category?.merchants?.map((merchant: any) => ({
-    id: merchant.id,
-    name: merchant.merchant_name,
-    slug: merchant.slug,
-    logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
-    description: merchant.summary || "",
-    topCouponTitle: undefined, // TODO: Fetch top coupon for each merchant
-  })) || [];
+  // Process popular merchants from category.merchants with top coupon titles
+  const popularMerchants = [];
+  if (a.category?.merchants) {
+    for (const merchant of a.category.merchants) {
+      try {
+        // Fetch top coupon for this merchant
+        const topCoupon = await getTopCouponForMerchant(merchant.id.toString(), marketKey);
+        
+        popularMerchants.push({
+          id: merchant.id,
+          name: merchant.merchant_name,
+          slug: merchant.slug,
+          logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+          description: merchant.summary || "",
+          topCouponTitle: topCoupon?.coupon_title || merchant.summary || "",
+        });
+      } catch (error) {
+        console.error(`Error fetching coupon for merchant ${merchant.id}:`, error);
+        // Fallback to description if coupon fetch fails
+        popularMerchants.push({
+          id: merchant.id,
+          name: merchant.merchant_name,
+          slug: merchant.slug,
+          logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+          description: merchant.summary || "",
+          topCouponTitle: merchant.summary || "",
+        });
+      }
+    }
+  }
 
   // Process categories from category.categories (for 熱門分類)
   const categories = a.category?.categories?.map((category: any) => ({
