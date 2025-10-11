@@ -1,5 +1,6 @@
 import { Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Header = () => {
   return (
@@ -7,11 +8,13 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center">
-          <img 
-            src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
-            alt="dealy.hk logo"
-            className="h-8 w-auto"
-          />
+          <Link href="/" className="flex items-center">
+            <img 
+              src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
+              alt="dealy.hk logo"
+              className="h-8 w-auto"
+            />
+          </Link>
         </div>
 
         {/* Navigation */}
