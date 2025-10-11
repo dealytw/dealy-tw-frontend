@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiGet } from "@/lib/strapi";
+import { strapiGet, absolutizeMedia } from "@/lib/strapi";
 
 export async function GET(
   request: NextRequest,
@@ -7,20 +7,27 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const market = searchParams.get('market') || process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
     
     if (!id) {
       return NextResponse.json(
-        { error: "Merchant ID is required" },
+        { error: "Merchant slug is required" },
         { status: 400 }
       );
     }
 
-    // Fetch merchant data from Strapi
-    const merchantData = await strapiGet(`/api/shops/${id}`, {
-      "populate": "logo"
-    });
+    // Fetch merchant data from Strapi by slug with market filtering
+    const params_query = {
+      "filters[slug][$eq]": id,
+      "filters[market][key][$eq]": market,
+      "populate[logo]": "true",
+      "populate[market]": "true",
+    };
 
-    if (!merchantData || !merchantData.data) {
+    const merchantData = await strapiGet("/api/merchants", params_query);
+
+    if (!merchantData || !merchantData.data || merchantData.data.length === 0) {
       return NextResponse.json(
         { error: "Merchant not found" },
         { status: 404 }
@@ -28,18 +35,18 @@ export async function GET(
     }
 
     // Transform the data to match our frontend structure
-    const merchant = merchantData.data;
+    const merchant = merchantData.data[0];
     const transformedMerchant = {
       id: merchant.id,
       name: merchant.merchant_name || merchant.name,
       slug: merchant.slug,
-      logo: merchant.logo?.url ? `https://cms.dealy.hk${merchant.logo.url}` : null,
+      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : null,
       description: merchant.summary || merchant.description || "",
       website: merchant.website || "",
       affiliateLink: merchant.affiliate_link || merchant.affiliateLink || "",
       pageLayout: merchant.page_layout || "coupon",
       isFeatured: merchant.is_featured || false,
-      market: merchant.market || "TW",
+      market: merchant.market?.key || market.toUpperCase(),
       seoTitle: merchant.seo_title || "",
       seoDescription: merchant.seo_description || "",
       canonicalUrl: merchant.canonical_url || "",
