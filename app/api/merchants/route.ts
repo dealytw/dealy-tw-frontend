@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
       const firstChar = merchant.merchant_name.charAt(0);
       const isChinese = /[\u4e00-\u9fff]/.test(firstChar);
       
-      // If it's Chinese and has no English, use the first letter of the slug
-      if (isChinese && !/[a-zA-Z]/.test(merchant.merchant_name)) {
+      // If the name starts with Chinese, always use the first letter of the slug
+      if (isChinese) {
         letter = merchant.slug.charAt(0).toUpperCase();
       }
       
