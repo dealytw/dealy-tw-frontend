@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
       "populate[logo]": "true",
       "populate[market]": "true",
       "sort": "merchant_name:asc", // Sort A-Z by merchant name
+      "pagination[pageSize]": "100", // Fetch up to 100 merchants per page
     };
 
     const merchantsData = await strapiGet("/api/merchants", params);
