@@ -17,7 +17,7 @@ interface Merchant {
 }
 
 const Shop = () => {
-  const [activeFilter, setActiveFilter] = useState("A");
+  const [activeFilter, setActiveFilter] = useState("ALL");
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -163,8 +163,8 @@ const Shop = () => {
     { id: "zalora", name: "Zalora", logo: "/api/placeholder/120/120", letter: "Z" },
   ];
 
-  // Generate alphabet letters
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  // Generate alphabet letters with ALL option
+  const alphabet = ["ALL", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")];
 
   // Filter merchants by selected letter
   const filteredMerchants = merchants.filter(merchant => 
