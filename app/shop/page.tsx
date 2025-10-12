@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
@@ -7,26 +7,65 @@ import { Badge } from "@/components/ui/badge";
 interface Merchant {
   id: string;
   name: string;
+  slug: string;
   logo: string;
   letter: string;
+  description?: string;
+  website?: string;
+  affiliateLink?: string;
+  market?: string;
 }
 
 const Shop = () => {
   const [activeFilter, setActiveFilter] = useState("A");
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock merchant data organized by letter
-  const merchants: Merchant[] = [
+  // Fetch merchants from CMS
+  useEffect(() => {
+    const fetchMerchants = async () => {
+      try {
+        const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+        const response = await fetch(`/api/merchants?market=${market}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (response.ok) {
+          const merchantsData = await response.json();
+          setMerchants(merchantsData);
+        } else {
+          console.error('Failed to fetch merchants');
+          // Fallback to mock data
+          setMerchants(mockMerchants);
+        }
+      } catch (error) {
+        console.error('Error fetching merchants:', error);
+        // Fallback to mock data
+        setMerchants(mockMerchants);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMerchants();
+  }, []);
+
+  // Mock merchant data as fallback
+  const mockMerchants: Merchant[] = [
     // A
-    { id: "adidas", name: "adidas HK", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "aeon", name: "AEON", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "agoda", name: "Agoda", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "alipay", name: "Alipay HK", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "amazon", name: "Amazon JP", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "american-eagle", name: "American Eagle", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "apple", name: "Apple", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "arena", name: "Arena", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "armani", name: "Armani beauty", logo: "/api/placeholder/120/120", letter: "A" },
-    { id: "asos", name: "Asos", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "adidas", name: "adidas HK", slug: "adidas-tw", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "aeon", name: "AEON", slug: "aeon", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "agoda", name: "Agoda", slug: "agoda", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "alipay", name: "Alipay HK", slug: "alipay", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "amazon", name: "Amazon JP", slug: "amazon", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "american-eagle", name: "American Eagle", slug: "american-eagle", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "apple", name: "Apple", slug: "apple", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "arena", name: "Arena", slug: "arena", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "armani", name: "Armani beauty", slug: "armani", logo: "/api/placeholder/120/120", letter: "A" },
+    { id: "asos", name: "Asos", slug: "asos", logo: "/api/placeholder/120/120", letter: "A" },
     
     // B
     { id: "birdie", name: "Birdie", logo: "/api/placeholder/120/120", letter: "B" },
@@ -141,8 +180,8 @@ const Shop = () => {
     return acc;
   }, {} as Record<string, Merchant[]>);
 
-  const handleMerchantClick = (merchantId: string) => {
-    window.location.href = `/shop/${merchantId}`;
+  const handleMerchantClick = (merchant: Merchant) => {
+    window.location.href = `/shop/${merchant.slug}`;
   };
 
   return (
@@ -156,28 +195,38 @@ const Shop = () => {
             🏬 All Shops
           </h1>
           
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-8">
+              <p className="text-gray-500">載入商店中...</p>
+            </div>
+          )}
+          
           {/* Alphabetical Filter */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {alphabet.map((letter) => (
-              <Badge
-                key={letter}
-                variant={activeFilter === letter ? "default" : "outline"}
-                className={`cursor-pointer px-3 py-2 text-sm ${
-                  activeFilter === letter 
-                    ? "bg-blue-500 text-white border-blue-500" 
-                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                }`}
-                onClick={() => setActiveFilter(letter)}
-              >
-                {letter}
-              </Badge>
-            ))}
-          </div>
+          {!loading && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {alphabet.map((letter) => (
+                <Badge
+                  key={letter}
+                  variant={activeFilter === letter ? "default" : "outline"}
+                  className={`cursor-pointer px-3 py-2 text-sm ${
+                    activeFilter === letter 
+                      ? "bg-blue-500 text-white border-blue-500" 
+                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+                  onClick={() => setActiveFilter(letter)}
+                >
+                  {letter}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Merchants Grid */}
-        <div className="space-y-12">
-          {Object.keys(groupedMerchants).sort().map((letter) => (
+        {!loading && (
+          <div className="space-y-12">
+            {Object.keys(groupedMerchants).sort().map((letter) => (
             <div key={letter}>
               {/* Letter Header */}
               <h2 className="text-xl font-bold text-gray-800 mb-6">{letter}</h2>
@@ -188,7 +237,7 @@ const Shop = () => {
                   <div 
                     key={merchant.id}
                     className="text-center cursor-pointer group"
-                    onClick={() => handleMerchantClick(merchant.id)}
+                    onClick={() => handleMerchantClick(merchant)}
                   >
                     {/* Merchant Logo - Rounded */}
                     <div className="w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden bg-white border border-gray-100 flex items-center justify-center p-2 group-hover:shadow-lg transition-shadow">
@@ -207,11 +256,12 @@ const Shop = () => {
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredMerchants.length === 0 && (
+        {!loading && filteredMerchants.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">沒有找到以 "{activeFilter}" 開頭的商店</p>
           </div>
