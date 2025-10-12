@@ -19,17 +19,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No merchants found" }, { status: 404 });
     }
 
-    const merchants = merchantsData.data.map((merchant: any) => ({
-      id: merchant.id,
-      name: merchant.merchant_name,
-      slug: merchant.slug,
-      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-      letter: merchant.merchant_name.charAt(0).toUpperCase(),
-      description: merchant.summary || "",
-      website: merchant.website || "",
-      affiliateLink: merchant.affiliate_link || "",
-      market: merchant.market?.key || market.toUpperCase(),
-    }));
+    const merchants = merchantsData.data.map((merchant: any) => {
+      // Determine the letter for alphabetical grouping
+      let letter = merchant.merchant_name.charAt(0).toUpperCase();
+      
+      // Check if the first character is Chinese (CJK Unified Ideographs)
+      const firstChar = merchant.merchant_name.charAt(0);
+      const isChinese = /[\u4e00-\u9fff]/.test(firstChar);
+      
+      // If it's Chinese and has no English, use the first letter of the slug
+      if (isChinese && !/[a-zA-Z]/.test(merchant.merchant_name)) {
+        letter = merchant.slug.charAt(0).toUpperCase();
+      }
+      
+      return {
+        id: merchant.id,
+        name: merchant.merchant_name,
+        slug: merchant.slug,
+        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+        letter: letter,
+        description: merchant.summary || "",
+        website: merchant.website || "",
+        affiliateLink: merchant.affiliate_link || "",
+        market: merchant.market?.key || market.toUpperCase(),
+      };
+    });
 
     return NextResponse.json(merchants);
   } catch (error: any) {
