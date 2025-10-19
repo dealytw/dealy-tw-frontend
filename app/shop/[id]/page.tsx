@@ -18,6 +18,7 @@ import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CouponCard from "@/components/CouponCard";
+import RelatedMerchantCouponCard from "@/components/RelatedMerchantCouponCard";
 
 // Helper function to extract text from Strapi rich text
 function extractTextFromRichText(richText: any): string {
@@ -34,6 +35,84 @@ function extractTextFromRichText(richText: any): string {
   return "";
 }
 
+// Helper function to render rich text with formatting preserved
+function renderRichText(richText: any): string {
+  if (!richText) return "";
+  if (typeof richText === "string") return richText;
+  if (Array.isArray(richText)) {
+    return richText.map(item => {
+      if (item.type === "paragraph") {
+        if (item.children && Array.isArray(item.children)) {
+          return item.children.map((child: any) => {
+            if (child.bold) return `<strong>${child.text || ""}</strong>`;
+            if (child.italic) return `<em>${child.text || ""}</em>`;
+            return child.text || "";
+          }).join("");
+        }
+        return item.text || "";
+      }
+      if (item.type === "list") {
+        const listItems = item.children?.map((child: any) => {
+          if (child.children && Array.isArray(child.children)) {
+            return child.children.map((grandChild: any) => grandChild.text || "").join("");
+          }
+          return child.text || "";
+        }).join("\n• ") || "";
+        return `• ${listItems}`;
+      }
+      return item.text || "";
+    }).join("\n\n");
+  }
+  return "";
+}
+
+// Helper function to parse FAQ rich text into question-answer pairs
+function parseFAQs(richText: any): Array<{question: string, answer: string}> {
+  if (!richText || !Array.isArray(richText)) return [];
+  
+  const faqs: Array<{question: string, answer: string}> = [];
+  let currentQuestion = "";
+  let currentAnswer = "";
+  
+  for (const item of richText) {
+    if (item.type === "heading" && item.level === 3) {
+      // If we have a previous question-answer pair, save it
+      if (currentQuestion && currentAnswer) {
+        faqs.push({
+          question: currentQuestion,
+          answer: currentAnswer.trim()
+        });
+      }
+      // Start new question
+      currentQuestion = item.children?.map((child: any) => child.text || "").join("") || "";
+      currentAnswer = "";
+    } else if (item.type === "paragraph" && currentQuestion) {
+      // Add to current answer
+      const paragraphText = item.children?.map((child: any) => {
+        if (child.bold) return `<strong>${child.text || ""}</strong>`;
+        if (child.italic) return `<em>${child.text || ""}</em>`;
+        return child.text || "";
+      }).join("") || "";
+      
+      if (currentAnswer) {
+        currentAnswer += " " + paragraphText;
+      } else {
+        currentAnswer = paragraphText;
+      }
+    }
+  }
+  
+  // Don't forget the last FAQ
+  if (currentQuestion && currentAnswer) {
+    faqs.push({
+      question: currentQuestion,
+      answer: currentAnswer.trim()
+    });
+  }
+  
+  return faqs;
+}
+
 const Merchant = () => {
   const params = useParams();
   const id = params?.id as string;
@@ -43,76 +122,8 @@ const Merchant = () => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
+  const [relatedMerchants, setRelatedMerchants] = useState<any[]>([]);
   const filters = ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
-
-  // Mock expired coupons data (from lovable project)
-  const mockExpiredCoupons = [{
-    id: "expired1",
-    title: "Trip.com日本酒店折扣低至 4 折｜夏遊日本星級酒店【最新】",
-    description: "日本夏季酒店打折少見優惠 4 折，特別是東京的三井花園與帝國飯店這類高評分住宿，在暑假期段訂房更容易撞到好價。如果想縮短旅遊打卡人潮，這波促銷是千手的好時機。",
-    discount: "4折",
-    discountValue: "4",
-    expiry: "已過期",
-    merchant: {
-      name: "Trip.com",
-      logo: "https://cdn.trip.com/images/logo/trip-logo.svg"
-    },
-    affiliateLink: "https://hk.trip.com"
-  }, {
-    id: "expired2",
-    title: "Trip.com App限定｜機票限時9折起＋可賺里數兼 Trip Coins【限時快閃】",
-    description: "先登入Trip.com App，開啟靈活日期搜尋功能可以撈到靚價，避開週末、選早晚時段更易中。當舖行李政策，必要時預先加購寄艙。熱門航點如大阪、首爾、曼谷、台北等座位緊張，先撈票再安排行程！",
-    discount: "9折",
-    discountValue: "9",
-    expiry: "已過期",
-    merchant: {
-      name: "Trip.com",
-      logo: "https://cdn.trip.com/images/logo/trip-logo.svg"
-    },
-    affiliateLink: "https://hk.trip.com"
-  }];
-
-  // Mock related merchants data
-  const relatedMerchants = [{
-    name: "Agoda",
-    discount: "$40",
-    type: "代碼",
-    users: "50",
-    logo: "/api/placeholder/48/48"
-  }, {
-    name: "Booking.com",
-    discount: "8折",
-    type: "折扣",
-    users: "44",
-    logo: "/api/placeholder/48/48"
-  }, {
-    name: "Expedia",
-    discount: "12%",
-    type: "OFF",
-    users: "42",
-    logo: "/api/placeholder/48/48"
-  }, {
-    name: "Qatar Airways",
-    discount: "$4,999",
-    type: "折扣",
-    users: "43",
-    logo: "/api/placeholder/48/48"
-  }];
-
-  // Mock FAQ data
-  const faqs = [{
-    question: "Trip.com HK提供哪些付款選項？",
-    answer: "Trip.com支援Visa、JCB、MasterCard、UnionPay、American Express、Discover、Diners Club International、PayPal、Google Pay、Apple Pay、Trip Coins及禮品卡。"
-  }, {
-    question: "Trip.com的付款流程是什麼？",
-    answer: "1. 選擇付款方式 2. 輸入持卡人姓名、卡號、到期日及安全碼 3. 確認付款詳情並提交。"
-  }, {
-    question: "Trip.com有提供旅遊積分嗎？",
-    answer: "有，Trip Coins可用於預訂機票、酒店及其他旅遊服務，可透過消費及促銷活動獲得。"
-  }, {
-    question: "Trip.com支援哪些平台付款？",
-    answer: "支援iOS、Android、桌面網頁及手機網頁，不同付款方式在各平台的支援度略有不同。"
-  }];
 
   // Fetch merchant data and coupons from Strapi
   useEffect(() => {
@@ -135,6 +146,25 @@ const Merchant = () => {
         const merchantData = await merchantResponse.json();
         setMerchant(merchantData);
 
+        // Fetch related merchants
+        try {
+          const relatedMerchantsResponse = await fetch(`/api/related-merchants?merchant=${id}&market=${market}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          });
+          
+          if (relatedMerchantsResponse.ok) {
+            const relatedData = await relatedMerchantsResponse.json();
+            setRelatedMerchants(relatedData.relatedMerchants || []);
+          } else {
+            console.error('Failed to fetch related merchants:', relatedMerchantsResponse.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching related merchants:', error);
+        }
+
         // Fetch coupons for this merchant
         const couponsResponse = await fetch(`/api/shop/${id}/coupons?market=${market}`, {
           cache: 'no-store',
@@ -145,18 +175,55 @@ const Merchant = () => {
         
         if (couponsResponse.ok) {
           const couponsData = await couponsResponse.json();
+          console.log('Raw coupons data received:', couponsData);
           
-          // Separate active and expired coupons
-          const today = new Date().toISOString().split('T')[0];
-          const activeCoupons = couponsData.filter((coupon: any) => 
-            !coupon.expires_at || coupon.expires_at >= today
-          );
-          const expiredCoupons = couponsData.filter((coupon: any) => 
-            coupon.expires_at && coupon.expires_at < today
-          );
+          // Validate coupon data structure
+          if (!Array.isArray(couponsData)) {
+            console.error('Invalid coupons data format - expected array, got:', typeof couponsData);
+            setCoupons([]);
+            setExpiredCoupons([]);
+            return;
+          }
           
+          // Log coupon validation issues
+          couponsData.forEach((coupon: any, index: number) => {
+            if (!coupon.id) {
+              console.error(`Coupon at index ${index} missing ID:`, coupon);
+            }
+            if (!coupon.coupon_title) {
+              console.warn(`Coupon ${coupon.id} missing title`);
+            }
+            if (!coupon.merchant) {
+              console.error(`Coupon ${coupon.id} missing merchant data:`, coupon);
+            }
+            if (coupon.value === null || coupon.value === undefined) {
+              console.warn(`Coupon ${coupon.id} has null/undefined value field`);
+            }
+            // Debug coupon_status
+            console.log(`Coupon ${coupon.id} status:`, coupon.coupon_status);
+          });
+          
+          // Separate active and expired coupons by coupon_status field
+          const activeCoupons = couponsData.filter((coupon: any) => {
+            const isActive = coupon.coupon_status === "active";
+            console.log(`Coupon ${coupon.id} (${coupon.coupon_title}) status: "${coupon.coupon_status}" -> Active: ${isActive}`);
+            return isActive;
+          });
+          const expiredCoupons = couponsData.filter((coupon: any) => {
+            const isExpired = coupon.coupon_status === "expired";
+            console.log(`Coupon ${coupon.id} (${coupon.coupon_title}) status: "${coupon.coupon_status}" -> Expired: ${isExpired}`);
+            return isExpired;
+          });
+          
+          console.log(`Found ${activeCoupons.length} active coupons and ${expiredCoupons.length} expired coupons`);
           setCoupons(activeCoupons);
-          setExpiredCoupons(expiredCoupons.length > 0 ? expiredCoupons : mockExpiredCoupons);
+          setExpiredCoupons(expiredCoupons);
+        } else {
+          console.error('Failed to fetch coupons:', couponsResponse.status, couponsResponse.statusText);
+          const errorText = await couponsResponse.text();
+          console.error('Error response:', errorText);
+          setCoupons([]);
+          setExpiredCoupons([]);
         }
       } catch (error) {
         console.error('Error fetching merchant data:', error);
@@ -182,7 +249,7 @@ const Merchant = () => {
           publishedAt: new Date().toISOString()
         });
         setCoupons([]);
-        setExpiredCoupons(mockExpiredCoupons);
+        setExpiredCoupons([]);
       }
     };
 
@@ -227,24 +294,43 @@ const Merchant = () => {
   };
 
   // Transform CMS coupons to DealyCouponCard format
-  const transformCoupon = (coupon: any) => ({
-    id: coupon.id,
-    code: coupon.code,
-    title: coupon.coupon_title,
-    description: extractTextFromRichText(coupon.description),
-    discount: coupon.value,
-    discountValue: coupon.value.replace(/[^\d]/g, ''),
-    expiry: coupon.expires_at || "長期有效",
-    usageCount: coupon.user_count || 0,
-    steps: extractTextFromRichText(coupon.editor_tips),
-    terms: extractTextFromRichText(coupon.editor_tips),
-    affiliateLink: coupon.affiliate_link,
-    couponType: coupon.coupon_type === "promo_code" ? "promo_code" : "coupon",
-    merchant: {
-      name: coupon.merchant.name,
-      logo: coupon.merchant.logo,
+  const transformCoupon = (coupon: any) => {
+    // Add null safety checks
+    if (!coupon) {
+      console.error('transformCoupon: coupon is null or undefined');
+      return null;
     }
-  });
+
+    if (!coupon.merchant) {
+      console.error('transformCoupon: coupon.merchant is missing', coupon.id);
+      return null;
+    }
+
+    // Handle null/undefined values safely
+    const value = coupon.value || '';
+    // Enhanced regex to handle currencies: TWD, HKD, USD, etc. and symbols: $, ¥, €, etc.
+    const currencyPattern = /(\d+)\s*(?:TWD|HKD|USD|EUR|JPY|CNY|SGD|MYR|THB|PHP|IDR|VND|KRW|INR|AUD|CAD|GBP|CHF|NZD|SEK|NOK|DKK|PLN|CZK|HUF|RUB|BRL|MXN|ARS|CLP|COP|PEN|UYU|VEF|ZAR|TRY|ILS|AED|SAR|QAR|KWD|BHD|OMR|JOD|LBP|EGP|MAD|TND|DZD|NGN|KES|UGX|TZS|ZMW|BWP|MWK|MZN|AOA|XOF|XAF|XPF|MUR|SCR|KMF|DJF|ERN|ETB|SOS|SLL|GMD|GNF|LRD|CDF|RWF|BIF|CVE|STN|SZL|LSL|NAD|BND|FJD|PGK|SBD|TOP|VUV|WST|TVD|KID|NPR|BTN|MVR|AFN|PKR|LKR|BDT|MMK|LAK|KHR|MOP)?\s*\$?\s*(%|折|off|減|扣|折|優惠)/i;
+    const discountValue = value ? value.replace(currencyPattern, '$1') : '0';
+    
+    return {
+      id: coupon.id,
+      code: coupon.code || '',
+      title: coupon.coupon_title || 'Untitled Coupon',
+      description: extractTextFromRichText(coupon.description), // This will show in the main description area
+      discount: value,
+      discountValue: discountValue,
+      expiry: coupon.expires_at || "長期有效",
+      usageCount: coupon.user_count || 0,
+      steps: renderRichText(coupon.description), // Map description to steps with formatting preserved
+      terms: extractTextFromRichText(coupon.editor_tips), // Map editor_tips to terms (⚠️ 溫馨提示)
+      affiliateLink: coupon.affiliate_link || '#',
+      couponType: coupon.coupon_type === "promo_code" ? "promo_code" : "coupon",
+      merchant: {
+        name: coupon.merchant.name || 'Unknown Merchant',
+        logo: coupon.merchant.logo || '',
+      }
+    };
+  };
 
   if (!merchant) {
     return (
@@ -326,11 +412,18 @@ const Merchant = () => {
             <div className="space-y-8">
               {/* Active Coupons */}
               <div className="space-y-0">
-                {coupons.map(coupon => (
-                  <div key={coupon.id} id={`coupon-${coupon.id}`}>
-                    <DealyCouponCard coupon={transformCoupon(coupon)} onClick={() => handleCouponClick(coupon)} />
-                  </div>
-                ))}
+                {coupons.map(coupon => {
+                  const transformedCoupon = transformCoupon(coupon);
+                  if (!transformedCoupon) {
+                    console.error('Skipping invalid coupon:', coupon);
+                    return null;
+                  }
+                  return (
+                    <div key={coupon.id} id={`coupon-${coupon.id}`}>
+                      <DealyCouponCard coupon={transformedCoupon} onClick={() => handleCouponClick(coupon)} />
+                    </div>
+                  );
+                }).filter(Boolean)}
               </div>
 
               {/* Expired Coupons Section */}
@@ -339,27 +432,40 @@ const Merchant = () => {
                   <CardTitle className="text-xl font-bold text-gray-800">已過期但仍可嘗試</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {expiredCoupons.map(coupon => (
-                    <div key={coupon.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="text-center min-w-[80px]">
-                          <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center">
-                            <img src={coupon.merchant?.logo || merchant.logo} alt={coupon.merchant?.name || merchant.name} className="max-w-full max-h-full object-contain" />
+                  {expiredCoupons.length > 0 ? (
+                    expiredCoupons.map(coupon => {
+                      const transformedCoupon = transformCoupon(coupon);
+                      if (!transformedCoupon) {
+                        console.error('Skipping invalid expired coupon:', coupon);
+                        return null;
+                      }
+                      return (
+                        <div key={coupon.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="text-center min-w-[80px]">
+                              <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center">
+                                <img src={transformedCoupon.merchant?.logo || merchant.logo} alt={transformedCoupon.merchant?.name || merchant.name} className="max-w-full max-h-full object-contain" />
+                              </div>
+                              <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
+                              <div className="text-sm text-gray-500">優惠</div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
+                              <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
+                              <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
+                                獲取優惠券 ➤
+                              </Button>
+                              <p className="text-xs text-gray-600">{transformedCoupon.description}</p>
+                            </div>
                           </div>
-                          <div className="text-lg font-bold text-purple-600">{coupon.discount}</div>
-                          <div className="text-sm text-gray-500">優惠</div>
                         </div>
-                        <div className="flex-1">
-                          <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
-                          <h3 className="text-sm font-medium text-blue-600 mb-2">{coupon.title}</h3>
-                          <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => window.open(coupon.affiliateLink, '_blank')}>
-                            獲取優惠券 ➤
-                          </Button>
-                          <p className="text-xs text-gray-600">{extractTextFromRichText(coupon.description)}</p>
-                        </div>
-                      </div>
+                      );
+                    }).filter(Boolean)
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>暫無已過期的優惠券</p>
                     </div>
-                  ))}
+                  )}
                 </CardContent>
               </Card>
 
@@ -369,45 +475,18 @@ const Merchant = () => {
                   <CardTitle className="text-xl font-bold text-gray-800">同類商戶折扣優惠</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {relatedMerchants.map((merchant, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg overflow-hidden bg-white text-sm">
-                      {/* Header */}
-                      <div className="px-3 pt-2 pb-1 bg-gray-50">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600">適用全站商品</span>
-                          <div className="w-6 h-6">
-                            <img src={merchant.logo} alt={merchant.name} className="w-full h-full object-contain" />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Main Content */}
-                      <div className="px-3 py-2">
-                        <h3 className="text-xs font-medium text-gray-900 mb-2 line-clamp-2">
-                          {merchant.name} - 精選優惠 ({merchant.discount}折扣)
-                        </h3>
-                        
-                        <div className="flex items-center gap-1 mb-2">
-                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                          <span className="text-xs text-gray-700">優惠碼: {merchant.name.toUpperCase()}4999</span>
-                        </div>
-                      </div>
-                      
-                      {/* Pink Bottom Section */}
-                      <div className="bg-pink-400 px-3 py-2 flex items-center justify-between text-white">
-                        <div>
-                          <div className="text-sm font-bold">{merchant.discount}</div>
-                          <div className="text-xs opacity-90">低消門檻: TWD 1,527</div>
-                        </div>
-                        <Button 
-                          className="bg-white text-pink-500 hover:bg-gray-50 px-2 py-1 text-xs font-medium"
-                          onClick={() => window.open(`/shop/${merchant.name.toLowerCase()}`, '_blank')}
-                        >
-                          馬上領
-                        </Button>
-                      </div>
+                  {relatedMerchants && relatedMerchants.length > 0 ? (
+                    relatedMerchants.map((relatedMerchant) => (
+                      <RelatedMerchantCouponCard 
+                        key={relatedMerchant.id} 
+                        relatedMerchant={relatedMerchant} 
+                      />
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center text-gray-500 py-8">
+                      暫無相關商戶優惠
                     </div>
-                  ))}
+                  )}
                 </CardContent>
               </Card>
 
@@ -420,15 +499,24 @@ const Merchant = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {faqs.map((faq, index) => (
-                    <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                      <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
-                        <span className="text-pink-500 mt-1">?</span>
-                        {faq.question}
-                      </h4>
-                      <p className="text-sm text-gray-600 ml-6">{faq.answer}</p>
+                  {merchant.faqs && merchant.faqs.length > 0 ? (
+                    parseFAQs(merchant.faqs).map((faq, index) => (
+                      <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                        <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
+                          <span className="text-pink-500 mt-1">?</span>
+                          {faq.question}
+                        </h4>
+                        <p 
+                          className="text-sm text-gray-600 ml-6" 
+                          dangerouslySetInnerHTML={{ __html: faq.answer }}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 py-8">
+                      暫無常見問題
                     </div>
-                  ))}
+                  )}
                 </CardContent>
               </Card>
 

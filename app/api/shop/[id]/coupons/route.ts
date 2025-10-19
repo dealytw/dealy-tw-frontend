@@ -35,11 +35,11 @@ export async function GET(
 
     const merchant = merchantData.data[0];
 
-    // Now fetch coupons for this merchant (both active and expired)
+    // Now fetch ALL coupons for this merchant (both active and expired)
     const couponParams = {
       "filters[merchant][id][$eq]": merchant.id.toString(),
       "filters[market][key][$eq]": market,
-      "filters[coupon_status][$eq]": "active",
+      // Removed coupon_status filter to get both active and expired coupons
       "populate[merchant][populate]": "logo",
       "populate[market]": "true",
       "sort": "priority:desc,createdAt:desc",
@@ -51,6 +51,7 @@ export async function GET(
       id: coupon.id.toString(),
       coupon_title: coupon.coupon_title,
       coupon_type: coupon.coupon_type,
+      coupon_status: coupon.coupon_status, // Added missing coupon_status field
       value: coupon.value,
       code: coupon.code,
       expires_at: coupon.expires_at,

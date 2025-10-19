@@ -34,6 +34,11 @@ export async function GET(
       );
     }
 
+    // Debug: Log the raw merchant data to see available fields
+    console.log('Raw merchant data:', merchantData.data[0]);
+    console.log('Available fields:', Object.keys(merchantData.data[0]));
+    console.log('store_description field:', merchantData.data[0].store_description);
+
     // Transform the data to match our frontend structure
     const merchant = merchantData.data[0];
     const transformedMerchant = {
@@ -42,6 +47,8 @@ export async function GET(
       slug: merchant.slug,
       logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : null,
       description: merchant.summary || merchant.description || "",
+      store_description: merchant.store_description || "", // Re-enabled store_description field
+      faqs: merchant.faqs || [], // Raw rich text data like store_description
       website: merchant.website || "",
       affiliateLink: merchant.affiliate_link || merchant.affiliateLink || "",
       pageLayout: merchant.page_layout || "coupon",
@@ -54,7 +61,8 @@ export async function GET(
       robots: merchant.robots || "index,follow",
       createdAt: merchant.createdAt,
       updatedAt: merchant.updatedAt,
-      publishedAt: merchant.publishedAt
+      publishedAt: merchant.publishedAt,
+      relatedMerchants: [] // Will be populated separately
     };
 
     return NextResponse.json(transformedMerchant);

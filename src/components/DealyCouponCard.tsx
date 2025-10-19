@@ -136,19 +136,7 @@ const DealyCouponCard = ({
             )}
           </div>
           
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-            <div className="flex items-start gap-2">
-              <div className="flex items-center gap-1 text-yellow-600 flex-shrink-0">
-                <span className="text-base">⚠️</span>
-              </div>
-              <div className="text-sm">
-                <div className="font-medium text-yellow-800 mb-1">溫馨提示：</div>
-                <div className="text-yellow-700 leading-relaxed">
-                  最高數額法：連住 2-3 晚 或適合早餐升等的房型等易獲選。本優惠僅限 Visa 信用卡付款，最低消費 HK$2,000，優惠有效期至 2026/03/31，數量有限，先到先得。
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Removed top yellow note section */}
 
           <Button variant="ghost" size="sm" onClick={e => {
             e.stopPropagation();
@@ -162,22 +150,22 @@ const DealyCouponCard = ({
             <div className="mt-3 space-y-3">
               {coupon.steps && (
                 <div className="text-sm">
-                  <div className="font-medium text-gray-800 mb-1">🧭 使用步驟：</div>
-                  <div className="text-gray-700 whitespace-pre-line">{coupon.steps}</div>
+                  <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
                 </div>
               )}
+            </div>
+          )}
 
-              {coupon.terms && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm">
-                      <div className="font-medium text-yellow-800 mb-1">⚠️ 溫馨提示：</div>
-                      <div className="text-yellow-700">{coupon.terms}</div>
-                    </div>
-                  </div>
+          {/* Bottom yellow note - moved outside foldable section */}
+          {coupon.terms && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <div className="font-medium text-yellow-800 mb-1">⚠️ 溫馨提示：</div>
+                  <div className="text-yellow-700">{coupon.terms}</div>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>
@@ -250,20 +238,7 @@ const DealyCouponCard = ({
               )}
             </div>
 
-            {/* Tips Section - Mobile */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3">
-              <div className="flex items-start gap-2">
-                <div className="flex items-center gap-1 text-yellow-600 flex-shrink-0">
-                  <span className="text-sm">⚠️</span>
-                </div>
-                <div className="text-xs">
-                  <div className="font-medium text-yellow-800 mb-1">溫馨提示：</div>
-                  <div className="text-yellow-700 leading-relaxed">
-                    最高數額法：連住 2-3 晚 或適合早餐升等的房型等易獲選。本優惠僅限 Visa 信用卡付款，最低消費 HK$2,000，優惠有效期至 2026/03/31，數量有限，先到先得。
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Removed mobile top yellow note section */}
 
             {/* Mobile Details Toggle */}
             <Button variant="ghost" size="sm" onClick={e => {
@@ -278,22 +253,22 @@ const DealyCouponCard = ({
               <div className="mt-3 space-y-3">
                 {coupon.steps && (
                   <div className="text-xs">
-                    <div className="font-medium text-gray-800 mb-1">🧭 使用步驟：</div>
-                    <div className="text-gray-700 whitespace-pre-line">{coupon.steps}</div>
+                    <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
                   </div>
                 )}
+              </div>
+            )}
 
-                {coupon.terms && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
-                      <div className="text-xs">
-                        <div className="font-medium text-yellow-800 mb-1">⚠️ 溫馨提示：</div>
-                        <div className="text-yellow-700">{coupon.terms}</div>
-                      </div>
-                    </div>
+            {/* Mobile bottom yellow note - moved outside foldable section */}
+            {coupon.terms && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mt-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-xs">
+                    <div className="font-medium text-yellow-800 mb-1">⚠️ 溫馨提示：</div>
+                    <div className="text-yellow-700">{coupon.terms}</div>
                   </div>
-                )}
+                </div>
               </div>
             )}
           </div>

@@ -278,6 +278,7 @@ export type TransformedShop = {
   slug: string;
   logo: string | null;
   description: string | null;
+  store_description?: string;
   website: string | null;
   affiliateLink: string | null;
   pageLayout: "coupon" | "blog";
@@ -301,6 +302,22 @@ export type TransformedShop = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  relatedMerchants?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    logo: string | null;
+    firstCoupon: {
+      id: string;
+      title: string;
+      value: string;
+      code?: string;
+      coupon_type: string;
+      affiliate_link: string;
+      priority: number;
+    } | null;
+  }>;
+  faqs?: any; // Raw rich text blocks from CMS, same as store_description
 };
 
 export type TransformedCoupon = {

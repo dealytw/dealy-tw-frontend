@@ -1,6 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+// Helper function to extract text from Strapi rich text
+function extractTextFromRichText(richText: any): string {
+  if (!richText) return "";
+  if (typeof richText === "string") return richText;
+  if (Array.isArray(richText)) {
+    return richText.map(item => {
+      if (item.children && Array.isArray(item.children)) {
+        return item.children.map((child: any) => child.text || "").join("");
+      }
+      return item.text || "";
+    }).join(" ");
+  }
+  return "";
+}
+
 interface MerchantSidebarProps {
   merchant: any;
   coupons: any[];
@@ -8,6 +23,10 @@ interface MerchantSidebarProps {
 }
 
 const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [] }: MerchantSidebarProps) => {
+  // Debug: Log merchant data to see what fields are available
+  console.log('MerchantSidebar received merchant:', merchant);
+  console.log('store_description:', merchant.store_description);
+  
   // Combine active and expired coupons for statistics
   const allCoupons = [...coupons, ...expiredCoupons];
   
@@ -21,9 +40,14 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [] }: MerchantSid
     const currentValue = coupon.value;
     if (!best) return currentValue;
     
-    // Extract percentage or dollar amount
-    const currentMatch = currentValue.match(/(\d+)(%|折|off)/i);
-    const bestMatch = best.match(/(\d+)(%|折|off)/i);
+    // Handle null/undefined values safely
+    if (!currentValue || !best) return best || currentValue;
+    
+    // Enhanced regex to handle currencies: TWD, HKD, USD, etc. and symbols: $, ¥, €, etc.
+    const currencyPattern = /(\d+)\s*(?:TWD|HKD|USD|EUR|JPY|CNY|SGD|MYR|THB|PHP|IDR|VND|KRW|INR|AUD|CAD|GBP|CHF|NZD|SEK|NOK|DKK|PLN|CZK|HUF|RUB|BRL|MXN|ARS|CLP|COP|PEN|UYU|VEF|ZAR|TRY|ILS|AED|SAR|QAR|KWD|BHD|OMR|JOD|LBP|EGP|MAD|TND|DZD|NGN|KES|UGX|TZS|ZMW|BWP|MWK|MZN|AOA|XOF|XAF|XPF|MUR|SCR|KMF|DJF|ERN|ETB|SOS|SLL|GMD|GNF|LRD|CDF|RWF|BIF|CVE|STN|SZL|LSL|NAD|BND|FJD|PGK|SBD|TOP|VUV|WST|TVD|KID|NPR|BTN|MVR|AFN|PKR|LKR|BDT|MMK|LAK|KHR|MOP)?\s*\$?\s*(%|折|off|減|扣|折|優惠)/i;
+    
+    const currentMatch = currentValue.match(currencyPattern);
+    const bestMatch = best.match(currencyPattern);
     
     if (currentMatch && bestMatch) {
       const currentNum = parseInt(currentMatch[1]);
@@ -102,7 +126,7 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [] }: MerchantSid
       {/* Description Card */}
       <Card className="p-4">
         <p className="text-sm text-gray-700 leading-relaxed">
-          {merchant.description}
+          {merchant.store_description ? extractTextFromRichText(merchant.store_description) : merchant.description || ""}
         </p>
       </Card>
 
