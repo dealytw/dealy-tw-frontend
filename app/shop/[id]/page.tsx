@@ -191,6 +191,28 @@ const Merchant = () => {
   const [relatedMerchants, setRelatedMerchants] = useState<any[]>([]);
   const filters = ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
 
+  // Auto scroll to coupon if hash is present
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#coupon-')) {
+      const couponId = hash.replace('#coupon-', '');
+      const element = document.getElementById(`coupon-${couponId}`);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+        // Find and open the corresponding coupon modal
+        const coupon = coupons.find(c => c.id === couponId);
+        if (coupon) {
+          setSelectedCoupon(coupon);
+          setIsModalOpen(true);
+        }
+      }
+    }
+  }, [coupons]);
+
   // Fetch merchant data and coupons from Strapi
   useEffect(() => {
     const fetchData = async () => {
@@ -390,7 +412,7 @@ const Merchant = () => {
       steps: renderRichText(coupon.description), // Map description to steps with formatting preserved
       terms: extractTextFromRichText(coupon.editor_tips), // Map editor_tips to terms (⚠️ 溫馨提示)
       affiliateLink: coupon.affiliate_link || '#',
-      couponType: coupon.coupon_type === "promo_code" ? "promo_code" : "coupon",
+      coupon_type: coupon.coupon_type,
       merchant: {
         name: coupon.merchant.name || 'Unknown Merchant',
         logo: coupon.merchant.logo || '',

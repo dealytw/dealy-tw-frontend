@@ -18,7 +18,7 @@ interface DealyCouponCardProps {
     steps?: string;
     terms?: string;
     affiliateLink: string;
-    couponType?: "promo_code" | "coupon";
+    coupon_type?: "promo_code" | "coupon" | "discount";
     timeLeft?: string;
     merchant: {
       name: string;
@@ -37,8 +37,22 @@ const DealyCouponCard = ({
   const [revealedCode, setRevealedCode] = useState(false);
   const { toast } = useToast();
 
-  // Determine coupon type - if no code provided, treat as regular coupon
-  const couponType = coupon.code ? "promo_code" : "coupon";
+  // Get button text based on coupon_type
+  const getButtonText = (couponType?: string) => {
+    switch (couponType) {
+      case "promo_code":
+        return "獲取優惠碼";
+      case "coupon":
+        return "獲取優惠券";
+      case "discount":
+        return "獲取折扣";
+      default:
+        return "獲取優惠碼"; // Default fallback
+    }
+  };
+
+  // Determine coupon type - use coupon_type from CMS, fallback to code detection
+  const couponType = coupon.coupon_type || (coupon.code ? "promo_code" : "coupon");
   const discountType = coupon.code ? "代碼" : "優惠";
 
   const handleCopy = async (code: string) => {
@@ -112,7 +126,7 @@ const DealyCouponCard = ({
                 {!revealedCode ? (
                   <div className="inline-flex items-center cursor-pointer" onClick={handleButtonClick}>
                     <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-2.5 rounded-l-full border-0 pointer-events-none">
-                      獲取優惠碼
+                      {getButtonText(couponType)}
                     </Button>
                     <div className="bg-white border-2 border-dashed border-gray-400 rounded-r-full px-3 py-2.5 flex items-center justify-center">
                       <span className="text-black text-xs font-bold">***</span>
@@ -131,7 +145,7 @@ const DealyCouponCard = ({
               </div>
             ) : (
               <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0" onClick={handleButtonClick}>
-                獲取優惠碼
+                {getButtonText(couponType)}
               </Button>
             )}
           </div>
@@ -214,7 +228,7 @@ const DealyCouponCard = ({
                   {!revealedCode ? (
                     <div className="inline-flex items-center cursor-pointer" onClick={handleButtonClick}>
                       <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-l-full border-0 pointer-events-none text-xs">
-                        獲取優惠碼
+                        {getButtonText(couponType)}
                       </Button>
                       <div className="bg-white border-2 border-dashed border-gray-400 rounded-r-full px-2 py-2 flex items-center justify-center">
                         <span className="text-black text-xs font-bold">***</span>
@@ -233,7 +247,7 @@ const DealyCouponCard = ({
                 </div>
               ) : (
                 <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-full border-0 text-xs" onClick={handleButtonClick}>
-                  獲取優惠碼
+                  {getButtonText(couponType)}
                 </Button>
               )}
             </div>
