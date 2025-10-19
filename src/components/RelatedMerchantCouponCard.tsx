@@ -94,6 +94,34 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
   const discountValue = extractDiscountValue(coupon.value);
   const couponTitle = `${relatedMerchant.name} - 精選優惠 (${discountValue}折扣)`;
 
+  // Helper function to get button text based on coupon type
+  const getButtonText = (couponType?: string) => {
+    switch (couponType) {
+      case "promo_code":
+        return "獲取優惠碼";
+      case "coupon":
+        return "獲取優惠券";
+      case "discount":
+        return "獲取折扣";
+      default:
+        return "獲取優惠碼"; // Default fallback
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (coupon) {
+      // Step 1: Open new tab with related merchant page + modal + auto-scroll (immediate)
+      const baseUrl = window.location.href.split('#')[0]; // Remove existing hash
+      const relatedMerchantUrl = baseUrl.replace(`/shop/${window.location.pathname.split('/').pop()}`, `/shop/${relatedMerchant.slug}`);
+      window.open(relatedMerchantUrl + `#coupon-${coupon.id}`, '_blank');
+      
+      // Step 2: Redirect current tab to affiliate link (after short delay)
+      setTimeout(() => {
+        window.open(coupon.affiliate_link, '_self');
+      }, 100);
+    }
+  };
+
   return (
     <Card className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
       {/* Merchant Logo */}
@@ -125,14 +153,13 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
           <div className="text-lg font-bold">{discountValue} 折扣</div>
         </div>
         
-        <Link href={`/shop/${relatedMerchant.slug}`}>
-          <Button 
-            className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-4 py-2"
-            size="sm"
-          >
-            馬上領
-          </Button>
-        </Link>
+        <Button 
+          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-4 py-2"
+          size="sm"
+          onClick={handleButtonClick}
+        >
+          {getButtonText(coupon.coupon_type)}
+        </Button>
       </div>
     </Card>
   );

@@ -189,29 +189,65 @@ const Merchant = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
   const [relatedMerchants, setRelatedMerchants] = useState<any[]>([]);
+  const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
   const filters = ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
+
+  // Helper function to get button text based on coupon type
+  const getButtonText = (couponType?: string) => {
+    switch (couponType) {
+      case "promo_code":
+        return "獲取優惠碼";
+      case "coupon":
+        return "獲取優惠券";
+      case "discount":
+        return "獲取折扣";
+      default:
+        return "獲取優惠碼"; // Default fallback
+    }
+  };
 
   // Auto scroll to coupon if hash is present
   useEffect(() => {
     const hash = window.location.hash;
     if (hash.startsWith('#coupon-')) {
-      const couponId = hash.replace('#coupon-', '');
-      const element = document.getElementById(`coupon-${couponId}`);
-      if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
+      // Handle multiple hash fragments by taking the last one
+      const couponHashes = hash.match(/#coupon-(\d+)/g);
+      if (couponHashes && couponHashes.length > 0) {
+        const lastCouponHash = couponHashes[couponHashes.length - 1];
+        const couponId = lastCouponHash.replace('#coupon-', '');
+        const element = document.getElementById(`coupon-${couponId}`);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
 
-        // Find and open the corresponding coupon modal
-        const coupon = coupons.find(c => c.id === couponId);
-        if (coupon) {
-          setSelectedCoupon(coupon);
-          setIsModalOpen(true);
+          // Set the scrolled to coupon ID for promo_code display
+          setScrolledToCouponId(couponId);
+
+          // Find and open the corresponding coupon modal
+          const coupon = coupons.find(c => c.id === couponId) || expiredCoupons.find(c => c.id === couponId);
+          if (coupon) {
+            // Transform the coupon for the modal
+            const transformedCoupon = {
+              id: coupon.id,
+              code: coupon.code,
+              title: coupon.coupon_title || 'Untitled Coupon', // Use correct field name
+              description: extractTextFromRichText(coupon.description),
+              discount: coupon.value || '', // Use correct field name
+              expiry: coupon.expires_at || "長期有效", // Use correct field name
+              terms: extractTextFromRichText(coupon.editor_tips),
+              merchant: coupon.merchant,
+              affiliateLink: coupon.affiliate_link || '#',
+              coupon_type: coupon.coupon_type // Add coupon_type for modal logic
+            };
+            setSelectedCoupon(transformedCoupon);
+            setIsModalOpen(true);
+          }
         }
       }
     }
-  }, [coupons]);
+  }, [coupons, expiredCoupons]);
 
   // Fetch merchant data and coupons from Strapi
   useEffect(() => {
@@ -362,22 +398,24 @@ const Merchant = () => {
     const transformedCoupon = {
       id: coupon.id,
       code: coupon.code,
-      title: coupon.title,
-      description: coupon.description, // Already transformed
-      discount: coupon.discount,
-      expiry: coupon.expiry,
-      terms: coupon.terms, // Already transformed
+      title: coupon.coupon_title || 'Untitled Coupon', // Use correct field name
+      description: extractTextFromRichText(coupon.description), // Transform rich text to string
+      discount: coupon.value || '', // Use correct field name
+      expiry: coupon.expires_at || "長期有效", // Use correct field name
+      terms: extractTextFromRichText(coupon.editor_tips), // Transform rich text to string
       merchant: coupon.merchant,
-      affiliateLink: coupon.affiliateLink
+      affiliateLink: coupon.affiliate_link || '#',
+      coupon_type: coupon.coupon_type // Add coupon_type for modal logic
     };
     
-    setSelectedCoupon(transformedCoupon);
-    setIsModalOpen(true);
-
-    // Open affiliate link in same tab and popup in new tab (as requested)
-    window.open(coupon.affiliateLink, '_self');
+    // Step 1: Open new tab with merchant page + modal + auto-scroll (immediate)
+    // Replace any existing hash with the new coupon hash
+    const baseUrl = window.location.href.split('#')[0]; // Remove existing hash
+    window.open(baseUrl + `#coupon-${coupon.id}`, '_blank');
+    
+    // Step 2: Redirect current tab to affiliate link (after short delay)
     setTimeout(() => {
-      window.open(window.location.href + `#coupon-${coupon.id}`, '_blank');
+      window.open(coupon.affiliate_link, '_self');
     }, 100);
   };
 
@@ -508,7 +546,11 @@ const Merchant = () => {
                   }
                   return (
                     <div key={coupon.id} id={`coupon-${coupon.id}`}>
-                      <DealyCouponCard coupon={transformedCoupon} onClick={() => handleCouponClick(coupon)} />
+                      <DealyCouponCard 
+                        coupon={transformedCoupon} 
+                        onClick={() => handleCouponClick(coupon)}
+                        isScrolledTo={scrolledToCouponId === coupon.id}
+                      />
                     </div>
                   );
                 }).filter(Boolean)}
@@ -528,7 +570,7 @@ const Merchant = () => {
                         return null;
                       }
                       return (
-                        <div key={coupon.id} className="border border-gray-200 rounded-lg p-4">
+                        <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
                           <div className="flex items-start gap-4">
                             <div className="text-center min-w-[80px]">
                               <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center">
@@ -540,9 +582,9 @@ const Merchant = () => {
                             <div className="flex-1">
                               <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
                               <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
-                              <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
-                                獲取優惠券 ➤
-                              </Button>
+                               <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
+                                 {getButtonText(coupon.coupon_type)} ➤
+                               </Button>
                               <p className="text-xs text-gray-600">{transformedCoupon.description}</p>
                             </div>
                           </div>
@@ -567,7 +609,7 @@ const Merchant = () => {
                     relatedMerchants.map((relatedMerchant) => (
                       <RelatedMerchantCouponCard 
                         key={relatedMerchant.id} 
-                        relatedMerchant={relatedMerchant} 
+                        relatedMerchant={relatedMerchant}
                       />
                     ))
                   ) : (

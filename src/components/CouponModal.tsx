@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Copy, Check, ExternalLink, AlertCircle } from "lucide-react";
+import { X, ShoppingBag, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CouponModalProps {
@@ -34,6 +33,11 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
 
   if (!coupon) return null;
 
+  const handleVisitStore = () => {
+    // Open affiliate link in same tab (as requested)
+    window.open(coupon.affiliateLink, '_self');
+  };
+
   const handleCopy = async () => {
     if (!coupon.code) return;
     
@@ -44,7 +48,7 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
         title: "優惠碼已複製",
         description: `${coupon.code} 已複製到剪貼簿`,
       });
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 5000); // 5 seconds as requested
     } catch (error) {
       toast({
         title: "複製失敗",
@@ -52,11 +56,6 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
         variant: "destructive",
       });
     }
-  };
-
-  const handleVisitStore = () => {
-    // Open affiliate link in same tab (as requested)
-    window.open(coupon.affiliateLink, '_self');
   };
 
   // Get button text based on coupon_type
@@ -73,96 +72,108 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
     }
   };
 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center">
-          <div className="flex justify-center mb-4">
+      <DialogContent className="sm:max-w-md p-0 bg-white">
+        <DialogTitle className="sr-only">
+          {coupon.title} - {coupon.merchant.name} 優惠券
+        </DialogTitle>
+        
+        {/* Close Button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 z-10 bg-pink-100 hover:bg-pink-200 text-pink-600 rounded-md p-1 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="p-6 space-y-6">
+          {/* Merchant Logo */}
+          <div className="flex justify-center">
             <img 
               src={coupon.merchant.logo} 
               alt={coupon.merchant.name}
-              className="h-12 w-auto"
+              className="h-8 w-auto"
             />
           </div>
-          <DialogTitle className="text-lg font-semibold text-center">
-            {coupon.title}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Discount Badge */}
+          
+          {/* Main Offer Title */}
           <div className="text-center">
-            <Badge variant="secondary" className="text-sm px-3 py-1">
-              {coupon.discount}
-            </Badge>
+            <h2 className="text-lg font-bold text-gray-800 mb-2">
+              {coupon.title}
+            </h2>
+            
+            {/* Usage Count */}
+            <p className="text-sm text-gray-600">
+              {coupon.usageCount}人已使用此優惠
+            </p>
           </div>
 
-          {/* Coupon Code - Only show if code exists */}
-          {coupon.code && (
-            <div className="border-2 border-dashed border-primary/20 rounded-lg p-4 bg-secondary/50">
-              <div className="flex items-center justify-between gap-2">
-                <code className="font-mono text-lg font-bold text-primary flex-1 text-center">
+          {/* Conditional Content based on coupon_type */}
+          {coupon.coupon_type === "promo_code" ? (
+            /* Promo Code Layout - Inline Code with Copy Button */
+            <div className="border-2 border-dashed border-pink-300 rounded-lg p-4 bg-pink-50">
+              <div className="flex items-center justify-between gap-3">
+                <code className="font-mono text-lg font-bold text-gray-800 flex-1 text-center">
                   {coupon.code}
                 </code>
                 <Button
                   onClick={handleCopy}
-                  size="sm"
-                  variant="outline"
-                  className="flex-shrink-0"
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    copied 
+                      ? "bg-green-500 hover:bg-green-600 text-white" 
+                      : "bg-pink-500 hover:bg-pink-600 text-white"
+                  }`}
                 >
                   {copied ? (
-                    <Check className="h-4 w-4" />
+                    <>
+                      <Check className="h-4 w-4 mr-1" />
+                      已複製
+                    </>
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      複製
+                    </>
                   )}
-                  <span className="ml-1">{copied ? "已複製" : "複製"}</span>
                 </Button>
               </div>
             </div>
+          ) : (
+            /* Regular Layout - Main CTA Button */
+            <Button 
+              onClick={handleVisitStore}
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-lg"
+            >
+              {getButtonText(coupon.coupon_type)}
+            </Button>
           )}
 
-          {/* Description */}
-          <p className="text-sm text-muted-foreground text-center">
+          {/* Offer Details */}
+          <div className="text-sm text-gray-600 leading-relaxed">
             {coupon.description}
-          </p>
+          </div>
 
-          {/* Steps - Show if available */}
-          {coupon.steps && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <div className="text-xs text-blue-800">
-                <div className="font-medium mb-1">使用步驟：</div>
-                <div dangerouslySetInnerHTML={{ __html: coupon.steps }} />
-              </div>
-            </div>
-          )}
-
-          {/* Terms and Conditions */}
+          {/* Warm Tip Section */}
           {coupon.terms && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-yellow-800">
-                  <p className="font-medium mb-1">⚠️ 溫馨提示：</p>
+                <ShoppingBag className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-gray-700">
+                  <p className="font-medium text-gray-800 mb-1">溫馨提示:</p>
                   <p>{coupon.terms}</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Expiry and Usage Count */}
-          <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>優惠期限：{coupon.expiry}</p>
-            <p>{coupon.usageCount} 人已使用</p>
-          </div>
-
-          {/* Visit Store Button */}
+          {/* Continue Browsing Button */}
           <Button 
-            onClick={handleVisitStore}
-            className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
-            size="lg"
+            onClick={() => onOpenChange(false)}
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-lg"
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            {getButtonText(coupon.coupon_type)}
+            繼續瀏覽
           </Button>
         </div>
       </DialogContent>

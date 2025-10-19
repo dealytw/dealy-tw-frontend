@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Copy, Check, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DealyCouponCardProps {
@@ -26,15 +26,16 @@ interface DealyCouponCardProps {
     };
   };
   onClick: () => void;
+  isScrolledTo?: boolean; // New prop to indicate if this coupon is scrolled to
 }
 
 const DealyCouponCard = ({
   coupon,
-  onClick
+  onClick,
+  isScrolledTo = false
 }: DealyCouponCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [revealedCode, setRevealedCode] = useState(false);
   const { toast } = useToast();
 
   // Get button text based on coupon_type
@@ -74,13 +75,7 @@ const DealyCouponCard = ({
   };
 
   const handleButtonClick = () => {
-    if (couponType === "promo_code" && !revealedCode) {
-      // Just reveal the code for promo codes
-      setRevealedCode(true);
-      return;
-    }
-
-    // For regular coupons or already revealed promo codes, trigger the click handler
+    // Always trigger the click handler for all coupon types
     onClick();
   };
 
@@ -121,29 +116,37 @@ const DealyCouponCard = ({
           </div>
           
           <div className="flex items-center gap-4 mb-4">
-            {couponType === "promo_code" ? (
-              <div className="flex items-center">
-                {!revealedCode ? (
-                  <div className="inline-flex items-center cursor-pointer" onClick={handleButtonClick}>
-                    <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-2.5 rounded-l-full border-0 pointer-events-none">
-                      {getButtonText(couponType)}
-                    </Button>
-                    <div className="bg-white border-2 border-dashed border-gray-400 rounded-r-full px-3 py-2.5 flex items-center justify-center">
-                      <span className="text-black text-xs font-bold">***</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center border-2 border-dashed border-gray-400 rounded">
-                    <span className="font-mono text-lg px-4 py-2 bg-gray-50">
-                      {coupon.code}
-                    </span>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-l-none" onClick={() => coupon.code && handleCopy(coupon.code)}>
-                      COPY
-                    </Button>
-                  </div>
-                )}
+            {couponType === "promo_code" && isScrolledTo ? (
+              /* Promo Code Layout - Dashed Code Block with Copy Button */
+              <div className="border-2 border-dashed border-red-400 rounded-lg p-3 bg-red-50">
+                <div className="flex items-center justify-between gap-3">
+                  <code className="font-mono text-lg font-bold text-gray-800 flex-1 text-center">
+                    {coupon.code}
+                  </code>
+                  <Button
+                    onClick={() => coupon.code && handleCopy(coupon.code)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      copied 
+                        ? "bg-green-500 hover:bg-green-600 text-white" 
+                        : "bg-blue-500 hover:bg-blue-600 text-white"
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 mr-1" />
+                        已複製
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-1" />
+                        複製
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             ) : (
+              /* Regular Layout - Standard Button */
               <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0" onClick={handleButtonClick}>
                 {getButtonText(couponType)}
               </Button>
@@ -223,29 +226,37 @@ const DealyCouponCard = ({
 
             {/* Mobile Buttons - Same as Desktop */}
             <div className="flex items-center gap-4 mb-3">
-              {couponType === "promo_code" ? (
-                <div className="flex items-center">
-                  {!revealedCode ? (
-                    <div className="inline-flex items-center cursor-pointer" onClick={handleButtonClick}>
-                      <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-l-full border-0 pointer-events-none text-xs">
-                        {getButtonText(couponType)}
-                      </Button>
-                      <div className="bg-white border-2 border-dashed border-gray-400 rounded-r-full px-2 py-2 flex items-center justify-center">
-                        <span className="text-black text-xs font-bold">***</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center border-2 border-dashed border-gray-400 rounded">
-                      <span className="font-mono text-sm px-3 py-2 bg-gray-50">
-                        {coupon.code}
-                      </span>
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-l-none text-xs" onClick={() => coupon.code && handleCopy(coupon.code)}>
-                        COPY
-                      </Button>
-                    </div>
-                  )}
+              {couponType === "promo_code" && isScrolledTo ? (
+                /* Mobile Promo Code Layout - Dashed Code Block with Copy Button */
+                <div className="border-2 border-dashed border-red-400 rounded-lg p-2 bg-red-50">
+                  <div className="flex items-center justify-between gap-2">
+                    <code className="font-mono text-sm font-bold text-gray-800 flex-1 text-center">
+                      {coupon.code}
+                    </code>
+                    <Button
+                      onClick={() => coupon.code && handleCopy(coupon.code)}
+                      className={`px-3 py-1 rounded-lg font-medium transition-colors text-xs ${
+                        copied 
+                          ? "bg-green-500 hover:bg-green-600 text-white" 
+                          : "bg-blue-500 hover:bg-blue-600 text-white"
+                      }`}
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="h-3 w-3 mr-1" />
+                          已複製
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3 mr-1" />
+                          複製
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               ) : (
+                /* Mobile Regular Layout - Standard Button */
                 <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-full border-0 text-xs" onClick={handleButtonClick}>
                   {getButtonText(couponType)}
                 </Button>
