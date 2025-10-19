@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp } from "lucide-react";
+import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart } from "lucide-react";
 import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -111,6 +111,72 @@ function parseFAQs(richText: any): Array<{question: string, answer: string}> {
   }
   
   return faqs;
+}
+
+// Helper function to parse how-to rich text into structured content
+function parseHowTo(richText: any): Array<{title: string, content: string}> {
+  if (!richText || !Array.isArray(richText)) return [];
+  
+  const howToSections: Array<{title: string, content: string}> = [];
+  let currentTitle = "";
+  let currentContent = "";
+  
+  for (const item of richText) {
+    if (item.type === "paragraph") {
+      const paragraphText = item.children?.map((child: any) => {
+        return child.text || "";
+      }).join("") || "";
+      
+      // Check if this paragraph contains bold text (step title)
+      const hasBoldText = item.children?.some((child: any) => child.bold);
+      
+      if (hasBoldText) {
+        // If we have a previous section, save it
+        if (currentTitle && currentContent) {
+          howToSections.push({
+            title: currentTitle,
+            content: currentContent.trim()
+          });
+        }
+        // Start new section with bold text as title (plain text, no HTML tags)
+        currentTitle = paragraphText;
+        currentContent = "";
+      } else if (currentTitle) {
+        // Add to current content
+        if (currentContent) {
+          currentContent += " " + paragraphText;
+        } else {
+          currentContent = paragraphText;
+        }
+      }
+    } else if (item.type === "list" && currentTitle) {
+      // Handle bullet points
+      const listItems = item.children?.map((child: any) => {
+        if (child.children && Array.isArray(child.children)) {
+          return child.children.map((grandChild: any) => {
+            return grandChild.text || "";
+          }).join("");
+        }
+        return child.text || "";
+      }).join("\n• ") || "";
+      
+      if (currentContent) {
+        currentContent += "\n• " + listItems;
+      } else {
+        currentContent = "• " + listItems;
+      }
+    }
+  }
+  
+  // Don't forget the last section
+  if (currentTitle && currentContent) {
+    howToSections.push({
+      title: currentTitle,
+      content: currentContent.trim()
+    });
+  }
+  
+  return howToSections;
 }
 
 const Merchant = () => {
@@ -544,44 +610,26 @@ const Merchant = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <p className="font-medium">1) 先在本頁按「顯示優惠碼」/「獲取折扣」</p>
-                    <p className="font-medium">2) 登入 {merchant.name} 帳戶</p>
-                    <p className="font-medium">3) 選擇產品加入購物車</p>
-                    <p className="font-medium">4) 結帳頁輸入或套用優惠</p>
-                    <p className="font-medium">5) 確認折扣已生效再付款。</p>
-                  </div>
-
-                  <div className="mt-6">
-                    <h4 className="font-bold text-lg mb-4">詳細步驟</h4>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <h5 className="font-medium mb-2">由本頁進入優惠</h5>
-                        <p className="text-sm text-gray-600">按「顯示優惠碼」或「獲取折扣」前往 {merchant.name}（部分優惠需經指定連結才會顯發）。</p>
+                  {merchant.how_to && merchant.how_to.length > 0 ? (
+                    parseHowTo(merchant.how_to).map((section, index) => (
+                      <div key={index} className="space-y-3">
+                        <h4 className="font-semibold text-gray-800 text-lg">
+                          {index + 1}. {section.title}
+                        </h4>
+                        <div className="text-sm text-gray-600 space-y-2 whitespace-pre-line">
+                          {section.content}
+                        </div>
                       </div>
-
-                      <div>
-                        <h5 className="font-medium mb-2">登入／建立帳戶</h5>
-                        <p className="text-sm text-gray-600">建議先登入以保留訂單與顯示會員價（如有）。</p>
-                      </div>
-
-                      <div>
-                        <h5 className="font-medium mb-2">搜尋與選擇</h5>
-                        <p className="text-sm text-gray-600">輸入城市／景點、日期與人數，挑選標示支援優惠的酒店／機票／門票產品，加入購物車。</p>
-                      </div>
-
-                      <div>
-                        <h5 className="font-medium mb-2">進入結帳頁</h5>
-                        <p className="text-sm text-gray-600">填寫旅客資料後，於結帳頁找到「優惠碼」/「折扣代碼」/「優惠券」區域。</p>
-                      </div>
-
-                      <div>
-                        <h5 className="font-medium mb-2">輸入或套用優惠</h5>
-                        <p className="text-sm text-gray-600">有代碼：貼上本頁顯示的優惠碼一按「套用」。</p>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="font-medium">1) 先在本頁按「顯示優惠碼」/「獲取折扣」</p>
+                      <p className="font-medium">2) 登入 {merchant.name} 帳戶</p>
+                      <p className="font-medium">3) 選擇產品加入購物車</p>
+                      <p className="font-medium">4) 結帳頁輸入或套用優惠</p>
+                      <p className="font-medium">5) 確認折扣已生效再付款。</p>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 

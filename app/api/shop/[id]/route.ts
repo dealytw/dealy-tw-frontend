@@ -23,6 +23,7 @@ export async function GET(
       "filters[market][key][$eq]": market,
       "populate[logo]": "true",
       "populate[market]": "true",
+      "populate[useful_links]": "true",
     };
 
     const merchantData = await strapiGet("/api/merchants", params_query);
@@ -38,6 +39,7 @@ export async function GET(
     console.log('Raw merchant data:', merchantData.data[0]);
     console.log('Available fields:', Object.keys(merchantData.data[0]));
     console.log('store_description field:', merchantData.data[0].store_description);
+    console.log('useful_links field:', merchantData.data[0].useful_links);
 
     // Transform the data to match our frontend structure
     const merchant = merchantData.data[0];
@@ -49,6 +51,8 @@ export async function GET(
       description: merchant.summary || merchant.description || "",
       store_description: merchant.store_description || "", // Re-enabled store_description field
       faqs: merchant.faqs || [], // Raw rich text data like store_description
+      how_to: merchant.how_to || [], // Raw rich text data for how-to section
+      useful_links: merchant.useful_links || [], // Component field with link_title and url
       website: merchant.website || "",
       affiliateLink: merchant.affiliate_link || merchant.affiliateLink || "",
       pageLayout: merchant.page_layout || "coupon",
@@ -65,7 +69,11 @@ export async function GET(
       relatedMerchants: [] // Will be populated separately
     };
 
-    return NextResponse.json(transformedMerchant);
+    return NextResponse.json(transformedMerchant, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      }
+    });
   } catch (error: any) {
     console.error("Error fetching merchant:", error);
     return NextResponse.json(

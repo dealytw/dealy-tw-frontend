@@ -318,6 +318,12 @@ export type TransformedShop = {
     } | null;
   }>;
   faqs?: any; // Raw rich text blocks from CMS, same as store_description
+  how_to?: any; // Raw rich text blocks for how-to section
+  useful_links?: Array<{
+    id: string;
+    link_title: string;
+    url: string;
+  }>; // Component field with link_title and url
 };
 
 export type TransformedCoupon = {

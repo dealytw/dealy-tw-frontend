@@ -114,11 +114,25 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [] }: MerchantSid
           </div>
         </div>
 
-        {/* Useful Links - Leave for now as requested */}
+        {/* Useful Links */}
         <div className="border-t pt-4">
           <h4 className="font-semibold text-gray-800 mb-3">有用及相關連結</h4>
           <div className="space-y-2">
-            <div className="text-sm text-gray-500">Coming soon...</div>
+            {merchant.useful_links && Array.isArray(merchant.useful_links) && merchant.useful_links.length > 0 ? (
+              merchant.useful_links.map((link: any, index: number) => (
+                <a
+                  key={index}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                >
+                  {link.link_title}
+                </a>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500">Coming soon...</div>
+            )}
           </div>
         </div>
       </Card>
