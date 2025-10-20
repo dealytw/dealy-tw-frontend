@@ -6,7 +6,7 @@ import DealySidebar from "@/components/DealySidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CouponCard from "@/components/CouponCard";
-import { Search } from "lucide-react";
+import { Search, X, Store, Tag } from "lucide-react";
 
 // Types matching homepage-code-usage.json
 type PopularMerchant = {
@@ -42,6 +42,40 @@ type CouponRailItem = {
   expiresAt?: string; // Raw expiry date for client-side calculation
 };
 
+type SearchResult = {
+  merchants: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    logo: string;
+    description: string;
+    website: string;
+    affiliateLink: string;
+    market: string;
+    type: 'merchant';
+  }>;
+  coupons: Array<{
+    id: string;
+    title: string;
+    description: string;
+    value: string;
+    code: string;
+    coupon_type: string;
+    expires_at: string;
+    user_count: number;
+    affiliate_link: string;
+    merchant: {
+      id: number;
+      name: string;
+      slug: string;
+      logo: string;
+    };
+    type: 'coupon';
+  }>;
+  query: string;
+  totalResults: number;
+};
+
 type HomePageData = {
   seo: {
     title: string;
@@ -75,6 +109,12 @@ const Index = () => {
   const [revealedCodes, setRevealedCodes] = useState<Set<string>>(new Set());
   const [homepageData, setHomepageData] = useState<HomePageData | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Search functionality state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Calculate time left on client side to avoid hydration mismatch
   const calculateTimeLeft = (expiresAt?: string): string | null => {
@@ -161,6 +201,39 @@ const Index = () => {
     navigator.clipboard.writeText(text);
   };
 
+  // Search functionality
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults(null);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+      const results = await response.json();
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults(null);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(searchQuery);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults(null);
+    setShowSearchResults(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -208,22 +281,135 @@ const Index = () => {
           
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto relative">
-            <div className="flex bg-white rounded-full shadow-lg overflow-hidden">
+            <form onSubmit={handleSearchSubmit} className="flex bg-white rounded-full shadow-lg overflow-hidden">
               <div className="flex items-center pl-6 pr-3">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
-                            placeholder={homepageData.hero?.searchPlaceholder || "搜尋最抵Deal"}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={homepageData.hero?.searchPlaceholder || "搜尋最抵Deal"}
                 className="flex-1 py-4 px-2 text-lg outline-none"
               />
-              <Button className="m-2 px-8 py-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full">
-                搜尋
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="flex items-center px-3 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              <Button 
+                type="submit"
+                disabled={isSearching}
+                className="m-2 px-8 py-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full"
+              >
+                {isSearching ? "搜尋中..." : "搜尋"}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
+
+      {/* Search Results */}
+      {showSearchResults && searchResults && (
+        <section className="py-8 px-4 bg-gray-50">
+          <div className="container mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                搜尋結果: "{searchResults.query}"
+              </h2>
+              <button
+                onClick={clearSearch}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+              >
+                <X className="h-4 w-4" />
+                清除搜尋
+              </button>
+            </div>
+            
+            {searchResults.totalResults === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">找不到相關結果</p>
+                <p className="text-gray-500 text-sm mt-2">請嘗試其他關鍵字</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Merchants Results */}
+                {searchResults.merchants.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                      <Store className="h-5 w-5" />
+                      商店 ({searchResults.merchants.length})
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {searchResults.merchants.map((merchant) => (
+                        <Card 
+                          key={merchant.id}
+                          className="cursor-pointer hover:shadow-lg transition-shadow"
+                          onClick={() => window.location.href = `/shop/${merchant.slug}`}
+                        >
+                          <div className="p-4 text-center">
+                            <div className="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden bg-white p-2">
+                              <img
+                                src={merchant.logo}
+                                alt={merchant.name}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-1">{merchant.name}</h4>
+                            <p className="text-xs text-gray-600 line-clamp-2">{merchant.description}</p>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Coupons Results */}
+                {searchResults.coupons.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                      <Tag className="h-5 w-5" />
+                      優惠券 ({searchResults.coupons.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {searchResults.coupons.map((coupon) => (
+                        <CouponCard
+                          key={coupon.id}
+                          coupon={{
+                            id: coupon.id,
+                            coupon_title: coupon.title,
+                            coupon_type: coupon.coupon_type,
+                            value: coupon.value,
+                            code: coupon.code,
+                            expires_at: coupon.expires_at,
+                            user_count: coupon.user_count,
+                            description: coupon.description,
+                            editor_tips: "",
+                            affiliate_link: coupon.affiliate_link,
+                            merchant: {
+                              name: coupon.merchant.name,
+                              logo: coupon.merchant.logo,
+                            },
+                          }}
+                          onGetCode={(couponData) => {
+                            if (couponData.affiliate_link) {
+                              window.open(couponData.affiliate_link, '_blank');
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Popular Merchants */}
       {homepageData.popularMerchants && (
@@ -237,7 +423,11 @@ const Index = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8">
               {homepageData.popularMerchants.items && homepageData.popularMerchants.items.length > 0 ? (
                 homepageData.popularMerchants.items.map((merchant) => (
-                  <div key={merchant.id} className="text-center group cursor-pointer">
+                  <div 
+                    key={merchant.id} 
+                    className="text-center group cursor-pointer"
+                    onClick={() => window.location.href = `/shop/${merchant.slug}`}
+                  >
                     <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
                       <div className="w-full h-full flex items-center justify-center">
                                     <img
