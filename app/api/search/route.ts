@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiGet, absolutizeMedia } from "@/lib/strapi";
+import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,16 +19,26 @@ export async function GET(request: NextRequest) {
 
     const searchQuery = query.trim();
 
-    // Search merchants - simplified approach
+    // Search merchants with explicit fields and minimal populate
     const merchantParams = {
       "filters[market][key][$eq]": market,
-      "populate[logo]": "true",
-      "populate[market]": "true",
+      "fields[0]": "id",
+      "fields[1]": "merchant_name",
+      "fields[2]": "slug", 
+      "fields[3]": "summary",
+      "fields[4]": "website",
+      "fields[5]": "affiliate_link",
       "sort": "merchant_name:asc",
+      "pagination[page]": "1",
       "pagination[pageSize]": "50",
+      "populate[logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
     };
 
-    const merchantsData = await strapiGet("/api/merchants", merchantParams);
+    const merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
+      cache: 'no-store' // Search should be fresh
+    });
+    
     const allMerchants = merchantsData?.data || [];
     
     // Filter merchants on the client side for now
@@ -52,11 +64,34 @@ export async function GET(request: NextRequest) {
         type: 'merchant'
       }));
 
-    // Search coupons - using existing coupon API
+    // Search coupons with explicit fields and minimal populate
     let coupons: any[] = [];
     try {
-      const couponResponse = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'}/api/coupons?filters[market][key][$eq]=${market}&filters[is_active][$eq]=true&populate[merchant][populate][logo]=true&pagination[pageSize]=50`);
-      const couponData = await couponResponse.json();
+      const couponParams = {
+        "filters[market][key][$eq]": market,
+        "filters[coupon_status][$eq]": "active",
+        "fields[0]": "id",
+        "fields[1]": "coupon_title",
+        "fields[2]": "description",
+        "fields[3]": "value",
+        "fields[4]": "code",
+        "fields[5]": "coupon_type",
+        "fields[6]": "expires_at",
+        "fields[7]": "user_count",
+        "fields[8]": "affiliate_link",
+        "fields[9]": "editor_tips",
+        "pagination[page]": "1",
+        "pagination[pageSize]": "50",
+        "populate[merchant][fields][0]": "id",
+        "populate[merchant][fields][1]": "merchant_name",
+        "populate[merchant][fields][2]": "slug",
+        "populate[merchant][populate][logo][fields][0]": "url",
+      };
+
+      const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(couponParams)}`, {
+        cache: 'no-store' // Search should be fresh
+      });
+      
       const allCoupons = couponData?.data || [];
       
       // Filter coupons on the client side

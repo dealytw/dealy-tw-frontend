@@ -1,5 +1,5 @@
 // src/lib/coupon-queries.ts
-import { strapiGet } from "./strapi";
+import { strapiFetch, qs } from "./strapi.server";
 
 export interface CouponData {
   id: string;
@@ -29,12 +29,28 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
       "filters[merchant][id][$eq]": merchantId,
       "filters[market][key][$eq]": marketKey,
       "filters[coupon_status][$eq]": "active",
-      "populate[merchant][populate]": "logo",
-      "populate[market]": "true",
-      "sort": "priority:desc,createdAt:desc",
+      "fields[0]": "id",
+      "fields[1]": "coupon_title",
+      "fields[2]": "coupon_type",
+      "fields[3]": "value",
+      "fields[4]": "code",
+      "fields[5]": "expires_at",
+      "fields[6]": "user_count",
+      "fields[7]": "description",
+      "fields[8]": "editor_tips",
+      "fields[9]": "affiliate_link",
+      "sort": "priority:desc",
+      "populate[merchant][fields][0]": "id",
+      "populate[merchant][fields][1]": "merchant_name",
+      "populate[merchant][fields][2]": "slug",
+      "populate[merchant][populate][logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
     };
 
-    const response = await strapiGet("/api/coupons", params);
+    const response = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
+      revalidate: 300,
+      tag: `merchant-coupons:${merchantId}`,
+    });
     const coupons = response.data || [];
 
     return coupons.map((coupon: any) => ({
@@ -74,14 +90,29 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
     const params = {
       "filters[market][key][$eq]": marketKey,
       "filters[coupon_status][$eq]": "active",
-      "filters[expires_at][$gte]": new Date().toISOString(),
-      "populate[merchant][populate]": "logo",
-      "populate[market]": "true",
-      "sort": "priority:desc,createdAt:desc",
+      "fields[0]": "id",
+      "fields[1]": "coupon_title",
+      "fields[2]": "coupon_type",
+      "fields[3]": "value",
+      "fields[4]": "code",
+      "fields[5]": "expires_at",
+      "fields[6]": "user_count",
+      "fields[7]": "description",
+      "fields[8]": "editor_tips",
+      "fields[9]": "affiliate_link",
+      "sort": "priority:desc",
       "pagination[pageSize]": "50",
+      "populate[merchant][fields][0]": "id",
+      "populate[merchant][fields][1]": "merchant_name",
+      "populate[merchant][fields][2]": "slug",
+      "populate[merchant][populate][logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
     };
 
-    const response = await strapiGet("/api/coupons", params);
+    const response = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
+      revalidate: 300,
+      tag: `active-coupons:${marketKey}`,
+    });
     const coupons = response.data || [];
 
     return coupons.map((coupon: any) => ({

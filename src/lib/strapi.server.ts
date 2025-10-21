@@ -1,6 +1,8 @@
 // src/lib/strapi.server.ts - Server-only Strapi fetch wrapper
 // Note: This file should only be imported in server components
 
+import 'server-only';
+
 type NextInit = RequestInit & { revalidate?: number; tag?: string };
 
 export async function strapiFetch<T>(path: string, init?: NextInit) {

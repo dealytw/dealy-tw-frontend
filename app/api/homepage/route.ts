@@ -2,8 +2,7 @@
 import { NextResponse } from "next/server";
 import { getHomePageData } from "@/lib/homepage-loader";
 
-export const dynamic = "force-dynamic"; // ensure server fetch
-export const revalidate = 0;
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {

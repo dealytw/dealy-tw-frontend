@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiGet, absolutizeMedia } from "@/lib/strapi";
+import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+
+export const runtime = 'nodejs';
+export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,18 +18,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // First, get the merchant with related merchants
+    // First, get the merchant with related merchants using explicit fields
     const merchantParams = {
       "filters[slug][$eq]": merchantSlug,
       "filters[market][key][$eq]": market,
-      "populate[related_merchants][populate][logo]": "true",
+      "fields[0]": "id",
+      "fields[1]": "merchant_name",
+      "populate[related_merchants][fields][0]": "id",
+      "populate[related_merchants][fields][1]": "merchant_name",
+      "populate[related_merchants][fields][2]": "slug",
+      "populate[related_merchants][populate][logo][fields][0]": "url",
     };
 
-    const merchantData = await strapiGet("/api/merchants", merchantParams);
-    
-    console.log('Raw merchant data for related merchants:', merchantData);
-    console.log('Available fields:', Object.keys(merchantData.data?.[0] || {}));
-    console.log('related_merchants field:', merchantData.data?.[0]?.related_merchants);
+    const merchantData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
+      revalidate: 300,
+      tag: `related-merchants:${merchantSlug}`,
+    });
     
     if (!merchantData || !merchantData.data || merchantData.data.length === 0) {
       return NextResponse.json({ relatedMerchants: [] });
@@ -34,36 +42,49 @@ export async function GET(request: NextRequest) {
     const merchant = merchantData.data[0];
     const relatedMerchants = merchant.related_merchants?.data || [];
 
-    console.log('Merchant found:', merchant.merchant_name || merchant.name);
-    console.log('Related merchants raw data:', merchant.related_merchants);
-    console.log('Related merchants count:', relatedMerchants.length);
-
     // If no related merchants found, let's test with Agoda (as mentioned by user)
     if (relatedMerchants.length === 0) {
       console.log('No related merchants found in CMS, testing with Agoda');
       
-      // Fetch Agoda merchant data
+      // Fetch Agoda merchant data with explicit fields
       const agodaParams = {
         "filters[slug][$eq]": "agoda-tw",
         "filters[market][key][$eq]": market,
-        "populate[logo]": "true",
+        "fields[0]": "id",
+        "fields[1]": "merchant_name",
+        "fields[2]": "slug",
+        "populate[logo][fields][0]": "url",
       };
       
       try {
-        const agodaData = await strapiGet("/api/merchants", agodaParams);
+        const agodaData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(agodaParams)}`, {
+          revalidate: 300,
+          tag: `merchant:agoda-tw`,
+        });
         const agodaMerchant = agodaData?.data?.[0];
         
         if (agodaMerchant) {
-          // Fetch Agoda's priority 1 coupon
+          // Fetch Agoda's priority 1 coupon with explicit fields
           const couponParams = {
             "filters[merchant][id][$eq]": agodaMerchant.id.toString(),
             "filters[market][key][$eq]": market,
             "filters[coupon_status][$eq]": "active",
+            "fields[0]": "id",
+            "fields[1]": "coupon_title",
+            "fields[2]": "value",
+            "fields[3]": "code",
+            "fields[4]": "coupon_type",
+            "fields[5]": "affiliate_link",
+            "fields[6]": "priority",
             "sort": "priority:asc",
+            "pagination[page]": "1",
             "pagination[pageSize]": "1",
           };
 
-          const couponData = await strapiGet("/api/coupons", couponParams);
+          const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(couponParams)}`, {
+            revalidate: 300,
+            tag: `merchant-coupon:agoda-tw`,
+          });
           const firstCoupon = couponData?.data?.[0] || null;
 
           const testRelatedMerchant = {
@@ -89,7 +110,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // For each related merchant, fetch their first priority coupon
+    // For each related merchant, fetch their first priority coupon with explicit fields
     const relatedMerchantsWithCoupons = await Promise.all(
       relatedMerchants.map(async (relatedMerchant: any) => {
         try {
@@ -98,11 +119,22 @@ export async function GET(request: NextRequest) {
             "filters[merchant][id][$eq]": relatedMerchant.id.toString(),
             "filters[market][key][$eq]": market,
             "filters[coupon_status][$eq]": "active",
+            "fields[0]": "id",
+            "fields[1]": "coupon_title",
+            "fields[2]": "value",
+            "fields[3]": "code",
+            "fields[4]": "coupon_type",
+            "fields[5]": "affiliate_link",
+            "fields[6]": "priority",
             "sort": "priority:asc",
+            "pagination[page]": "1",
             "pagination[pageSize]": "1",
           };
 
-          const couponData = await strapiGet("/api/coupons", couponParams);
+          const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(couponParams)}`, {
+            revalidate: 300,
+            tag: `merchant-coupon:${relatedMerchant.slug}`,
+          });
           const firstCoupon = couponData?.data?.[0] || null;
 
           return {

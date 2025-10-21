@@ -1,6 +1,6 @@
 // src/lib/coupons.ts - Optimized coupon data fetching with minimal populate
 
-import { strapiFetch, qs } from './strapi';
+import { strapiFetch, qs } from './strapi.server';
 
 // TypeScript interfaces for Strapi v5 data
 interface MerchantData {

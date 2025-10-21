@@ -86,7 +86,13 @@ const DealyCouponCard = ({
         {/* Left: Logo and Badge */}
         <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="w-20 h-20 mb-4 flex items-center justify-center">
-            <img src={coupon.merchant.logo} alt={coupon.merchant.name} className="max-w-full max-h-full object-contain" />
+            {coupon.merchant.logo ? (
+              <img src={coupon.merchant.logo} alt={coupon.merchant.name} className="max-w-full max-h-full object-contain" />
+            ) : (
+              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
+              </div>
+            )}
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-pink-600 mb-1">{coupon.discount}</div>
@@ -194,7 +200,13 @@ const DealyCouponCard = ({
           {/* Left: Logo and Discount - Slimmer */}
           <div className="flex-shrink-0 w-12">
             <div className="w-10 h-8 mb-1 flex items-center justify-center">
-              <img src={coupon.merchant.logo} alt={coupon.merchant.name} className="max-w-full max-h-full object-contain" />
+              {coupon.merchant.logo ? (
+                <img src={coupon.merchant.logo} alt={coupon.merchant.name} className="max-w-full max-h-full object-contain" />
+              ) : (
+                <div className="w-8 h-6 bg-gray-200 rounded flex items-center justify-center">
+                  <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
+                </div>
+              )}
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-pink-600 break-words leading-tight">

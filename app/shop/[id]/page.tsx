@@ -1,10 +1,51 @@
 import { notFound } from 'next/navigation';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { pageMeta } from '@/seo/meta';
+import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
 
 // ISR Configuration - Critical for SEO
 export const revalidate = 300; // Revalidate every 5 minutes
 export const dynamic = 'force-static'; // Enable static generation
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  
+  try {
+    const res = await getMerchantSEO(id, 300);
+    const merchant = res.data?.[0];
+
+    if (!merchant) {
+      return pageMeta({
+        title: `${id} 優惠碼｜最新折扣與優惠券`,
+        description: `精選 ${id} 最新優惠碼與折扣，限時優惠一鍵領取。`,
+        path: `/shop/${id}`,
+      });
+    }
+
+    const name = merchant.merchant_name || id;
+    const title = merchant.seo_title || `${name} 優惠碼｜最新折扣與優惠券`;
+    const description = merchant.seo_description || `精選 ${name} 最新優惠碼與折扣，限時優惠一鍵領取。`;
+    const noindex = merchant.robots === 'noindex,nofollow' || merchant.robots === 'noindex';
+
+    return pageMeta({
+      title,
+      description,
+      path: `/shop/${id}`,
+      canonicalOverride: merchant.canonical_url || undefined,
+      noindex,
+      ogImageUrl: merchant.ogImage?.url || undefined,
+    });
+      } catch (error) {
+    console.error('Error generating metadata:', error);
+    return pageMeta({
+      title: `${id} 優惠碼｜最新折扣與優惠券`,
+      description: `精選 ${id} 最新優惠碼與折扣，限時優惠一鍵領取。`,
+      path: `/shop/${id}`,
+    });
+  }
+}
 
 interface MerchantPageProps {
   params: Promise<{ id: string }>;

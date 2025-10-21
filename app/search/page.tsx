@@ -1,267 +1,176 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CouponModal from "@/components/CouponModal";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import CouponCard from "@/components/CouponCard";
-import { Search, X, Store, Tag, ArrowLeft } from "lucide-react";
+// app/search/page.tsx - Server Component with SSR + noindex
+import { pageMeta } from '@/seo/meta';
+import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import SearchResults from './search-results';
 
-type SearchResult = {
-  merchants: Array<{
-    id: number;
-    name: string;
-    slug: string;
-    logo: string;
-    description: string;
-    website: string;
-    affiliateLink: string;
-    market: string;
-    type: 'merchant';
-  }>;
-  coupons: Array<{
-    id: string;
-    title: string;
-    description: string;
-    value: string;
-    code: string;
-    coupon_type: string;
-    expires_at: string;
-    user_count: number;
-    affiliate_link: string;
-    merchant: {
-      id: number;
-      name: string;
-      slug: string;
-      logo: string;
-    };
-    type: 'coupon';
-  }>;
-  query: string;
-  totalResults: number;
-};
+export const dynamic = 'force-dynamic'; // SSR
 
-const SearchPage = () => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export async function generateMetadata({ searchParams }: { searchParams: { q?: string } }) {
+  const query = searchParams.q || '';
+  
+  if (query) {
+    return pageMeta({
+      title: `搜尋「${query}」的優惠碼｜Dealy`,
+      description: `搜尋「${query}」相關的優惠碼與折扣。`,
+      path: `/search?q=${encodeURIComponent(query)}`,
+      noindex: true,
+    });
+  }
+  
+  return pageMeta({
+    title: '搜尋優惠碼｜Dealy',
+    description: '搜尋全站優惠碼與折扣。',
+    path: '/search',
+    noindex: true,
+  });
+}
 
-  // Get search query from URL params
-  useEffect(() => {
-    const query = searchParams.get('q');
-    if (query) {
-      setSearchQuery(query);
-      handleSearch(query);
-    }
-  }, [searchParams]);
+export default async function SearchPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ q?: string; page?: string }> 
+}) {
+  const { q, page } = await searchParams;
+  const query = (q || '').trim();
+  const pageNum = Number(page || 1);
+  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults(null);
-      return;
-    }
+  let searchResults = {
+    merchants: [],
+    coupons: [],
+    query: query,
+    totalResults: 0
+  };
 
-    setIsSearching(true);
+  if (query) {
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
-      const results = await response.json();
-      setSearchResults(results);
+      // Search merchants with explicit fields and minimal populate
+      const merchantParams = {
+        "filters[market][key][$eq]": market, // Market relation filter
+        "fields[0]": "id",
+        "fields[1]": "merchant_name",
+        "fields[2]": "slug", 
+        "fields[3]": "summary",
+        "fields[4]": "default_affiliate_link",
+        "sort": "merchant_name:asc",
+        "pagination[page]": "1",
+        "pagination[pageSize]": "50",
+        "populate[logo][fields][0]": "url",
+        "populate[market][fields][0]": "key",
+      };
+
+      const merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
+        cache: 'no-store' // Search should be fresh
+      });
+      
+      const allMerchants = merchantsData?.data || [];
+      
+      // Filter merchants on the server side
+      const merchants = allMerchants
+        .filter((merchant: any) => {
+          const name = merchant.merchant_name?.toLowerCase() || '';
+          const slug = merchant.slug?.toLowerCase() || '';
+          const summary = merchant.summary?.toLowerCase() || '';
+          const searchQuery = query.toLowerCase();
+          
+          return name.includes(searchQuery) || slug.includes(searchQuery) || summary.includes(searchQuery);
+        })
+        .slice(0, 20)
+        .map((merchant: any) => ({
+          id: merchant.id,
+          name: merchant.merchant_name,
+          slug: merchant.slug,
+          logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+          description: merchant.summary || "",
+          website: merchant.website || "",
+          affiliateLink: merchant.affiliate_link || "",
+          market: merchant.market?.key || market.toUpperCase(),
+          type: 'merchant'
+        }));
+
+      // Search coupons with explicit fields and minimal populate
+      let coupons: any[] = [];
+      try {
+        const couponParams = {
+          "filters[market][key][$eq]": market, // Market relation filter
+          "filters[coupon_status][$eq]": "active",
+          "fields[0]": "id",
+          "fields[1]": "coupon_title",
+          "fields[2]": "description",
+          "fields[3]": "value",
+          "fields[4]": "code",
+          "fields[5]": "coupon_type",
+          "fields[6]": "expires_at",
+          "fields[7]": "user_count",
+          "fields[8]": "affiliate_link",
+          "fields[9]": "editor_tips",
+          "pagination[page]": "1",
+          "pagination[pageSize]": "50",
+          "populate[merchant][fields][0]": "id",
+          "populate[merchant][fields][1]": "merchant_name",
+          "populate[merchant][fields][2]": "slug",
+          "populate[merchant][populate][logo][fields][0]": "url",
+          "populate[market][fields][0]": "key",
+        };
+
+        const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(couponParams)}`, {
+          cache: 'no-store' // Search should be fresh
+        });
+        
+        const allCoupons = couponData?.data || [];
+        
+        // Filter coupons on the server side
+        coupons = allCoupons
+          .filter((coupon: any) => {
+            const title = coupon.coupon_title?.toLowerCase() || '';
+            const description = coupon.description?.toLowerCase() || '';
+            const tips = coupon.editor_tips?.toLowerCase() || '';
+            const merchantName = coupon.merchant?.merchant_name?.toLowerCase() || '';
+            const searchQuery = query.toLowerCase();
+            
+            return title.includes(searchQuery) || description.includes(searchQuery) || 
+                   tips.includes(searchQuery) || merchantName.includes(searchQuery);
+          })
+          .slice(0, 20)
+          .map((coupon: any) => ({
+            id: coupon.id,
+            title: coupon.coupon_title || 'Untitled Coupon',
+            description: coupon.description || "",
+            value: coupon.value || "",
+            code: coupon.code || "",
+            coupon_type: coupon.coupon_type || "promo_code",
+            expires_at: coupon.expires_at || "長期有效",
+            user_count: coupon.user_count || 0,
+            affiliate_link: coupon.affiliate_link || "#",
+            merchant: {
+              id: coupon.merchant?.id,
+              name: coupon.merchant?.merchant_name || 'Unknown Merchant',
+              slug: coupon.merchant?.slug || '',
+              logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120",
+            },
+            type: 'coupon'
+          }));
+      } catch (couponError) {
+        console.error('Coupon search error:', couponError);
+        coupons = [];
+      }
+
+      searchResults = {
+        merchants,
+        coupons,
+        query: query,
+        totalResults: merchants.length + coupons.length
+      };
     } catch (error) {
       console.error('Search error:', error);
-      setSearchResults(null);
-    } finally {
-      setIsSearching(false);
+      searchResults = {
+        merchants: [],
+        coupons: [],
+        query: query,
+        totalResults: 0
+      };
     }
-  };
+  }
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
-  const handleCouponClick = (coupon: any) => {
-    // Open affiliate link in same tab
-    window.open(coupon.affiliate_link, '_self');
-    
-    // Open merchant page in new tab with coupon hash for popup and auto-scroll
-    setTimeout(() => {
-      window.open(`/shop/${coupon.merchant.slug}#coupon-${coupon.id}`, '_blank');
-    }, 100);
-  };
-
-  return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            返回
-          </Button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <form onSubmit={handleSearchSubmit} className="flex bg-white rounded-full shadow-lg overflow-hidden border">
-            <div className="flex items-center pl-6 pr-3">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜尋最抵Deal"
-              className="flex-1 py-4 px-2 text-lg outline-none"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSearchResults(null);
-                }}
-                className="flex items-center px-3 text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-            <Button 
-              type="submit"
-              disabled={isSearching}
-              className="m-2 px-8 py-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full"
-            >
-              {isSearching ? "搜尋中..." : "搜尋"}
-            </Button>
-          </form>
-        </div>
-
-        {/* Search Results */}
-        {isSearching && (
-          <div className="text-center py-12">
-            <div className="text-lg text-gray-600">搜尋中...</div>
-          </div>
-        )}
-
-        {!isSearching && searchResults && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-gray-800">
-                搜尋結果: "{searchResults.query}"
-              </h1>
-              <div className="text-gray-600">
-                共找到 {searchResults.totalResults} 個結果
-              </div>
-            </div>
-            
-            {searchResults.totalResults === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">找不到相關結果</p>
-                <p className="text-gray-500 text-sm mt-2">請嘗試其他關鍵字</p>
-              </div>
-            ) : (
-              <div className="space-y-12">
-                {/* Merchants Results */}
-                {searchResults.merchants.length > 0 && (
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-700 mb-6 flex items-center gap-2">
-                      <Store className="h-6 w-6" />
-                      商店 ({searchResults.merchants.length})
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                      {searchResults.merchants.map((merchant) => (
-                        <Card 
-                          key={merchant.id}
-                          className="cursor-pointer hover:shadow-lg transition-shadow"
-                          onClick={() => router.push(`/shop/${merchant.slug}`)}
-                        >
-                          <div className="p-6 text-center">
-                            <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden bg-white p-2">
-                              <img
-                                src={merchant.logo}
-                                alt={merchant.name}
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                            <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
-                            <p className="text-xs text-gray-600 line-clamp-3">{merchant.description}</p>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Coupons Results */}
-                {searchResults.coupons.length > 0 && (
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-700 mb-6 flex items-center gap-2">
-                      <Tag className="h-6 w-6" />
-                      優惠券 ({searchResults.coupons.length})
-                    </h2>
-                    <div className="space-y-6">
-                      {searchResults.coupons.map((coupon) => (
-                        <CouponCard
-                          key={coupon.id}
-                          coupon={{
-                            id: coupon.id,
-                            coupon_title: coupon.title,
-                            coupon_type: coupon.coupon_type,
-                            value: coupon.value,
-                            code: coupon.code,
-                            expires_at: coupon.expires_at,
-                            user_count: coupon.user_count,
-                            description: coupon.description,
-                            editor_tips: "",
-                            affiliate_link: coupon.affiliate_link,
-                            merchant: {
-                              name: coupon.merchant.name,
-                              logo: coupon.merchant.logo,
-                            },
-                          }}
-                          onGetCode={(couponData) => {
-                            handleCouponClick(coupon);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {!isSearching && !searchResults && searchQuery && (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">請輸入搜尋關鍵字</p>
-          </div>
-        )}
-      </main>
-
-      <Footer />
-
-      {/* Coupon Modal */}
-      <CouponModal 
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        coupon={selectedCoupon}
-      />
-    </div>
-  );
-};
-
-export default SearchPage;
+  return <SearchResults searchResults={searchResults} query={query} />;
+}

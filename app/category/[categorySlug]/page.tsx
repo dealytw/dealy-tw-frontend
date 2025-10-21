@@ -1,247 +1,171 @@
-"use client";
-import { useParams } from "next/navigation";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CouponCard from "@/components/CouponCard";
-import { useState, useEffect } from "react";
+// app/category/[categorySlug]/page.tsx - Server Component with ISR
+import { notFound } from 'next/navigation';
+import { pageMeta } from '@/seo/meta';
+import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import CategoryView from './category-view';
 
-interface Merchant {
-  id: string;
-  name: string;
-  logo: string;
-  description: string;
-}
+export const revalidate = 300; // ISR - revalidate every 5 minutes
 
-interface Coupon {
-  id: string;
-  code: string;
-  title: string;
-  description: string;
-  discount: string;
-  expiry: string;
-  usageCount: number;
-  merchant: {
-    name: string;
-    logo: string;
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ categorySlug: string }> 
+}) {
+  const { categorySlug } = await params;
+  
+  try {
+    // Fetch category SEO data from Strapi
+    const categoryData = await strapiFetch<{ data: any[] }>(
+      `/api/categories?filters[slug][$eq]=${categorySlug}&fields[0]=name&fields[1]=slug&fields[2]=seo_title&fields[3]=seo_description`,
+      { revalidate: 300, tag: `category:${categorySlug}` }
+    );
+    
+    const category = categoryData?.data?.[0];
+    
+    if (category) {
+      const title = category.seo_title || `${category.name} 優惠與折扣`;
+      const description = category.seo_description || `精選 ${category.name} 最新優惠與折扣合集。`;
+      
+      return pageMeta({
+        title,
+        description,
+        path: `/category/${categorySlug}`,
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching category SEO data:', error);
+  }
+  
+  // Fallback metadata
+  const categoryMap: { [key: string]: string } = {
+    'travel': '旅遊',
+    'food': '美食', 
+    'shopping': '購物',
+    'entertainment': '娛樂',
+    'lifestyle': '生活'
   };
+  
+  const categoryName = categoryMap[categorySlug] || categorySlug;
+  
+  return pageMeta({
+    title: `${categoryName} 優惠與折扣`,
+    description: `精選 ${categoryName} 最新優惠與折扣合集。`,
+    path: `/category/${categorySlug}`,
+  });
 }
 
-const Category = () => {
-  const params = useParams();
-  const categorySlug = params?.categorySlug as string;
-  const [merchants, setMerchants] = useState<Merchant[]>([]);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
+export default async function CategoryPage({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ categorySlug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { categorySlug } = await params;
+  const { page } = await searchParams;
+  const pageNum = Number(page || 1);
+  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
-  // Mock data - replace with actual API calls
-  useEffect(() => {
-    // Mock popular merchants for category
-    setMerchants([
-      {
-        id: "1",
-        name: "Qatar Airways",
-        logo: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=100&h=100&fit=crop&crop=center",
-        description: "卡塔爾航空"
-      },
-      {
-        id: "2", 
-        name: "Wing On Travel",
-        logo: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=100&h=100&fit=crop&crop=center",
-        description: "永安旅遊"
-      },
-      {
-        id: "3",
-        name: "Trip.com",
-        logo: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=100&h=100&fit=crop&crop=center", 
-        description: "Trip.com"
-      },
-      {
-        id: "4",
-        name: "Agoda",
-        logo: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=100&h=100&fit=crop&crop=center",
-        description: "Agoda"
-      },
-      {
-        id: "5",
-        name: "Expedia", 
-        logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=100&h=100&fit=crop&crop=center",
-        description: "Expedia"
-      },
-      {
-        id: "6",
-        name: "Hotels.com",
-        logo: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=100&h=100&fit=crop&crop=center",
-        description: "Hotels.com"
-      },
-      {
-        id: "7", 
-        name: "Rakuten Travel",
-        logo: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=100&h=100&fit=crop&crop=center",
-        description: "樂天旅行"
-      },
-      {
-        id: "8",
-        name: "Klook",
-        logo: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop&crop=center",
-        description: "Klook"
-      }
-    ]);
+  try {
+    // Fetch category data
+    const categoryData = await strapiFetch<{ data: any[] }>(
+      `/api/categories?filters[slug][$eq]=${categorySlug}&fields[0]=id&fields[1]=name&fields[2]=slug&fields[3]=summary`,
+      { revalidate: 300, tag: `category:${categorySlug}` }
+    );
 
-    // Mock coupons for category
-    setCoupons([
-      {
-        id: "1",
-        code: "QATAR4999",
-        title: "Qatar Airways卡塔爾航空 - 精選優惠 ($4999折扣)",
-        description: "最高數額法：連住 2-3 晚 或適合早餐升等的房型等易獲選",
-        discount: "$4,999",
-        expiry: "2025-03-31",
-        usageCount: 50,
-        merchant: {
-          name: "Qatar Airways",
-          logo: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=60&h=60&fit=crop&crop=center"
-        }
-      },
-      {
-        id: "2", 
-        code: "WINGON20",
-        title: "永安旅遊 Wing On Travel 溫泉之旅 20% 折扣",
-        description: "日本溫泉酒店預訂優惠，包含早餐和晚餐",
-        discount: "20% OFF",
-        expiry: "2025-04-15",
-        usageCount: 125,
-        merchant: {
-          name: "Wing On Travel",
-          logo: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=60&h=60&fit=crop&crop=center"
-        }
-      },
-      {
-        id: "3",
-        code: "TRIP300",
-        title: "Trip.com 機票酒店套餐 $300 優惠碼",
-        description: "預訂機票+酒店套餐享受額外折扣",
-        discount: "$300",
-        expiry: "2025-05-01", 
-        usageCount: 89,
-        merchant: {
-          name: "Trip.com",
-          logo: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=60&h=60&fit=crop&crop=center"
-        }
-      },
-      {
-        id: "4",
-        code: "AGODA15",
-        title: "Agoda 酒店預訂 15% 折扣優惠",
-        description: "全球酒店預訂享受15%折扣",
-        discount: "15% OFF",
-        expiry: "2025-04-30",
-        usageCount: 203,
-        merchant: {
-          name: "Agoda", 
-          logo: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=60&h=60&fit=crop&crop=center"
-        }
-      },
-      {
-        id: "5",
-        code: "EXPEDIA500", 
-        title: "Expedia 度假套餐 $500 折扣",
-        description: "預訂度假套餐享受 $500 折扣優惠",
-        discount: "$500",
-        expiry: "2025-06-15",
-        usageCount: 67,
-        merchant: {
-          name: "Expedia",
-          logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=60&h=60&fit=crop&crop=center"
-        }
-      },
-      {
-        id: "6",
-        code: "HOTELS25",
-        title: "Hotels.com 酒店預訂 25% 優惠",
-        description: "精選酒店預訂享受25%折扣",
-        discount: "25% OFF", 
-        expiry: "2025-07-01",
-        usageCount: 156,
-        merchant: {
-          name: "Hotels.com",
-          logo: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=60&h=60&fit=crop&crop=center"
-        }
-      }
-    ]);
-  }, [categorySlug]);
+    const category = categoryData?.data?.[0];
+    
+    if (!category) {
+      notFound();
+    }
 
-  const getCategoryTitle = (slug: string | undefined) => {
-    const categoryMap: { [key: string]: string } = {
-      'travel': '旅遊',
-      'food': '美食',
-      'shopping': '購物',
-      'entertainment': '娛樂',
-      'lifestyle': '生活'
+    // Fetch merchants for this category
+    const merchantParams = {
+      "filters[categories][slug][$eq]": categorySlug,
+      "filters[market][key][$eq]": market, // Market relation filter
+      "fields[0]": "id",
+      "fields[1]": "merchant_name", 
+      "fields[2]": "slug",
+      "fields[3]": "summary",
+      "sort": "merchant_name:asc",
+      "pagination[page]": "1",
+      "pagination[pageSize]": "20",
+      "populate[logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
     };
-    return categoryMap[slug || ''] || '分類';
-  };
 
-  const handleCouponClick = (coupon: Coupon) => {
-    console.log('Coupon clicked:', coupon);
-  };
+    const merchantsData = await strapiFetch<{ data: any[] }>(
+      `/api/merchants?${qs(merchantParams)}`,
+      { revalidate: 300, tag: `category:${categorySlug}` }
+    );
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Category Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {getCategoryTitle(categorySlug)}
-          </h1>
-        </div>
+    // Fetch paginated coupons for this category
+    const couponParams = {
+      "filters[categories][slug][$eq]": categorySlug,
+      "filters[market][key][$eq]": market, // Market relation filter
+      "filters[coupon_status][$eq]": "active",
+      "fields[0]": "id",
+      "fields[1]": "coupon_title",
+      "fields[2]": "coupon_type", 
+      "fields[3]": "value",
+      "fields[4]": "code",
+      "fields[5]": "expires_at",
+      "fields[6]": "user_count",
+      "fields[7]": "description",
+      "fields[8]": "affiliate_link",
+      "fields[9]": "priority",
+      "fields[10]": "last_click_at",
+      "sort[0]": "priority:desc",
+      "sort[1]": "last_click_at:desc",
+      "pagination[page]": String(pageNum),
+      "pagination[pageSize]": "20",
+      "populate[merchant][fields][0]": "id",
+      "populate[merchant][fields][1]": "merchant_name",
+      "populate[merchant][fields][2]": "slug",
+      "populate[merchant][populate][logo][fields][0]": "url",
+    };
 
-        {/* Popular Merchants Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
-            香港最新折扣優惠
-          </h2>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8">
-            {merchants.map((merchant) => (
-              <div key={merchant.id} className="text-center group cursor-pointer">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <img 
-                      src={merchant.logo} 
-                      alt={merchant.name}
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  </div>
-                </div>
-                <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
-                <p className="text-xs text-gray-600 leading-tight px-2">{merchant.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+    const couponsData = await strapiFetch<{ data: any[]; meta: any }>(
+      `/api/coupons?${qs(couponParams)}`,
+      { revalidate: 300, tag: `category:${categorySlug}` }
+    );
 
-        {/* Coupons Section */}
-        <section>
-          <h2 className="text-xl font-semibold text-foreground mb-6">
-            {getCategoryTitle(categorySlug)}優惠券
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {coupons.map((coupon) => (
-              <CouponCard
-                key={coupon.id}
-                coupon={coupon}
-                onClick={() => handleCouponClick(coupon)}
-              />
-            ))}
-          </div>
-        </section>
-      </main>
-      
-      <Footer />
-    </div>
-  );
-};
+    // Transform merchants data
+    const merchants = (merchantsData?.data || []).map((merchant: any) => ({
+      id: merchant.id.toString(),
+      name: merchant.merchant_name,
+      slug: merchant.slug,
+      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+      description: merchant.summary || "",
+    }));
 
-export default Category;
+    // Transform coupons data
+    const coupons = (couponsData?.data || []).map((coupon: any) => ({
+      id: coupon.id.toString(),
+      code: coupon.code || "",
+      title: coupon.coupon_title || 'Untitled Coupon',
+      description: coupon.description || "",
+      discount: coupon.value || "",
+      expiry: coupon.expires_at || "長期有效",
+      usageCount: coupon.user_count || 0,
+      merchant: {
+        name: coupon.merchant?.merchant_name || 'Unknown Merchant',
+        logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/60/60",
+      },
+    }));
+
+    return (
+      <CategoryView 
+        category={category}
+        merchants={merchants}
+        coupons={coupons}
+        pagination={couponsData?.meta?.pagination}
+        categorySlug={categorySlug}
+      />
+    );
+
+  } catch (error) {
+    console.error('Error fetching category data:', error);
+    notFound();
+  }
+}

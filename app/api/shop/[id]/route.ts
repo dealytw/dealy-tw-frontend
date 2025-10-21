@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiGet, absolutizeMedia } from "@/lib/strapi";
+import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+
+export const runtime = 'nodejs';          // ensure server envs
+export const revalidate = 300;          // cache this API response
 
 export async function GET(
   request: NextRequest,
@@ -17,16 +20,36 @@ export async function GET(
       );
     }
 
-    // Fetch merchant data from Strapi by slug with market filtering
-    const params_query = {
+    // Build query parameters with explicit fields and minimal populate
+    const queryParams = {
       "filters[slug][$eq]": id,
       "filters[market][key][$eq]": market,
-      "populate[logo]": "true",
-      "populate[market]": "true",
-      "populate[useful_links]": "true",
+      "fields[0]": "id",
+      "fields[1]": "merchant_name", 
+      "fields[2]": "slug",
+      "fields[3]": "summary",
+      "fields[4]": "store_description",
+      "fields[5]": "faqs",
+      "fields[6]": "how_to",
+      "fields[7]": "website",
+      "fields[8]": "affiliate_link",
+      "fields[9]": "page_layout",
+      "fields[10]": "is_featured",
+      "fields[11]": "seo_title",
+      "fields[12]": "seo_description",
+      "fields[13]": "canonical_url",
+      "fields[14]": "priority",
+      "fields[15]": "robots",
+      "populate[logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
+      "populate[useful_links][fields][0]": "link_title",
+      "populate[useful_links][fields][1]": "url",
     };
 
-    const merchantData = await strapiGet("/api/merchants", params_query);
+    const merchantData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(queryParams)}`, {
+      revalidate: 300,
+      tag: `merchant:${id}`,
+    });
 
     if (!merchantData || !merchantData.data || merchantData.data.length === 0) {
       return NextResponse.json(

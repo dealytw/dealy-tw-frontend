@@ -13,9 +13,9 @@ function extractTextFromRichText(richText: any): string {
   }
   return "";
 }
-import { absolutizeMedia, getHomePageByMarketKey } from "./strapi";
+import { absolutizeMedia } from "./strapi.server";
+import { getHomePageByMarket } from "./homepage";
 import { getTopCouponForMerchant } from "./coupon-queries";
-import { mapHero, mapMerchantBasic, mapCategoryBasic } from "./mappers";
 
 export type HomePageData = {
   seo: {
@@ -81,7 +81,9 @@ export type HomePageData = {
 };
 
 export async function getHomePageData(marketKey: string): Promise<HomePageData> {
-  const hp = await getHomePageByMarketKey(marketKey);
+  const hpResponse = await getHomePageByMarket(marketKey);
+  const hp = hpResponse.data?.[0];
+  
   if (!hp) {
     console.log(`No homepage found for market: ${marketKey}, using fallback data`);
     // Return fallback data if no homepage is found
@@ -113,7 +115,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   };
 
   // Process popular merchants from category.merchants with top coupon titles
-  const popularMerchants = [];
+  let popularMerchants = [];
   if (a.category?.merchants) {
     for (const merchant of a.category.merchants) {
       try {
@@ -160,7 +162,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   })) || [];
 
   // Process coupon rail merchants with real coupon data
-  const couponItems = [];
+  let couponItems = [];
   if (a.coupon?.merchants) {
     for (const merchant of a.coupon.merchants) {
       try {
@@ -198,7 +200,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
             description: merchant.summary || "",
             terms: "",
             code: "",
-            affiliateLink: merchant.default_affiliate_link || merchant.site_url || "",
+            affiliateLink: merchant.affiliate_link || "",
             expiresAt: undefined,
           });
         }
@@ -217,7 +219,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           description: merchant.summary || "",
           terms: "",
           code: "",
-          affiliateLink: merchant.default_affiliate_link || merchant.site_url || "",
+          affiliateLink: merchant.affiliate_link || "",
           expiresAt: undefined,
         });
       }
