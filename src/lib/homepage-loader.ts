@@ -153,12 +153,12 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     iconUrl: "", // Categories don't have icons yet
   })) || [];
 
-  // Process topics from topicpage.topics (for 2025優惠主題一覽)
-  const topics = a.topicpage?.topics?.map((topic: any) => ({
-    id: topic.id,
-    name: topic.name,
-    slug: topic.slug,
-    iconUrl: "", // Topics don't have icons yet
+  // Process special-offers from topicpage.special_offers (for 2025優惠主題一覽)
+  const specialOffers = a.topicpage?.special_offers?.map((specialOffer: any) => ({
+    id: specialOffer.id,
+    name: specialOffer.title,
+    slug: specialOffer.slug,
+    iconUrl: "", // Special-offers don't have icons yet, could use a default icon
   })) || [];
 
   // Process coupon rail merchants with real coupon data
@@ -244,7 +244,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     },
     categoryBlock: { 
       heading: a.topicpage?.heading ?? "2025優惠主題一覽", 
-      categories: topics, 
+      categories: specialOffers, 
       disclaimer: a.topicpage?.disclaimer ?? "通過本站連結完成購物訂單，我們可能會因此獲得佣金，而您無需額外付費。" 
     },
     sidebarCategories: {

@@ -583,6 +583,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
 
       {/* Coupon Modal */}
       <CouponModal open={isModalOpen} onOpenChange={setIsModalOpen} coupon={selectedCoupon} />
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

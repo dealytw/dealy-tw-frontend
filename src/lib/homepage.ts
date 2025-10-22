@@ -44,10 +44,13 @@ export interface HomePage {
     }>;
   };
   topicpage?: {
-    topics?: Array<{
+    special_offers?: Array<{
       id: number;
-      name: string;
+      title: string;
       slug: string;
+      intro?: string;
+      seo_title?: string;
+      seo_description?: string;
     }>;
     heading?: string;
     disclaimer?: string;
@@ -84,7 +87,7 @@ export async function getHomePageByMarket(market = 'tw', revalidate = HOME_REVAL
     'populate[category][populate][merchants][populate][logo][fields][0]': 'url',
     'populate[coupon][populate][merchants][populate][logo][fields][0]': 'url',
     'populate[category][populate][categories]': 'true',
-    'populate[topicpage][populate][topics]': 'true',
+    'populate[topicpage][populate][special_offers]': 'true', // New special-offers section
     'populate[market]': 'true',
     'pagination[pageSize]': '1',
   };

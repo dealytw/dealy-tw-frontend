@@ -175,12 +175,12 @@ string[] // Array of hashtag strings
 
 ### Footer Component
 **Static Text**:
-- `components/Footer.tsx:10`: "ReUbird" (brand name)
+- `components/Footer.tsx:10`: "Dealy.TW" (brand name)
 - `components/Footer.tsx:12`: "最新優惠碼、折扣資訊一站式平台，幫你省更多！" (description)
 - `components/Footer.tsx:32`: "快速連結" (section heading)
 - `components/Footer.tsx:43`: "熱門商戶" (section heading)
 - `components/Footer.tsx:54`: "支援" (section heading)
-- `components/Footer.tsx:69`: "© 2025 ReUbird. 版權所有。" (copyright)
+- `components/Footer.tsx:69`: "© 2025 Dealy.TW. 版權所有。" (copyright)
 - `components/Footer.tsx:73`: "透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。" (disclaimer)
 
 **Links**:

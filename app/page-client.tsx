@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import CouponModal from "@/components/CouponModal";
 import DealySidebar from "@/components/DealySidebar";
 import { Button } from "@/components/ui/button";
@@ -348,6 +349,9 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
         onOpenChange={setIsModalOpen}
         coupon={selectedCoupon}
       />
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

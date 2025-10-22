@@ -58,12 +58,12 @@
       "file": "components/Footer.tsx",
       "props": {},
       "strings": [
-        { "value": "ReUbird", "file": "components/Footer.tsx", "line": 10 },
+        { "value": "Dealy.TW", "file": "components/Footer.tsx", "line": 10 },
         { "value": "最新優惠碼、折扣資訊一站式平台，幫你省更多！", "file": "components/Footer.tsx", "line": 12 },
         { "value": "快速連結", "file": "components/Footer.tsx", "line": 32 },
         { "value": "熱門商戶", "file": "components/Footer.tsx", "line": 43 },
         { "value": "支援", "file": "components/Footer.tsx", "line": 54 },
-        { "value": "© 2025 ReUbird. 版權所有。", "file": "components/Footer.tsx", "line": 69 },
+        { "value": "© 2025 Dealy.TW. 版權所有。", "file": "components/Footer.tsx", "line": 69 },
         { "value": "透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。", "file": "components/Footer.tsx", "line": 73 }
       ],
       "links": [
