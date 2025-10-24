@@ -22,6 +22,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-HK" suppressHydrationWarning>
+      <head>
+        {/* Preconnect to CMS for faster API calls */}
+        <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
+        <link rel="dns-prefetch" href="//cms.dealy.tw" />
+        
+        {/* Preconnect to external domains for faster loading */}
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+      </head>
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
