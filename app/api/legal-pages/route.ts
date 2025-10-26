@@ -29,9 +29,10 @@ export async function GET(request: NextRequest) {
       "fields[5]": "seo_description",
     };
 
+    // Fetch from Strapi CMS directly
     const response = await strapiFetch<{ data: any[] }>(
       `/api/legal-pages?${qs(queryParams)}`,
-      { revalidate: 3600, tag: `legal-page:${slug}` }
+      { revalidate: false }
     );
 
     if (!response?.data || response.data.length === 0) {
