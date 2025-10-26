@@ -61,7 +61,7 @@ function renderRichText(richText: any): string {
         return `• ${listItems}`;
       }
       return item.text || "";
-    }).join("\n\n");
+    }).join("\n");
   }
   return "";
 }
