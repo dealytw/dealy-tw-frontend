@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
 
     const pageData = await strapiFetch<{ data: any[] }>(
-      `/api/legal-pages?${qs(pageParams)}`,
+      `/api/legals?${qs(pageParams)}`,
       { revalidate: false }
     );
 
@@ -125,7 +125,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
     };
 
     const pageData = await strapiFetch<{ data: any[] }>(
-      `/api/legal-pages?${qs(pageParams)}`,
+      `/api/legals?${qs(pageParams)}`,
       { revalidate: false }
     );
 
