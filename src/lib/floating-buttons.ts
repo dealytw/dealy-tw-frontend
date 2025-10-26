@@ -7,7 +7,7 @@ import { FLOATING_BUTTON_REVALIDATE } from './constants';
 export interface FloatingButton {
   id: number;
   button_label?: string;
-  priority: number;
+  priority?: number;
   icon?: {
     url: string;
   };
@@ -36,14 +36,12 @@ export interface FloatingButtonResponse {
   };
 }
 
-// Get active floating buttons by market, sorted by priority (ascending = lowest at bottom)
+// Get active floating buttons by market
 export async function getFloatingButtons(market = 'tw', revalidate = FLOATING_BUTTON_REVALIDATE): Promise<FloatingButtonResponse> {
-  const params = {
+  const params: Record<string, string | number | undefined> = {
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
     'fields[1]': 'button_label',
-    'fields[2]': 'priority',
-    'sort': 'priority:asc', // Lowest priority at bottom
     'populate[icon][fields][0]': 'url',
     'populate[merchant][fields][0]': 'id',
     'populate[merchant][fields][1]': 'slug',
@@ -52,9 +50,21 @@ export async function getFloatingButtons(market = 'tw', revalidate = FLOATING_BU
     'populate[market][fields][0]': 'key',
   };
 
-  return strapiFetch<FloatingButtonResponse>(`/api/floating-buttons?${qs(params)}`, { 
+  // Only add priority fields and sort if priority field exists in CMS
+  // TODO: Re-enable once CMS priority field is deployed
+  // params['fields[2]'] = 'priority';
+  // params['sort'] = 'priority:asc';
+
+  const response = await strapiFetch<FloatingButtonResponse>(`/api/floating-buttons?${qs(params)}`, { 
     revalidate, 
     tag: `floating-buttons:${market}` 
   });
+
+  // Sort by priority on the client side if priority field exists
+  if (response.data && response.data.length > 0 && typeof response.data[0].priority === 'number') {
+    response.data.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+  }
+
+  return response;
 }
 
