@@ -7,7 +7,9 @@ export const revalidate = 3600; // Revalidate every hour
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const slug = searchParams.get('slug');
+    
+    // Extract slug from either 'slug' param or 'filters[slug][$eq]' param (Strapi format)
+    const slug = searchParams.get('slug') || searchParams.get('filters[slug][$eq]');
     const market = searchParams.get('market') || process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
     
     if (!slug) {
@@ -17,7 +19,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build query parameters
+    // Build query parameters for Strapi
     const queryParams = {
       "filters[slug][$eq]": slug,
       "filters[market][key][$eq]": market,
@@ -29,11 +31,14 @@ export async function GET(request: NextRequest) {
       "fields[5]": "seo_description",
     };
 
-    // Fetch from Strapi CMS directly
+    // Fetch from Strapi CMS directly  
+    // Note: strapiFetch is calling Strapi CMS, not this API route
     const response = await strapiFetch<{ data: any[] }>(
       `/api/legal-pages?${qs(queryParams)}`,
       { revalidate: false }
     );
+    
+    console.log('[legal-pages API] Response:', JSON.stringify(response, null, 2));
 
     if (!response?.data || response.data.length === 0) {
       return NextResponse.json(
