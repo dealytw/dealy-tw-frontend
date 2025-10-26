@@ -319,9 +319,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
       
       <main className="container mx-auto px-4 py-4">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Column - Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-4">
             {/* Page Title */}
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center lg:hidden">
@@ -339,7 +339,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
                     {merchant.name}優惠碼2025｜9月最新折扣與信用卡優惠
                   </h1>
                   <p className="text-xs text-gray-600 sm:mb-1">
-                    最近更新： 2025/09/04 （每日更新）
+                    最近更新： {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/')} （每日更新）
                   </p>
                 </div>
               </div>
