@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 // ISR Configuration - Incremental Static Regeneration
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 86400; // Revalidate every day
 export const dynamic = 'auto'; // Enable ISR
 
 // Reserved slugs that should not be handled by this page
@@ -27,7 +27,7 @@ export async function generateStaticParams() {
 
     const response = await strapiFetch<{ data: any[] }>(
       `/api/legals?${qs(params)}`,
-      { revalidate: 3600 }
+      { revalidate: 86400 }
     );
 
     const slugs = (response?.data || []).map((page: any) => ({
@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const pageData = await strapiFetch<{ data: any[] }>(
       `/api/legals?${qs(pageParams)}`,
-      { revalidate: 3600, tag: `legal:${slug}` }
+      { revalidate: 86400, tag: `legal:${slug}` }
     );
 
     const page = pageData?.data?.[0];
@@ -126,7 +126,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
 
     const pageData = await strapiFetch<{ data: any[] }>(
       `/api/legals?${qs(pageParams)}`,
-      { revalidate: 3600, tag: `legal:${slug}` }
+      { revalidate: 86400, tag: `legal:${slug}` }
     );
 
     const page = pageData?.data?.[0];
