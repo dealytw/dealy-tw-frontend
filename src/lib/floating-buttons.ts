@@ -50,19 +50,19 @@ export async function getFloatingButtons(market = 'tw', revalidate = FLOATING_BU
     'populate[market][fields][0]': 'key',
   };
 
-  // Only add priority fields and sort if priority field exists in CMS
-  // TODO: Re-enable once CMS priority field is deployed
-  // params['fields[2]'] = 'priority';
-  // params['sort'] = 'priority:asc';
+  // Fetch priority field for sorting (sorted ascending = priority 1 at top, lowest at bottom)
+  params['fields[2]'] = 'priority';
+  params['sort'] = 'priority:asc';
 
   const response = await strapiFetch<FloatingButtonResponse>(`/api/floating-buttons?${qs(params)}`, { 
     revalidate, 
     tag: `floating-buttons:${market}` 
   });
 
-  // Sort by priority on the client side if priority field exists
-  if (response.data && response.data.length > 0 && typeof response.data[0].priority === 'number') {
-    response.data.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+  // Strapi returns in sorted order (priority:asc), but we reverse to show lowest priority at bottom
+  // Priority 1 = bottom, Priority 2+ = above
+  if (response.data && response.data.length > 1) {
+    response.data.sort((a, b) => (b.priority || 0) - (a.priority || 0));
   }
 
   return response;
