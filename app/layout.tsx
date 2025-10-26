@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import FloatingActionContainer from "@/components/FloatingActionContainer";
 
 export const metadata: Metadata = {
   title: "Dealy - 香港最佳優惠碼平台",
@@ -32,7 +33,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
       </head>
       <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <FloatingActionContainer />
+        </Providers>
       </body>
     </html>
   );
