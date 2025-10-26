@@ -39,10 +39,10 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-4">支援</h4>
             <ul className="space-y-2">
-              <li><a href="/legal/about" className="text-sm text-gray-600 hover:text-gray-900">關於我們</a></li>
+              <li><a href="/about" className="text-sm text-gray-600 hover:text-gray-900">關於我們</a></li>
               <li><a href="/submit-coupons" className="text-sm text-gray-600 hover:text-gray-900">聯絡我們</a></li>
-              <li><a href="/legal/privacy" className="text-sm text-gray-600 hover:text-gray-900">私隱政策</a></li>
-              <li><a href="/legal/terms" className="text-sm text-gray-600 hover:text-gray-900">使用條款</a></li>
+              <li><a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">私隱政策</a></li>
+              <li><a href="/terms" className="text-sm text-gray-600 hover:text-gray-900">使用條款</a></li>
             </ul>
           </div>
         </div>

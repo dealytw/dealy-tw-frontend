@@ -9,6 +9,9 @@ import Footer from '@/components/Footer';
 export const revalidate = false; // Static - never revalidate
 export const dynamic = 'force-static'; // Enable static generation
 
+// Reserved slugs that should not be handled by this page
+const RESERVED_SLUGS = ['shop', 'blog', 'category', 'special-offers', 'search', 'submit-coupons', 'coupons-demo', 'api', '_next', 'sitemap'];
+
 // Generate static params at build time
 export async function generateStaticParams() {
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
@@ -41,6 +44,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
+  // Check if slug is reserved
+  if (RESERVED_SLUGS.includes(slug)) {
+    return pageMeta({
+      title: `${slug} | Dealy.TW`,
+      description: '',
+      path: `/${slug}`,
+    });
+  }
+  
   try {
     const pageParams = {
       "filters[slug][$eq]": slug,
@@ -62,7 +74,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       return pageMeta({
         title: `${slug} | Dealy.TW`,
         description: '',
-        path: `/legal/${slug}`,
+        path: `/${slug}`,
       });
     }
 
@@ -72,14 +84,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return pageMeta({
       title,
       description,
-      path: `/legal/${slug}`,
+      path: `/${slug}`,
     });
   } catch (error) {
     console.error('Error generating metadata:', error);
     return pageMeta({
       title: `${slug} | Dealy.TW`,
       description: '',
-      path: `/legal/${slug}`,
+      path: `/${slug}`,
     });
   }
 }
@@ -91,6 +103,11 @@ interface LegalPageProps {
 export default async function LegalPage({ params }: LegalPageProps) {
   const { slug } = await params;
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+
+  // Check if slug is reserved - if so, let other routes handle it
+  if (RESERVED_SLUGS.includes(slug)) {
+    notFound();
+  }
 
   try {
     const pageParams = {
