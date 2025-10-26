@@ -62,9 +62,11 @@ const Header = () => {
           <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
             最新快訊訊息
           </Button>
-          <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
-            提交優惠券
-          </Button>
+          <Link href="/submit-coupons">
+            <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
+              提交優惠券
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
           </Button>
