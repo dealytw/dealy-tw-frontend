@@ -28,7 +28,7 @@ export async function generateStaticParams() {
 
     const response = await strapiFetch<{ data: any[] }>(
       `/api/legals?${qs(params)}`,
-      { revalidate: false }
+      { revalidate: 3600 }
     );
 
     const slugs = (response?.data || []).map((page: any) => ({
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const pageData = await strapiFetch<{ data: any[] }>(
       `/api/legals?${qs(pageParams)}`,
-      { revalidate: false }
+      { revalidate: 3600, tag: `legal:${slug}` }
     );
 
     const page = pageData?.data?.[0];
@@ -127,7 +127,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
 
     const pageData = await strapiFetch<{ data: any[] }>(
       `/api/legals?${qs(pageParams)}`,
-      { revalidate: false }
+      { revalidate: 3600, tag: `legal:${slug}` }
     );
 
     const page = pageData?.data?.[0];
