@@ -14,6 +14,9 @@ const RESERVED_SLUGS = ['shop', 'blog', 'category', 'special-offers', 'search', 
 
 // Generate static params at build time
 export async function generateStaticParams() {
+  // Try to fetch from Strapi, but always return at least common legal pages as fallback
+  const commonLegalPages = [{ slug: 'about' }, { slug: 'privacy' }, { slug: 'terms' }];
+  
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
   try {
@@ -32,10 +35,12 @@ export async function generateStaticParams() {
       slug: page.slug,
     }));
 
-    return slugs;
+    // If we got slugs from CMS, use those; otherwise use fallback
+    return slugs.length > 0 ? slugs : commonLegalPages;
   } catch (error) {
     console.error('Error generating static params for legal pages:', error);
-    return [];
+    // Return fallback pages so they can at least be generated
+    return commonLegalPages;
   }
 }
 
