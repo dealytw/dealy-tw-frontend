@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation';
-import { strapiFetch } from '@/lib/strapi.server';
+import { strapiFetch, qs } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
-import qs from 'qs';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-// SSG Configuration - Static Site Generation
-export const revalidate = false; // Static - never revalidate
-export const dynamic = 'force-static'; // Enable static generation
+// ISR Configuration - Incremental Static Regeneration
+export const revalidate = 3600; // Revalidate every hour
+export const dynamic = 'auto'; // Enable ISR
 
 // Reserved slugs that should not be handled by this page
 const RESERVED_SLUGS = ['shop', 'blog', 'category', 'special-offers', 'search', 'submit-coupons', 'coupons-demo', 'api', '_next', 'sitemap'];
