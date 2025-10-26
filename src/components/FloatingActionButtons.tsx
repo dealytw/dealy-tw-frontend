@@ -35,9 +35,18 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
           <button
             key={button.id}
             onClick={() => handleClick(button)}
-            className="relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ease-in-out
-                       bg-white text-gray-800 hover:scale-105 hover:shadow-xl
+            className="relative flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out
+                       bg-white text-gray-800 hover:scale-105
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            style={{
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 15px 15px -7px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1)';
+            }}
             aria-label={label || "Floating Action Button"}
             title={label || "Floating Action Button"}
           >
