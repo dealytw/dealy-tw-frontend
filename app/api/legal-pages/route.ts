@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     // Fetch from Strapi CMS directly  
     // Note: strapiFetch is calling Strapi CMS, not this API route
     const response = await strapiFetch<{ data: any[] }>(
-      `/api/legal-pages?${qs(queryParams)}`,
+      `/api/legals?${qs(queryParams)}`,
       { revalidate: false }
     );
     

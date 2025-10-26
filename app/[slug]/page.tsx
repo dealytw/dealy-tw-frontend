@@ -27,7 +27,7 @@ export async function generateStaticParams() {
     };
 
     const response = await strapiFetch<{ data: any[] }>(
-      `/api/legal-pages?${qs(params)}`,
+      `/api/legals?${qs(params)}`,
       { revalidate: false }
     );
 
