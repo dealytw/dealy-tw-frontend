@@ -122,6 +122,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
       "fields[1]": "title",
       "fields[2]": "content",
       "fields[3]": "slug",
+      "pagination[pageSize]": "1",
     };
 
     const pageData = await strapiFetch<{ data: any[] }>(
