@@ -244,7 +244,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                   <div 
                     key={merchant.id} 
                     className="text-center group cursor-pointer"
-                    onClick={() => window.location.href = `/shop/${merchant.slug}`}
+                    onClick={() => router.push(`/shop/${merchant.slug}`)}
                   >
                     <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
                       <div className="w-full h-full flex items-center justify-center">
@@ -282,7 +282,11 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
             
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-8">
               {initialData.categoryBlock.categories.map((category) => (
-                <div key={category.id} className="text-center group cursor-pointer">
+                <div 
+                  key={category.id} 
+                  className="text-center group cursor-pointer"
+                  onClick={() => router.push(`/category/${category.slug}`)}
+                >
                   <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                     <img
                       src={category.iconUrl}
