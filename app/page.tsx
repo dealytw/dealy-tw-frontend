@@ -6,7 +6,7 @@ import HomePageClient from "./page-client";
 
 // Enable ISR for this page
 export const revalidate = 300;
-export const dynamic = 'force-static';
+export const dynamic = 'auto'; // Allow ISR revalidation
 
 // Generate metadata for SEO
 export async function generateMetadata() {
