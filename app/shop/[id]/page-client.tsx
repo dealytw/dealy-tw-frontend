@@ -448,7 +448,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
                     ))
                   ) : (
                     <div className="col-span-full text-center text-gray-500 py-8">
-                      暫無相關商戶優惠
+                      暫無同類商戶折扣優惠
                     </div>
                   )}
                 </CardContent>

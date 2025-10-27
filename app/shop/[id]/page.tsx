@@ -162,51 +162,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         );
         
         relatedMerchants = relatedMerchantsWithCoupons;
-      } else {
-        // Fallback: Fetch Agoda as a test merchant
-        console.log('No related merchants found in CMS, using Agoda fallback');
-        
-        const agodaData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
-          "filters[slug][$eq]": "agoda-tw",
-          "filters[market][key][$eq]": marketKey,
-          "populate[logo][fields][0]": "url",
-        })}`, { 
-          revalidate: 300, 
-          tag: `merchant:agoda-tw` 
-        });
-        
-        const agodaMerchant = agodaData?.data?.[0];
-        
-        if (agodaMerchant) {
-          const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
-            "filters[merchant][id][$eq]": agodaMerchant.id.toString(),
-            "filters[market][key][$eq]": marketKey,
-            "filters[coupon_status][$eq]": "active",
-            "sort": "priority:asc",
-            "pagination[pageSize]": "1",
-          })}`, { 
-            revalidate: 300, 
-            tag: `merchant:agoda-tw` 
-          });
-          
-          const firstCoupon = couponData?.data?.[0] || null;
-          
-          relatedMerchants = [{
-            id: agodaMerchant.id.toString(),
-            name: agodaMerchant.merchant_name || agodaMerchant.name,
-            slug: agodaMerchant.slug,
-            logo: agodaMerchant.logo?.url ? absolutizeMedia(agodaMerchant.logo.url) : null,
-            firstCoupon: firstCoupon ? {
-              id: firstCoupon.id.toString(),
-              title: firstCoupon.coupon_title,
-              value: firstCoupon.value?.replace('$$', '$') || "$40",
-              code: firstCoupon.code || "AGODA4999",
-              coupon_type: firstCoupon.coupon_type || "promo_code",
-              affiliate_link: firstCoupon.affiliate_link,
-              priority: firstCoupon.priority
-            } : null
-          }];
-        }
       }
       
       console.log('Related merchants fetched:', relatedMerchants.length, relatedMerchants);
