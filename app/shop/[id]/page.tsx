@@ -101,14 +101,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       console.log('Fetching related merchants for:', { id, marketKey });
       
       // First, try to get related merchants from the merchant's related_merchants field
-      // For manyToMany relations, use simpler populate syntax
+      // For manyToMany relations, use 'true' to populate all fields
       const merchantWithRelated = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
         "filters[slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
-        "populate[related_merchants][fields][0]": "id",
-        "populate[related_merchants][fields][1]": "merchant_name",
-        "populate[related_merchants][fields][2]": "slug",
-        "populate[related_merchants][populate][logo][fields][0]": "url",
+        "populate[related_merchants]": "true",
         "pagination[pageSize]": "1",
       })}`, { 
         revalidate: 300, 
