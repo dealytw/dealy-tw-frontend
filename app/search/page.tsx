@@ -54,7 +54,7 @@ export default async function SearchPage({
         "fields[4]": "default_affiliate_link",
         "sort": "merchant_name:asc",
         "pagination[page]": "1",
-        "pagination[pageSize]": "50",
+        "pagination[pageSize]": "500",
         "populate[logo][fields][0]": "url",
         "populate[market][fields][0]": "key",
       };
@@ -105,7 +105,7 @@ export default async function SearchPage({
           "fields[8]": "affiliate_link",
           "fields[9]": "editor_tips",
           "pagination[page]": "1",
-          "pagination[pageSize]": "50",
+          "pagination[pageSize]": "500",
           "populate[merchant][fields][0]": "id",
           "populate[merchant][fields][1]": "merchant_name",
           "populate[merchant][fields][2]": "slug",

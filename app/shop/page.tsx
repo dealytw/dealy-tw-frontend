@@ -32,7 +32,7 @@ export default async function ShopIndex({
       "fields[3]": "summary",
       "fields[4]": "default_affiliate_link",
       "pagination[page]": String(pageNum),
-      "pagination[pageSize]": "24",
+      "pagination[pageSize]": "500", // Increased to fetch all merchants
       "sort[0]": "merchant_name:asc",
       "populate[logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
