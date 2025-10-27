@@ -5,7 +5,7 @@ import { pageMeta } from "@/seo/meta";
 import HomePageClient from "./page-client";
 
 // Enable ISR for this page
-export const revalidate = 300;
+export const revalidate = 3600; // Revalidate every hour
 export const dynamic = 'auto'; // Allow ISR revalidation
 
 // Generate metadata for SEO

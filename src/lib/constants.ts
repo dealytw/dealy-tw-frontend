@@ -1,6 +1,6 @@
 // src/lib/constants.ts - Shared constants for caching and revalidation
 
-export const HOME_REVALIDATE = 300;
+export const HOME_REVALIDATE = 3600; // 1 hour
 export const HOME_TAG = 'home';
 
 export const MERCHANT_REVALIDATE = 300;
