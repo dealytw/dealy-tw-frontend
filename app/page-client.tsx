@@ -340,7 +340,10 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               </div>
               {/* Sidebar */}
               <div className="hidden lg:block">
-                <DealySidebar />
+                <DealySidebar 
+                  popularMerchants={initialData.popularMerchants}
+                  sidebarCategories={initialData.sidebarCategories}
+                />
               </div>
             </div>
           </div>

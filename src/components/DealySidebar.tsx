@@ -1,38 +1,45 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-const DealySidebar = () => {
-  const [homepageData, setHomepageData] = useState<any>(null);
+interface DealySidebarProps {
+  popularMerchants?: {
+    items: Array<{
+      id: number;
+      name: string;
+      slug: string;
+      logoUrl: string;
+    }>;
+  };
+  sidebarCategories?: {
+    categories: Array<{
+      id: number;
+      name: string;
+      slug: string;
+    }>;
+  };
+}
 
-  // Fetch homepage data from CMS
-  useEffect(() => {
-    async function fetchHomepageData() {
-      try {
-        const response = await fetch('/api/homepage');
-        const result = await response.json();
-        if (result.ok && result.data) {
-          setHomepageData(result.data);
-        }
-      } catch (error) {
-        console.error('Error fetching homepage data:', error);
-      }
-    }
-
-    fetchHomepageData();
-  }, []);
+const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps) => {
+  const router = useRouter();
 
   return (
     <div className="w-80 space-y-6">
       {/* Popular Merchants */}
-      {homepageData?.popularMerchants && (
+      {popularMerchants && (
         <Card className="p-6">
           <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
             <h3 className="text-sm font-semibold text-gray-800">熱門商店</h3>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            {homepageData.popularMerchants.items && homepageData.popularMerchants.items.length > 0 ? (
-              homepageData.popularMerchants.items.map((merchant: any) => (
-                <div key={merchant.id} className="text-center cursor-pointer group">
+            {popularMerchants.items && popularMerchants.items.length > 0 ? (
+              popularMerchants.items.map((merchant: any) => (
+                <div 
+                  key={merchant.id} 
+                  className="text-center cursor-pointer group"
+                  onClick={() => router.push(`/shop/${merchant.slug}`)}
+                >
                   <div className="w-16 h-16 mx-auto mb-2 border rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
                     <img 
                       src={merchant.logoUrl} 
@@ -55,17 +62,18 @@ const DealySidebar = () => {
       )}
 
       {/* Popular Categories */}
-      {homepageData?.sidebarCategories && (
+      {sidebarCategories && (
         <Card className="p-6">
           <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
             <h3 className="text-sm font-semibold text-gray-800">熱門分類</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {homepageData.sidebarCategories.categories && homepageData.sidebarCategories.categories.length > 0 ? (
-              homepageData.sidebarCategories.categories.map((category: any) => (
+            {sidebarCategories.categories && sidebarCategories.categories.length > 0 ? (
+              sidebarCategories.categories.map((category: any) => (
                 <span 
                   key={category.id}
                   className="text-xs px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full cursor-pointer hover:bg-blue-50 transition-colors"
+                  onClick={() => router.push(`/category/${category.slug}`)}
                 >
                   #{category.name}
                 </span>
