@@ -101,7 +101,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     try {
       console.log('Extracting related merchants from merchant data');
       
-      const merchant = merchantData;
+      const merchant = merchantRes.data?.[0];
       console.log('Merchant related_merchants:', JSON.stringify(merchant?.related_merchants, null, 2));
       
       // Handle all possible formats for manyToMany relation:
