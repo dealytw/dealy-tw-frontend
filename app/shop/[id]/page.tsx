@@ -68,13 +68,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
   try {
     // Use server-only Strapi fetch with ISR
     const [merchantRes, couponsRes] = await Promise.all([
-      // Fetch merchant data with ISR
+      // Fetch merchant data with ISR (including related_merchants for manyToMany)
       strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
         "filters[slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
+        "populate[related_merchants][populate][logo][fields][0]": "url",
       })}`, { 
         revalidate: 300, 
         tag: `merchant:${id}` 
@@ -95,25 +96,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       })
     ]);
 
-    // Fetch related merchants directly from Strapi with ISR
+    // Extract related merchants from the merchant data already fetched
     let relatedMerchants: any[] = [];
     try {
-      console.log('Fetching related merchants for:', { id, marketKey });
+      console.log('Extracting related merchants from merchant data');
       
-      // First, try to get related merchants from the merchant's related_merchants field
-      // For manyToMany relations, use 'true' to populate all fields
-      const merchantWithRelated = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
-        "filters[slug][$eq]": id,
-        "filters[market][key][$eq]": marketKey,
-        "populate[related_merchants]": "true",
-        "pagination[pageSize]": "1",
-      })}`, { 
-        revalidate: 300, 
-        tag: `merchant:${id}` 
-      });
-      
-      const merchant = merchantWithRelated.data?.[0];
-      console.log('Merchant with related:', JSON.stringify(merchant?.related_merchants, null, 2));
+      const merchant = merchantData;
+      console.log('Merchant related_merchants:', JSON.stringify(merchant?.related_merchants, null, 2));
       
       // Handle all possible formats for manyToMany relation:
       // 1. Direct array: [{ id, ... }]
