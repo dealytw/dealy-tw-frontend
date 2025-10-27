@@ -115,7 +115,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       });
       
       const merchant = merchantWithRelated.data?.[0];
-      const relatedFromCMS = merchant?.related_merchants?.data || [];
+      // Handle both array format and { data: [] } format
+      const relatedFromCMS = Array.isArray(merchant?.related_merchants) 
+        ? merchant.related_merchants 
+        : merchant?.related_merchants?.data || [];
       
       console.log('Related merchants from CMS:', relatedFromCMS.length);
       
