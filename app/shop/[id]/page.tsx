@@ -117,10 +117,21 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       const merchant = merchantWithRelated.data?.[0];
       console.log('Merchant with related:', JSON.stringify(merchant?.related_merchants, null, 2));
       
-      // Handle both array format and { data: [] } format
-      const relatedFromCMS = Array.isArray(merchant?.related_merchants) 
-        ? merchant.related_merchants 
-        : merchant?.related_merchants?.data || [];
+      // Handle all possible formats for manyToMany relation:
+      // 1. Direct array: [{ id, ... }]
+      // 2. With data wrapper: { data: [{ id, ... }] }
+      // 3. Nested: [{ data: { id, ... } }]
+      let relatedFromCMS = [];
+      if (Array.isArray(merchant?.related_merchants)) {
+        // Check if it's nested format
+        if (merchant.related_merchants[0]?.data) {
+          relatedFromCMS = merchant.related_merchants.map((item: any) => item.data || item);
+        } else {
+          relatedFromCMS = merchant.related_merchants;
+        }
+      } else if (merchant?.related_merchants?.data) {
+        relatedFromCMS = merchant.related_merchants.data;
+      }
       
       console.log('Related merchants from CMS:', relatedFromCMS.length, relatedFromCMS);
       
@@ -174,7 +185,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       }
       
       console.log('Related merchants fetched:', relatedMerchants.length, relatedMerchants);
-    } catch (error) {
+      } catch (error) {
       console.warn('Failed to fetch related merchants, continuing without them:', error);
       relatedMerchants = [];
     }
@@ -220,13 +231,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       coupon_type: coupon.coupon_type,
       coupon_status: coupon.coupon_status || 'active',
       value: coupon.value,
-      code: coupon.code,
+    code: coupon.code,
       expires_at: coupon.expires_at,
       user_count: coupon.user_count || 0,
       description: coupon.description || "",
       editor_tips: coupon.editor_tips,
       affiliate_link: coupon.affiliate_link,
-      merchant: {
+    merchant: {
         id: coupon.merchant?.id || coupon.merchant,
         name: coupon.merchant?.merchant_name || coupon.merchant?.name || "Unknown",
         slug: coupon.merchant?.slug || "unknown",
@@ -242,7 +253,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const expiredCoupons = transformedCoupons.filter((coupon: any) => coupon.coupon_status === 'expired');
 
     // Pass the data to the original client component
-    return (
+  return (
       <Merchant 
         merchant={merchant}
         coupons={activeCoupons}
