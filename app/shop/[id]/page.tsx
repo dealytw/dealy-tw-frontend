@@ -115,12 +115,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       });
       
       const merchant = merchantWithRelated.data?.[0];
+      console.log('Merchant with related:', JSON.stringify(merchant?.related_merchants, null, 2));
+      
       // Handle both array format and { data: [] } format
       const relatedFromCMS = Array.isArray(merchant?.related_merchants) 
         ? merchant.related_merchants 
         : merchant?.related_merchants?.data || [];
       
-      console.log('Related merchants from CMS:', relatedFromCMS.length);
+      console.log('Related merchants from CMS:', relatedFromCMS.length, relatedFromCMS);
       
       if (relatedFromCMS.length > 0) {
         // Fetch priority 1 coupon for each related merchant
