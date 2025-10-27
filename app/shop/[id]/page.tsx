@@ -75,6 +75,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
+        "populate[related_merchants][fields][0]": "id",
+        "populate[related_merchants][fields][1]": "merchant_name",
+        "populate[related_merchants][fields][2]": "slug",
         "populate[related_merchants][populate][logo][fields][0]": "url",
       })}`, { 
         revalidate: 300, 
