@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const market = searchParams.get('market') || process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
     const page = searchParams.get('page') || '1';
-    const pageSize = searchParams.get('pageSize') || '100';
+    const pageSize = searchParams.get('pageSize') || '1000'; // Increased default to fetch all merchants
 
     const params = {
       "filters[market][key][$eq]": market, // Market relation filter
