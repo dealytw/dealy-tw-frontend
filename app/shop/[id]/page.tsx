@@ -11,8 +11,10 @@ export const dynamic = 'force-static'; // Enable static generation
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const market = 'tw'; // Default market
   
   try {
+    // Fetch merchant with SEO fields
     const res = await getMerchantSEO(id, 300);
     const merchant = res.data?.[0];
 
@@ -25,8 +27,46 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
 
     const name = merchant.merchant_name || id;
-    const title = merchant.seo_title || `${name} 優惠碼｜最新折扣與優惠券`;
-    const description = merchant.seo_description || `精選 ${name} 最新優惠碼與折扣，限時優惠一鍵領取。`;
+    let title: string;
+    let description: string;
+
+    // Check if CMS has override values
+    if (merchant.seo_title && merchant.seo_description) {
+      // Use CMS override values
+      title = merchant.seo_title;
+      description = merchant.seo_description;
+    } else {
+      // Auto-generate from coupons
+      const { getFirstCouponHighlights, getFirstValidCoupon, generateMerchantMetaTitle, generateMerchantMetaDescription } = await import('@/lib/seo-generation');
+      const { getMerchantCouponsForSEO } = await import('@/lib/seo.server');
+      
+      // Fetch coupons for this merchant
+      const couponsRes = await getMerchantCouponsForSEO(merchant.id.toString(), market, 300);
+      const coupons = couponsRes?.data || [];
+      
+      // Generate highlights and first coupon
+      const highlights = getFirstCouponHighlights(coupons, name);
+      const firstCoupon = getFirstValidCoupon(coupons);
+      
+      // Extract highlight for description
+      let highlight = '';
+      if (highlights.includes('新客優惠')) {
+        highlight = '新客優惠';
+      } else if (highlights.includes('免運費')) {
+        highlight = '免運費';
+      } else if (highlights) {
+        // Extract value from highlights (e.g., "最抵 買X送Y")
+        const valueMatch = highlights.match(/最抵\s*(.+?)(?:\s*&|$)/);
+        if (valueMatch) {
+          highlight = valueMatch[1];
+        }
+      }
+      
+      // Generate meta tags
+      title = generateMerchantMetaTitle(name, highlights);
+      description = generateMerchantMetaDescription(name, firstCoupon?.coupon_title || '限時優惠', highlight);
+    }
+
     const noindex = merchant.robots === 'noindex,nofollow' || merchant.robots === 'noindex';
 
     return pageMeta({

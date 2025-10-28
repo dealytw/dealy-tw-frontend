@@ -21,6 +21,25 @@ export async function getMerchantSEO(slug: string, revalidate = 300) {
   });
 }
 
+// Get coupons for merchant (for SEO generation)
+export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw', revalidate = 300) {
+  const params = {
+    'filters[merchant][documentId][$eq]': merchantId,
+    'filters[market][key][$eq]': market,
+    'filters[coupon_status][$eq]': 'active',
+    'fields[0]': 'coupon_title',
+    'fields[1]': 'value',
+    'fields[2]': 'expires_at',
+    'sort': 'priority:asc',
+    'pagination[pageSize]': '10', // Only need first 10 for SEO
+  };
+
+  return strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
+    revalidate,
+    tag: `coupons:${merchantId}`
+  });
+}
+
 // TOPIC SEO (if you have topics)
 export async function getTopicSEO(slug: string, revalidate = 300) {
   const params = {
