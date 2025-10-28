@@ -10,6 +10,11 @@ export interface CouponForSEO {
   expires_at?: string | null;
 }
 
+// Get Taiwan time (UTC+8)
+function getTaiwanDate() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+}
+
 /**
  * Extract discount value from coupon value string
  * Priority: 買X送Y > percentage > Chinese discount > cash
@@ -81,7 +86,9 @@ export function getFirstCouponHighlights(
   coupons: CouponForSEO[],
   merchantName: string
 ): string {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  // Use Taiwan timezone for date comparisons
+  const twDate = getTaiwanDate();
+  const today = twDate.toISOString().split('T')[0]; // YYYY-MM-DD
   const validCoupons = coupons.filter(c => {
     if (!c.expires_at) return true;
     return c.expires_at >= today;
@@ -163,7 +170,9 @@ export function getFirstCouponHighlights(
 export function getFirstValidCoupon(
   coupons: CouponForSEO[]
 ): CouponForSEO | null {
-  const today = new Date().toISOString().split('T')[0];
+  // Use Taiwan timezone for date comparisons
+  const twDate = getTaiwanDate();
+  const today = twDate.toISOString().split('T')[0];
   
   for (const coupon of coupons) {
     if (coupon.expires_at && coupon.expires_at < today) continue;
@@ -183,8 +192,9 @@ export function generateMerchantMetaTitle(
   merchantName: string,
   highlights: string
 ): string {
-  const month = new Date().getMonth() + 1; // 1-12
-  const year = new Date().getFullYear();
+  const twDate = getTaiwanDate();
+  const month = twDate.getMonth() + 1; // 1-12
+  const year = twDate.getFullYear();
 
   if (highlights) {
     const title = `${merchantName}優惠碼及折扣｜${highlights} | ${month}月 ${year}`;
@@ -205,11 +215,11 @@ export function generateMerchantMetaDescription(
   firstCouponTitle: string,
   highlight: string
 ): string {
-  // Format date in Chinese: 2024年10月12日
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  // Format date in Chinese: 2024年10月12日 (Taiwan timezone)
+  const twDate = getTaiwanDate();
+  const year = twDate.getFullYear();
+  const month = twDate.getMonth() + 1;
+  const day = twDate.getDate();
   const formattedDate = `${year}年${month}月${day}日`;
 
   // Truncate first coupon title if too long (max 30 chars)
