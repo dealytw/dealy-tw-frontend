@@ -336,7 +336,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 mb-2">
                   <h1 className="text-lg md:text-3xl font-bold text-gray-900">
-                    {merchant.name}優惠碼2025｜9月最新折扣與信用卡優惠
+                    {merchant.name}優惠碼{new Date().getFullYear()}｜{new Date().getMonth() + 1}月最新折扣與信用卡優惠
                   </h1>
                   <p className="text-xs text-gray-600 sm:mb-1">
                     最近更新： {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/')} （每日更新）
