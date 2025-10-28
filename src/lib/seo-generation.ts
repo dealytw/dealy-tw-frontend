@@ -69,8 +69,13 @@ function extractKeywords(title: string): { newUser: boolean; freeShipping: boole
 }
 
 /**
- * Get first coupon highlights (priority 1 coupon)
- * Returns: "最抵 買X送Y & 50%OFF | 新客優惠 | 免運費"
+ * Get first coupon highlights (WordPress logic)
+ * Returns: "最抵 $800 OFF & 新客優惠 & 免運費"
+ * Logic:
+ * 1. Get priority 1 coupon value
+ * 2. Check if there's "新客優惠" keyword
+ * 3. If no "新客優惠", get priority 2 coupon value (format: $X OFF or 半價)
+ * 4. Check for "免運" in active coupon list
  */
 export function getFirstCouponHighlights(
   coupons: CouponForSEO[],
@@ -84,80 +89,64 @@ export function getFirstCouponHighlights(
 
   if (validCoupons.length === 0) return '';
 
-  // Step 1: Get first value and keywords from first 3 coupons
-  let firstValue = '';
-  let firstCouponIndex = -1;
-  const keywordParts = {
-    newUser: false,
-    freeShipping: false
-  };
+  const parts: string[] = [];
 
-  for (let i = 0; i < Math.min(3, validCoupons.length); i++) {
-    const coupon = validCoupons[i];
-    
-    // Extract first value if not found yet
-    if (!firstValue) {
-      const extracted = extractCouponValue(coupon.value);
-      if (extracted) {
-        firstValue = extracted.label;
-        firstCouponIndex = i;
-      }
+  // Step 1: Get priority 1 coupon value (first coupon)
+  const priority1Coupon = validCoupons[0];
+  let priority1Value = '';
+  
+  if (priority1Coupon) {
+    const extracted = extractCouponValue(priority1Coupon.value);
+    if (extracted) {
+      priority1Value = extracted.label;
+      parts.push(`最抵 ${priority1Value}`);
     }
+  }
 
-    // Extract keywords
+  // Step 2: Check if there's "新客優惠" keyword in ANY active coupon
+  let hasNewUserDiscount = false;
+  for (const coupon of validCoupons) {
     const keywords = extractKeywords(coupon.coupon_title);
-    if (keywords.newUser) keywordParts.newUser = true;
-    if (keywords.freeShipping) keywordParts.freeShipping = true;
-
-    // Early exit if we have everything
-    if (firstValue && keywordParts.newUser && keywordParts.freeShipping) {
+    if (keywords.newUser) {
+      hasNewUserDiscount = true;
       break;
     }
   }
 
-  // Step 2: If no keywords, get second-best value (excluding 買X送Y)
-  let secondValue = '';
-  if (!keywordParts.newUser && !keywordParts.freeShipping) {
-    let highest: { type: string; value: number; label: string } | null = null;
-
-    for (let i = 0; i < validCoupons.length; i++) {
-      if (i === firstCouponIndex) continue;
-      
-      // Skip 買X送Y patterns
-      if (/買\d+送\d+/.test(validCoupons[i].value)) continue;
-
-      const extracted = extractCouponValue(validCoupons[i].value);
-      if (extracted && (!highest || extracted.value > highest.value)) {
-        highest = extracted;
+  if (hasNewUserDiscount) {
+    parts.push('新客優惠');
+  } else {
+    // Step 3: If no "新客優惠", get priority 2 coupon value
+    if (validCoupons.length >= 2) {
+      const priority2Coupon = validCoupons[1];
+      const extracted = extractCouponValue(priority2Coupon.value);
+      if (extracted && extracted.label !== priority1Value) {
+        // Format based on type
+        let formattedValue = extracted.label;
+        if (extracted.type === 'cash') {
+          formattedValue = `$${extracted.value} OFF`;
+        }
+        // else keep as is (e.g., 半價, 買一送一)
+        parts.push(formattedValue);
       }
     }
+  }
 
-    if (highest && highest.label !== firstValue) {
-      secondValue = highest.label;
+  // Step 4: Check for "免運" in active coupon list
+  let hasFreeShipping = false;
+  for (const coupon of validCoupons) {
+    const keywords = extractKeywords(coupon.coupon_title);
+    if (keywords.freeShipping) {
+      hasFreeShipping = true;
+      break;
     }
   }
 
-  // Step 3: Build output - SHORT format for SEO
-  const finalParts: string[] = [];
-
-  if (firstValue) {
-    // Just the values, no "最抵" prefix
-    let valueOutput = firstValue;
-    if (secondValue && valueOutput.length < 20) {
-      valueOutput += ` & ${secondValue}`;
-    }
-    finalParts.push(valueOutput);
+  if (hasFreeShipping) {
+    parts.push('免運費');
   }
 
-  if (keywordParts.newUser) {
-    finalParts.push('新客');
-  }
-
-  if (keywordParts.freeShipping) {
-    finalParts.push('免運');
-  }
-
-  return finalParts.join(' | ');
+  return parts.join(' & ');
 }
 
 /**
@@ -177,8 +166,8 @@ export function getFirstValidCoupon(
 }
 
 /**
- * Generate meta title
- * Format: {Merchant}優惠碼及折扣｜{highlights} | {Month}月 {Year}
+ * Generate meta title (WordPress format)
+ * Format: {Merchant}優惠碼及折扣｜最抵 $800 OFF & 新客優惠 & 免運費 | 10月 2025
  * If highlights empty: {Merchant}優惠碼及折扣｜{Month}月 {Year}最新優惠
  * SEO Limit: 60 characters (for better Google display)
  */
@@ -192,7 +181,7 @@ export function generateMerchantMetaTitle(
   if (highlights) {
     const title = `${merchantName}優惠碼及折扣｜${highlights} | ${month}月 ${year}`;
     // Truncate to ~60 chars for SEO
-    return title.length > 60 ? title.substring(0, 60) + '...' : title;
+    return title.length > 60 ? title.substring(0, 57) + '...' : title;
   } else {
     return `${merchantName}優惠碼及折扣｜${month}月 ${year}最新優惠`;
   }

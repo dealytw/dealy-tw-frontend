@@ -48,17 +48,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       const highlights = getFirstCouponHighlights(coupons, name);
       const firstCoupon = getFirstValidCoupon(coupons);
       
-      // Extract highlight for description (short format)
+      // Extract highlight for description
+      // Format from highlights: "最抵 $800 OFF & 新客優惠 & 免運費"
       let highlight = '';
-      if (highlights.includes('新客')) {
+      if (highlights.includes('新客優惠')) {
         highlight = '新客優惠';
-      } else if (highlights.includes('免運')) {
+      } else if (highlights.includes('免運費')) {
         highlight = '免運費';
       } else if (highlights) {
-        // Extract first value from highlights (format: "20%OFF | 新客")
-        const firstValueMatch = highlights.match(/^([^|]+)/);
-        if (firstValueMatch) {
-          highlight = firstValueMatch[1].trim();
+        // Extract first value after "最抵" (e.g., "最抵 $800 OFF & ...")
+        const valueMatch = highlights.match(/最抵\s*([^&]+)/);
+        if (valueMatch) {
+          highlight = valueMatch[1].trim();
         }
       }
       
