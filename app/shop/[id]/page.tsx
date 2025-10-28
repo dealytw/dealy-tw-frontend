@@ -6,7 +6,7 @@ import Merchant from './page-client';
 
 // ISR Configuration - Critical for SEO
 export const revalidate = 300; // Revalidate every 5 minutes
-export const dynamic = 'force-dynamic'; // Force dynamic generation to allow real-time date updates
+export const dynamic = 'auto'; // Enable ISR: Fast cached pages, auto-refresh every 5 minutes
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
