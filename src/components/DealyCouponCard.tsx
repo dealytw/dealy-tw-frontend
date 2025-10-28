@@ -37,6 +37,21 @@ const DealyCouponCard = ({
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  
+  // Track coupon click
+  const trackCouponClick = async () => {
+    try {
+      await fetch(`/api/coupons/${coupon.id}/track-click`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      // Silently fail - don't interrupt user experience
+      console.error('Failed to track click:', error);
+    }
+  };
 
   // Get button text based on coupon_type
   const getButtonText = (couponType?: string) => {
@@ -74,8 +89,17 @@ const DealyCouponCard = ({
     }
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
+    // Track the click
+    await trackCouponClick();
     // Always trigger the click handler for all coupon types
+    onClick();
+  };
+  
+  const handleTitleClick = async () => {
+    // Track the click
+    await trackCouponClick();
+    // Trigger the click handler (opens modal)
     onClick();
   };
 
@@ -105,7 +129,10 @@ const DealyCouponCard = ({
         
         {/* Right: Content */}
         <div className="flex-1 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3 leading-tight">
+          <h3 
+            className="text-lg font-semibold text-gray-800 mb-3 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={handleTitleClick}
+          >
             {coupon.title}
           </h3>
           
@@ -220,7 +247,10 @@ const DealyCouponCard = ({
 
           {/* Right: Content */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-gray-800 mb-2 leading-tight">
+            <h3 
+              className="text-sm font-medium text-gray-800 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+              onClick={handleTitleClick}
+            >
               {coupon.title}
             </h3>
             
