@@ -137,26 +137,27 @@ export function getFirstCouponHighlights(
     }
   }
 
-  // Step 3: Build output
+  // Step 3: Build output - SHORT format for SEO
   const finalParts: string[] = [];
 
   if (firstValue) {
-    let valueOutput = `最抵 ${firstValue}`;
-    if (secondValue) {
+    // Just the values, no "最抵" prefix
+    let valueOutput = firstValue;
+    if (secondValue && valueOutput.length < 20) {
       valueOutput += ` & ${secondValue}`;
     }
     finalParts.push(valueOutput);
   }
 
   if (keywordParts.newUser) {
-    finalParts.push('新客優惠');
+    finalParts.push('新客');
   }
 
   if (keywordParts.freeShipping) {
-    finalParts.push('免運費');
+    finalParts.push('免運');
   }
 
-  return finalParts.join(' & ');
+  return finalParts.join(' | ');
 }
 
 /**
@@ -179,6 +180,7 @@ export function getFirstValidCoupon(
  * Generate meta title
  * Format: {Merchant}優惠碼及折扣｜{highlights} | {Month}月 {Year}
  * If highlights empty: {Merchant}優惠碼及折扣｜{Month}月 {Year}最新優惠
+ * SEO Limit: 60 characters (for better Google display)
  */
 export function generateMerchantMetaTitle(
   merchantName: string,
@@ -188,7 +190,9 @@ export function generateMerchantMetaTitle(
   const year = new Date().getFullYear();
 
   if (highlights) {
-    return `${merchantName}優惠碼及折扣｜${highlights} | ${month}月 ${year}`;
+    const title = `${merchantName}優惠碼及折扣｜${highlights} | ${month}月 ${year}`;
+    // Truncate to ~60 chars for SEO
+    return title.length > 60 ? title.substring(0, 60) + '...' : title;
   } else {
     return `${merchantName}優惠碼及折扣｜${month}月 ${year}最新優惠`;
   }
@@ -197,6 +201,7 @@ export function generateMerchantMetaTitle(
 /**
  * Generate meta description
  * Format: 【{Merchant}優惠碼】今日精選優惠：{First Coupon} ＋{Highlight}。優惠碼即將到期，立即領取！（{Date}更新）
+ * SEO Limit: 160 characters (Google display limit)
  */
 export function generateMerchantMetaDescription(
   merchantName: string,
@@ -210,7 +215,12 @@ export function generateMerchantMetaDescription(
   const day = date.getDate();
   const formattedDate = `${year}年${month}月${day}日`;
 
-  let description = `【${merchantName}優惠碼】今日精選優惠：${firstCouponTitle}`;
+  // Truncate first coupon title if too long (max 30 chars)
+  const truncatedTitle = firstCouponTitle.length > 30 
+    ? firstCouponTitle.substring(0, 30) + '...'
+    : firstCouponTitle;
+
+  let description = `【${merchantName}優惠碼】今日精選優惠：${truncatedTitle}`;
   
   if (highlight) {
     description += ` ＋${highlight}`;
@@ -218,6 +228,9 @@ export function generateMerchantMetaDescription(
   
   description += `。優惠碼即將到期，立即領取！（${formattedDate}更新）`;
   
-  return description;
+  // Truncate to 160 chars for SEO
+  return description.length > 160 
+    ? description.substring(0, 160) + '...'
+    : description;
 }
 
