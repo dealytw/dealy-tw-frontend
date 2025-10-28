@@ -351,7 +351,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
             {/* Filter Section */}
             <div className="mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
-                {merchant.name}優惠碼總整理（每日更新）｜信用卡優惠券/ Promo code/ Coupon
+                {merchant.name}優惠碼總整理（每日更新）｜Promo code／Discount code
               </h2>
               
               <div className="flex flex-wrap gap-2 mb-6">
