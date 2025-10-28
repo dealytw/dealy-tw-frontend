@@ -40,9 +40,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       const { getFirstCouponHighlights, getFirstValidCoupon, generateMerchantMetaTitle, generateMerchantMetaDescription } = await import('@/lib/seo-generation');
       const { getMerchantCouponsForSEO } = await import('@/lib/seo.server');
       
-      // Fetch coupons for this merchant
-      const couponsRes = await getMerchantCouponsForSEO(merchant.id.toString(), market, 300);
+      // Fetch ACTIVE coupons for this merchant (sorted by priority)
+      const couponsRes = await getMerchantCouponsForSEO(merchant.documentId, market, 300);
       const coupons = couponsRes?.data || [];
+      
+      console.log(`[SEO] Merchant ${merchant.merchant_name} - Fetched ${coupons.length} active coupons`);
       
       // Generate highlights and first coupon
       const highlights = getFirstCouponHighlights(coupons, name);

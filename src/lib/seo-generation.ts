@@ -96,10 +96,12 @@ export function getFirstCouponHighlights(
   let priority1Value = '';
   
   if (priority1Coupon) {
+    console.log(`[SEO] Priority 1 coupon: ${priority1Coupon.coupon_title}, value: ${priority1Coupon.value}`);
     const extracted = extractCouponValue(priority1Coupon.value);
     if (extracted) {
       priority1Value = extracted.label;
       parts.push(`最抵 ${priority1Value}`);
+      console.log(`[SEO] Extracted value: ${priority1Value}`);
     }
   }
 
@@ -109,6 +111,7 @@ export function getFirstCouponHighlights(
     const keywords = extractKeywords(coupon.coupon_title);
     if (keywords.newUser) {
       hasNewUserDiscount = true;
+      console.log(`[SEO] Found 新客優惠 in: ${coupon.coupon_title}`);
       break;
     }
   }
@@ -119,6 +122,7 @@ export function getFirstCouponHighlights(
     // Step 3: If no "新客優惠", get priority 2 coupon value
     if (validCoupons.length >= 2) {
       const priority2Coupon = validCoupons[1];
+      console.log(`[SEO] Priority 2 coupon: ${priority2Coupon.coupon_title}, value: ${priority2Coupon.value}`);
       const extracted = extractCouponValue(priority2Coupon.value);
       if (extracted && extracted.label !== priority1Value) {
         // Format based on type
@@ -128,6 +132,7 @@ export function getFirstCouponHighlights(
         }
         // else keep as is (e.g., 半價, 買一送一)
         parts.push(formattedValue);
+        console.log(`[SEO] Added priority 2 value: ${formattedValue}`);
       }
     }
   }
@@ -138,6 +143,7 @@ export function getFirstCouponHighlights(
     const keywords = extractKeywords(coupon.coupon_title);
     if (keywords.freeShipping) {
       hasFreeShipping = true;
+      console.log(`[SEO] Found 免運 in: ${coupon.coupon_title}`);
       break;
     }
   }
@@ -146,7 +152,9 @@ export function getFirstCouponHighlights(
     parts.push('免運費');
   }
 
-  return parts.join(' & ');
+  const result = parts.join(' & ');
+  console.log(`[SEO] Final highlights: ${result}`);
+  return result;
 }
 
 /**
