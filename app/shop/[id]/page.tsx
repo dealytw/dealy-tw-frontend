@@ -275,6 +275,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       coupon_title: coupon.coupon_title,
       coupon_type: coupon.coupon_type,
       coupon_status: coupon.coupon_status || 'active',
+      priority: coupon.priority || 0, // Include priority for sorting
       value: coupon.value,
       code: coupon.code,
       expires_at: coupon.expires_at,
@@ -294,9 +295,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       },
     }));
 
-    // Separate active and expired coupons on server (better performance)
-    const activeCoupons = transformedCoupons.filter((coupon: any) => coupon.coupon_status === 'active');
-    const expiredCoupons = transformedCoupons.filter((coupon: any) => coupon.coupon_status === 'expired');
+    // Separate active and expired coupons on server, then sort by priority within each group
+    const activeCoupons = transformedCoupons
+      .filter((coupon: any) => coupon.coupon_status === 'active')
+      .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
+    
+    const expiredCoupons = transformedCoupons
+      .filter((coupon: any) => coupon.coupon_status === 'expired')
+      .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
     // Pass the data to the original client component
   return (
