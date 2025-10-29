@@ -143,6 +143,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[9]": "editor_tips",
         "fields[10]": "priority",
         "fields[11]": "display_count",
+        "fields[12]": "coupon_status",
         "populate[merchant][fields][0]": "id",
         "populate[merchant][fields][1]": "merchant_name",
         "populate[merchant][fields][2]": "slug",
