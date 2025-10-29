@@ -126,11 +126,23 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         revalidate: 300, 
         tag: `merchant:${id}` 
       }),
-      // Fetch coupons data with ISR
+      // Fetch coupons data with ISR (include display_count for usage tracking)
       strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
         "filters[merchant][slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
         "sort": "priority:asc",
+        "fields[0]": "id",
+        "fields[1]": "documentId",
+        "fields[2]": "coupon_title",
+        "fields[3]": "value",
+        "fields[4]": "code",
+        "fields[5]": "expires_at",
+        "fields[6]": "affiliate_link",
+        "fields[7]": "coupon_type",
+        "fields[8]": "description",
+        "fields[9]": "editor_tips",
+        "fields[10]": "priority",
+        "fields[11]": "display_count",
         "populate[merchant][fields][0]": "id",
         "populate[merchant][fields][1]": "merchant_name",
         "populate[merchant][fields][2]": "slug",

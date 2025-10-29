@@ -240,7 +240,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
       discount: value,
       discountValue: discountValue,
       expiry: coupon.expires_at || "長期有效",
-      usageCount: coupon.user_count || 0,
+      usageCount: coupon.display_count || coupon.user_count || 0, // Use display_count (calculated) instead of user_count (actual clicks)
       steps: renderRichText(coupon.description), // Map description to steps with formatting preserved
       terms: extractTextFromRichText(coupon.editor_tips), // Map editor_tips to terms (⚠️ 溫馨提示)
       affiliateLink: coupon.affiliate_link || '#',
