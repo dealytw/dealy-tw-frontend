@@ -276,13 +276,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       coupon_type: coupon.coupon_type,
       coupon_status: coupon.coupon_status || 'active',
       value: coupon.value,
-    code: coupon.code,
+      code: coupon.code,
       expires_at: coupon.expires_at,
       user_count: coupon.user_count || 0,
+      display_count: coupon.display_count || 0, // Add display_count for usage tracking
       description: coupon.description || "",
       editor_tips: coupon.editor_tips,
       affiliate_link: coupon.affiliate_link,
-    merchant: {
+      merchant: {
         id: coupon.merchant?.id || coupon.merchant,
         name: coupon.merchant?.merchant_name || coupon.merchant?.name || "Unknown",
         slug: coupon.merchant?.slug || "unknown",
