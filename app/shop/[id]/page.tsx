@@ -296,27 +296,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     }));
 
     // Separate active and expired coupons on server, then sort by priority within each group
-    // Use Taiwan timezone for date comparison
-    const twDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
-    const today = twDate.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-    
+    // Note: CMS middleware automatically changes coupon_status to 'expired' after 3 days
     const activeCoupons = transformedCoupons
-      .filter((coupon: any) => {
-        // Check if status is active AND hasn't expired
-        if (coupon.coupon_status !== 'active') return false;
-        // If expires_at exists and is in the past, consider it expired
-        if (coupon.expires_at && coupon.expires_at < today) return false;
-        return true;
-      })
+      .filter((coupon: any) => coupon.coupon_status === 'active')
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
     
     const expiredCoupons = transformedCoupons
-      .filter((coupon: any) => {
-        // Include if status is explicitly expired OR if the expire date has passed
-        if (coupon.coupon_status === 'expired') return true;
-        if (coupon.coupon_status === 'active' && coupon.expires_at && coupon.expires_at < today) return true;
-        return false;
-      })
+      .filter((coupon: any) => coupon.coupon_status === 'expired')
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
     // Pass the data to the original client component
