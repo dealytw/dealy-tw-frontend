@@ -173,13 +173,14 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           couponItems.push({
             id: `coupon-${topCoupon.id}`,
             merchantId: merchant.id.toString(),
+            merchantSlug: topCoupon.merchant.slug,
             logo: topCoupon.merchant.logo,
             discount: topCoupon.value,
             type: topCoupon.coupon_type === "promo_code" ? "優惠碼" : 
                   topCoupon.coupon_type === "coupon" ? "優惠券" : "自動折扣",
             couponType: topCoupon.coupon_type,
             title: topCoupon.coupon_title,
-            usageCount: topCoupon.user_count,
+            usageCount: topCoupon.display_count,
             description: extractTextFromRichText(topCoupon.description),
             terms: extractTextFromRichText(topCoupon.editor_tips),
             code: topCoupon.code,

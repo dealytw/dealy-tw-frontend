@@ -29,6 +29,7 @@ type CategoryBadge = {
 type CouponRailItem = {
   id: string;
   merchantId: string;
+  merchantSlug?: string;
   logo: string;
   discount: string;
   type: string;
@@ -151,16 +152,22 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
   };
 
   const handleCouponClick = (coupon: CouponRailItem) => {
-    // Transform the coupon for the modal using the same transformation as DealyCouponCard
-    const transformedCoupon = transformCoupon(coupon);
-    if (!transformedCoupon) {
-      console.error('Failed to transform coupon for modal:', coupon);
-      return;
+    // If merchant slug is available, open merchant page in new tab
+    if (coupon.merchantSlug) {
+      // Open merchant page in new tab with coupon hash
+      const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${coupon.id}`;
+      window.open(merchantUrl, '_blank');
+    } else {
+      // Fallback: open modal (for backward compatibility)
+      const transformedCoupon = transformCoupon(coupon);
+      if (!transformedCoupon) {
+        console.error('Failed to transform coupon for modal:', coupon);
+        return;
+      }
+      
+      setSelectedCoupon(transformedCoupon);
+      setIsModalOpen(true);
     }
-    
-    // Set the modal data
-    setSelectedCoupon(transformedCoupon);
-    setIsModalOpen(true);
   };
 
   const copyToClipboard = (text: string) => {

@@ -9,6 +9,7 @@ export interface CouponData {
   code?: string;
   expires_at?: string;
   user_count: number;
+  display_count: number;
   description: string;
   editor_tips?: string;
   affiliate_link: string;
@@ -36,9 +37,10 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
       "fields[4]": "code",
       "fields[5]": "expires_at",
       "fields[6]": "user_count",
-      "fields[7]": "description",
-      "fields[8]": "editor_tips",
-      "fields[9]": "affiliate_link",
+      "fields[7]": "display_count",
+      "fields[8]": "description",
+      "fields[9]": "editor_tips",
+      "fields[10]": "affiliate_link",
       "sort": "priority:desc",
       "populate[merchant][fields][0]": "id",
       "populate[merchant][fields][1]": "merchant_name",
@@ -61,6 +63,7 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
       code: coupon.code,
       expires_at: coupon.expires_at,
       user_count: coupon.user_count || 0,
+      display_count: coupon.display_count || 0,
       description: coupon.description || "",
       editor_tips: coupon.editor_tips,
       affiliate_link: coupon.affiliate_link,
@@ -97,9 +100,10 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
       "fields[4]": "code",
       "fields[5]": "expires_at",
       "fields[6]": "user_count",
-      "fields[7]": "description",
-      "fields[8]": "editor_tips",
-      "fields[9]": "affiliate_link",
+      "fields[7]": "display_count",
+      "fields[8]": "description",
+      "fields[9]": "editor_tips",
+      "fields[10]": "affiliate_link",
       "sort": "priority:desc",
       "pagination[pageSize]": "50",
       "populate[merchant][fields][0]": "id",
@@ -123,6 +127,7 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
       code: coupon.code,
       expires_at: coupon.expires_at,
       user_count: coupon.user_count || 0,
+      display_count: coupon.display_count || 0,
       description: coupon.description || "",
       editor_tips: coupon.editor_tips,
       affiliate_link: coupon.affiliate_link,
