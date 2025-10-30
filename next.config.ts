@@ -26,6 +26,30 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
+  async headers() {
+    return [
+      {
+        // Apply long-lived cache headers to static images in public folder
+        source: '/(.*\\.(jpg|jpeg|png|gif|webp|svg|ico))',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Apply long-lived cache headers to fonts in public folder
+        source: '/(.*\\.(woff|woff2|ttf|otf|eot))',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
   // Optional: enable typed routes, etc.
 };
 

@@ -5,8 +5,11 @@ import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
 
 // ISR Configuration - Critical for SEO
-export const revalidate = 300; // Revalidate every 5 minutes
-export const dynamic = 'auto'; // Enable ISR: Fast cached pages, auto-refresh every 5 minutes
+export const revalidate = 600; // Revalidate every 10 minutes (Cloudflare edge cache compatible)
+export const dynamic = 'auto'; // Enable ISR: Fast cached pages, auto-refresh every 10 minutes
+
+// Note: Cache-Control headers are set via middleware.ts
+// Expected: max-age=0, must-revalidate, s-maxage=600, stale-while-revalidate=86400
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

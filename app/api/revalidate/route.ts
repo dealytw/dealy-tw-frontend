@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
+import { warmPaths } from '@/lib/warm';
 
 export const preferredRegion = ['sin1']; // Singapore (close to Strapi)
 export const dynamic = 'force-dynamic'; // never cache this route
@@ -58,16 +59,35 @@ export async function POST(req: NextRequest) {
   }
 
   // Optional: Purge Cloudflare cache for instant freshness
+  // Warm origin HTML before purge to avoid edge fetching stale
   let purged = false;
-  if (purge && paths.length > 0) {
-    const urls = paths
-      .filter(path => typeof path === 'string' && path.startsWith('/'))
-      .map(path => `${ORIGIN}${path}`);
-    
-    if (urls.length > 0) {
-      await purgeCF(urls);
-      purged = true;
+  const uniqueWarmPaths = Array.from(new Set(paths.filter((p: unknown) => typeof p === 'string' && (p as string).startsWith('/')))) as string[];
+  if (uniqueWarmPaths.length) {
+    const warm = await warmPaths(uniqueWarmPaths, {
+      origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
+      concurrency: 3,
+      timeoutMs: 4000,
+      retries: 2,
+    });
+    if (!warm.ok) {
+      return NextResponse.json(
+        { ok: false, warmed: warm },
+        {
+          status: 206,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        }
+      );
     }
+  }
+
+  if (purge && uniqueWarmPaths.length > 0) {
+    const urls = uniqueWarmPaths.map(path => `${ORIGIN}${path}`);
+    await purgeCF(urls);
+    purged = true;
   }
 
   return NextResponse.json({ 
