@@ -6,9 +6,8 @@ import Merchant from './page-client';
 
 // ISR Configuration - Critical for SEO
 export const revalidate = 600; // Revalidate every 10 minutes (Cloudflare edge cache compatible)
-export const dynamic = 'auto'; // Enable ISR: Fast cached pages, auto-refresh every 10 minutes
+export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
 
-// Note: Cache-Control headers are set via middleware.ts
 // Expected: max-age=0, must-revalidate, s-maxage=600, stale-while-revalidate=86400
 
 // Generate metadata for SEO
