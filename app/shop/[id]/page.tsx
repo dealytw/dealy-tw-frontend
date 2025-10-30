@@ -5,7 +5,7 @@ import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
 
 // ISR Configuration - Critical for SEO
-export const revalidate = 600; // Revalidate every 10 minutes (Cloudflare edge cache compatible)
+export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
 export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
 
 // Expected: max-age=0, must-revalidate, s-maxage=600, stale-while-revalidate=86400
