@@ -24,6 +24,22 @@ async function purgeCF(urls: string[]) {
   }
 }
 
+async function purgeCFEverything() {
+  if (!process.env.CF_API_TOKEN || !process.env.CF_ZONE_ID) return;
+  try {
+    await fetch(`https://api.cloudflare.com/client/v4/zones/${process.env.CF_ZONE_ID}/purge_cache`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.CF_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ purge_everything: true })
+    });
+  } catch (error) {
+    console.error('Cloudflare purge-everything failed:', error);
+  }
+}
+
 export async function POST(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret');
   if (secret !== process.env.REVALIDATE_SECRET) {
@@ -37,7 +53,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const { paths = [], tags = [], purge = false } = await req.json().catch(() => ({}));
+  const { paths = [], tags = [], purge = false, purgeEverything = false } = await req.json().catch(() => ({}));
 
   // Validate inputs
   if (!Array.isArray(paths) && !Array.isArray(tags)) {
@@ -82,6 +98,17 @@ export async function POST(req: NextRequest) {
         }
       );
     }
+  }
+
+  if (purgeEverything) {
+    await purgeCFEverything();
+    return NextResponse.json({ ok: true, revalidated: { paths, tags }, purged: true, scope: 'everything' }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
   }
 
   if (purge && uniqueWarmPaths.length > 0) {
