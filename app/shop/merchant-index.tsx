@@ -110,11 +110,11 @@ export default function MerchantIndex({
                     onClick={() => handleMerchantClick(merchant)}
                   >
                     {/* Merchant Logo - Rounded */}
-                    <div className="w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden bg-white border border-gray-100 flex items-center justify-center p-2 group-hover:shadow-lg transition-shadow">
+                    <div className="w-32 h-32 mx-auto mb-3 rounded-full overflow-hidden bg-white border border-gray-100 flex items-center justify-center group-hover:shadow-lg transition-shadow">
                       <img 
                         src={merchant.logo}
                         alt={merchant.name}
-                        className="max-w-full max-h-full object-contain"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     
