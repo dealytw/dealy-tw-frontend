@@ -55,6 +55,18 @@ export async function POST(req: NextRequest) {
 
   const { paths = [], tags = [], purge = false, purgeEverything = false } = await req.json().catch(() => ({}));
 
+  // If purgeEverything is requested, execute immediately (no paths/tags required)
+  if (purgeEverything) {
+    await purgeCFEverything();
+    return NextResponse.json({ ok: true, revalidated: { paths: [], tags: [] }, purged: true, scope: 'everything' }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
+  }
+
   // Validate inputs
   if (!Array.isArray(paths) && !Array.isArray(tags)) {
     return NextResponse.json({ ok: false, error: 'paths and tags must be arrays' }, { status: 400 });

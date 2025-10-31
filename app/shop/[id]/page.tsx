@@ -3,6 +3,7 @@ import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
+import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd } from '@/lib/jsonld';
 
 // ISR Configuration - Critical for SEO
 export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
@@ -308,15 +309,66 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       .filter((coupon: any) => coupon.coupon_status === 'expired')
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
+    // Build JSON-LD blocks
+    const merchantUrl = `https://dealy.tw/shop/${merchant.slug}`;
+    const breadcrumb = breadcrumbJsonLd([
+      { name: '首頁', url: 'https://dealy.tw/' },
+      { name: '商家', url: 'https://dealy.tw/shop' },
+      { name: merchant.name, url: merchantUrl },
+    ]);
+    const merchantOrg = organizationJsonLd({
+      name: merchant.name,
+      url: merchantUrl,
+      logo: merchant.logo || undefined,
+      sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
+    });
+    const offersList = offersItemListJsonLd(
+      activeCoupons.map((c: any) => ({
+        value: c.value,
+        title: c.coupon_title,
+        code: c.code,
+        status: c.coupon_status,
+        expires_at: c.expires_at,
+        url: merchantUrl,
+      }))
+    );
+    const faq = faqPageJsonLd((merchant.faqs || []).map((f: any) => ({ question: f?.q || f?.question || '', answer: f?.a || f?.answer || '' })).filter((x: any) => x.question && x.answer));
+    const howto = howToJsonLd(`如何使用${merchant.name}優惠碼`, (merchant.how_to || []).map((s: any) => s?.text || s).filter(Boolean));
+    const pageImage = merchant.logo || undefined;
+    const webPage = webPageJsonLd({
+      name: `${merchant.name} 優惠碼頁面`,
+      url: merchantUrl,
+      description: merchant.seoDescription || merchant.description || undefined,
+      image: pageImage || undefined,
+      dateModified: merchant.updatedAt,
+    });
+    const imageObj = pageImage ? imageObjectJsonLd({ url: pageImage }) : undefined;
+    const aggregate = aggregateOfferJsonLd({
+      url: merchantUrl,
+      offers: activeCoupons.map((c: any) => ({ validThrough: c.expires_at, status: c.coupon_status })),
+    });
+
     // Pass the data to the original client component
   return (
+      <>
       <Merchant 
-        merchant={merchant}
+        merchant={merchant as any}
         coupons={activeCoupons}
         expiredCoupons={expiredCoupons}
         relatedMerchants={relatedMerchants}
         market={marketKey}
       />
+      // JSON-LD scripts
+      /* eslint-disable @next/next/no-sync-scripts */
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(merchantOrg) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offersList) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aggregate) }} />
+      {imageObj && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imageObj) }} />}
+      {faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />}
+      {howto && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howto) }} />}
+      </>
     );
   } catch (error) {
     console.error('Error fetching merchant data:', error);

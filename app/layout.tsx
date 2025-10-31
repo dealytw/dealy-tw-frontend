@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/jsonld";
 import FloatingActionContainer from "@/components/FloatingActionContainer";
 
 export const metadata: Metadata = {
@@ -34,6 +35,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body suppressHydrationWarning>
         <Providers>
+          {/* Site-wide JSON-LD: WebSite + Organization */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                websiteJsonLd({ siteName: "Dealy TW", siteUrl: "https://dealy.tw", searchUrl: "https://dealy.tw/search" })
+              ),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                organizationJsonLd({ name: "Dealy TW", url: "https://dealy.tw", logo: "https://dealy.tw/favicon.ico" })
+              ),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                siteNavigationJsonLd([
+                  { name: '首頁', url: 'https://dealy.tw/' },
+                  { name: '商家', url: 'https://dealy.tw/shop' },
+                  { name: '特別優惠', url: 'https://dealy.tw/special-offers' },
+                ])
+              ),
+            }}
+          />
           {children}
           <FloatingActionContainer />
         </Providers>
