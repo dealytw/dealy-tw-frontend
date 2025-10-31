@@ -5,7 +5,7 @@ import SpecialOffersClient from '../special-offers-client';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 3600; // ISR - revalidate every 60 minutes for stronger edge hit ratio
-export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
+export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
 
 export async function generateMetadata({ params }: { params: Promise<{ topicSlug: string }> }) {
   const { topicSlug } = await params;
@@ -55,28 +55,10 @@ export default async function SpecialOfferTopic({
   
   try {
     // Fetch topic data with featured merchants and coupons
+    // Use deep populate to get all relations automatically
     const topicParams = {
       "filters[slug][$eq]": topicSlug,
-      "fields[0]": "id",
-      "fields[1]": "title", 
-      "fields[2]": "slug",
-      "fields[3]": "intro",
-      "populate[featured_merchants][populate][logo][fields][0]": "url",
-      "populate[coupons][populate][merchant][populate][logo][fields][0]": "url",
-      "populate[coupons][fields][0]": "id",
-      "populate[coupons][fields][1]": "coupon_title",
-      "populate[coupons][fields][2]": "description",
-      "populate[coupons][fields][3]": "value",
-      "populate[coupons][fields][4]": "code",
-      "populate[coupons][fields][5]": "coupon_type",
-      "populate[coupons][fields][6]": "expires_at",
-      "populate[coupons][fields][7]": "user_count",
-      "populate[coupons][fields][8]": "display_count",
-      "populate[coupons][fields][9]": "affiliate_link",
-      "populate[coupons][fields][10]": "editor_tips",
-      "populate[coupons][populate][merchant][fields][0]": "id",
-      "populate[coupons][populate][merchant][fields][1]": "merchant_name",
-      "populate[coupons][populate][merchant][fields][2]": "slug",
+      "populate": "deep", // Populate all relations recursively
     };
 
     const topicRes = await strapiFetch<{ data: any[] }>(
@@ -91,7 +73,12 @@ export default async function SpecialOfferTopic({
     }
 
     // Transform featured merchants data
-    const featuredMerchants = (topic.featured_merchants || []).map((merchant: any) => ({
+    // Handle both singular and plural (in case schema allows multiple)
+    const featuredMerchantData = topic.featured_merchant 
+      ? (Array.isArray(topic.featured_merchant) ? topic.featured_merchant : [topic.featured_merchant])
+      : (topic.featured_merchants || []);
+    
+    const featuredMerchants = featuredMerchantData.map((merchant: any) => ({
       id: merchant.id,
       name: merchant.merchant_name,
       slug: merchant.slug,
@@ -99,8 +86,13 @@ export default async function SpecialOfferTopic({
       link: `/shop/${merchant.slug}`,
     }));
 
-    // Transform coupons data (using 'coupons' field instead of 'flash_deals')
-    const flashDeals = (topic.coupons || []).map((coupon: any) => ({
+    // Transform coupons data
+    // Handle both singular and plural (in case schema allows multiple)
+    const couponData = topic.coupon
+      ? (Array.isArray(topic.coupon) ? topic.coupon : [topic.coupon])
+      : (topic.coupons || []);
+    
+    const flashDeals = couponData.map((coupon: any) => ({
       id: coupon.id?.toString(),
       coupon_title: coupon.coupon_title,
       description: coupon.description,
