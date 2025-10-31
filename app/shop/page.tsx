@@ -5,6 +5,25 @@ import MerchantIndex from './merchant-index';
 
 export const revalidate = 3600; // ISR - revalidate every hour (merchants don't change often)
 
+/**
+ * Extract the first English letter from a merchant name.
+ * If the name starts with Chinese or other non-English characters,
+ * find the first English letter in the name.
+ * Falls back to 'A' if no English letter is found.
+ */
+function getFirstEnglishLetter(name: string): string {
+  if (!name) return 'A';
+  
+  // Try to find the first English letter (A-Z, a-z) in the name
+  const englishLetterMatch = name.match(/[A-Za-z]/);
+  if (englishLetterMatch) {
+    return englishLetterMatch[0].toUpperCase();
+  }
+  
+  // Fallback to 'A' if no English letter found
+  return 'A';
+}
+
 export async function generateMetadata() {
   return pageMeta({
     title: '所有商店｜Dealy.TW 優惠折扣平台',
@@ -49,7 +68,7 @@ export default async function ShopIndex({
       name: merchant.merchant_name,
       slug: merchant.slug,
       logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-      letter: merchant.merchant_name?.charAt(0).toUpperCase() || 'A',
+      letter: getFirstEnglishLetter(merchant.merchant_name || ''),
       description: merchant.summary || '',
       affiliateLink: merchant.default_affiliate_link || '',
       market: market,

@@ -96,7 +96,10 @@ export default function MerchantIndex({
 
         {/* Merchants Grid */}
         <div className="space-y-12">
-          {Object.keys(groupedMerchants).sort().map((letter) => (
+          {Object.keys(groupedMerchants)
+            .filter(letter => /^[A-Z]$/.test(letter)) // Only show English letters
+            .sort()
+            .map((letter) => (
             <div key={letter}>
               {/* Letter Header */}
               <h2 className="text-xl font-bold text-gray-800 mb-6">{letter}</h2>
