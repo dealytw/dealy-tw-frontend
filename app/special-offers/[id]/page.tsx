@@ -11,10 +11,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id: slug } = await params;
   
   try {
-    // Fetch special offer data for SEO - match slug exactly (UID field)
+    // Fetch special offer data for SEO - use explicit fields like merchant page
     const specialOfferRes = await strapiFetch<{ data: any[] }>(
       `/api/special-offers?${qs({
-        "filters[slug][$eq]": slug, // Exact match for UID field
+        "filters[slug][$eq]": slug,
         "fields[0]": "title",
         "fields[1]": "seo_title",
         "fields[2]": "seo_description",
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       });
     }
   } catch (error) {
-    console.error('[SpecialOffers] Error fetching special offer metadata:', error);
+    console.error('[SpecialOfferPage] Error fetching metadata:', error);
   }
   
   // Fallback metadata
@@ -53,71 +53,104 @@ export default async function SpecialOfferPage({
 }) {
   const { id: slug } = await params;
   
-  console.log(`[SpecialOffers] Fetching special offer with slug: "${slug}"`);
-  
-  try {
-    // Fetch special offer data with slug filter (exact match for UID field)
-    const specialOfferParams = {
-      "filters[slug][$eq]": slug,
-      "populate": "deep", // Populate all relations recursively
-    };
+  console.log('[SpecialOfferPage] Fetching data for', { slug });
+  console.log('Environment check:', {
+    STRAPI_URL: process.env.STRAPI_URL,
+    NEXT_PUBLIC_STRAPI_URL: process.env.NEXT_PUBLIC_STRAPI_URL,
+    STRAPI_TOKEN: process.env.STRAPI_TOKEN ? 'exists' : 'missing'
+  });
 
-    const apiUrl = `/api/special-offers?${qs(specialOfferParams)}`;
-    console.log(`[SpecialOffers] API URL: ${apiUrl}`);
+  try {
+    // Use explicit populate structure like merchant page - don't use "populate=deep"
+    const specialOfferRes = await strapiFetch<{ data: any[] }>(`/api/special-offers?${qs({
+      "filters[slug][$eq]": slug,
+      "fields[0]": "id",
+      "fields[1]": "title",
+      "fields[2]": "slug",
+      "fields[3]": "intro",
+      "fields[4]": "seo_title",
+      "fields[5]": "seo_description",
+      "populate[logo][fields][0]": "url",
+      "populate[featured_merchant][fields][0]": "id",
+      "populate[featured_merchant][fields][1]": "merchant_name",
+      "populate[featured_merchant][fields][2]": "slug",
+      "populate[featured_merchant][populate][logo][fields][0]": "url",
+      "populate[coupon][fields][0]": "id",
+      "populate[coupon][fields][1]": "coupon_title",
+      "populate[coupon][fields][2]": "description",
+      "populate[coupon][fields][3]": "value",
+      "populate[coupon][fields][4]": "code",
+      "populate[coupon][fields][5]": "coupon_type",
+      "populate[coupon][fields][6]": "expires_at",
+      "populate[coupon][fields][7]": "user_count",
+      "populate[coupon][fields][8]": "display_count",
+      "populate[coupon][fields][9]": "affiliate_link",
+      "populate[coupon][fields][10]": "editor_tips",
+      "populate[coupon][populate][merchant][fields][0]": "id",
+      "populate[coupon][populate][merchant][fields][1]": "merchant_name",
+      "populate[coupon][populate][merchant][fields][2]": "slug",
+      "populate[coupon][populate][merchant][populate][logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
+    })}`, { 
+      revalidate: 3600, 
+      tag: `special-offer:${slug}` 
+    });
     
-    let specialOfferRes = await strapiFetch<{ data: any[] }>(
-      apiUrl,
-      { revalidate: 3600, tag: `special-offer:${slug}` }
-    );
-    
-    console.log(`[SpecialOffers] Response data length: ${specialOfferRes.data?.length || 0}`);
-    
-    // If no results, try to fetch all slugs to debug
     if (!specialOfferRes.data || specialOfferRes.data.length === 0) {
-      console.warn(`[SpecialOffers] No results found with slug "${slug}". Fetching all slugs to debug...`);
-      const allSpecialOffersRes = await strapiFetch<{ data: any[] }>(
-        `/api/special-offers?${qs({ "fields[0]": "slug", "fields[1]": "title", "pagination[pageSize]": "100" })}`,
-        { revalidate: 60, tag: 'special-offers:debug' }
-      );
-      const allSlugs = (allSpecialOffersRes.data || []).map((so: any) => ({ slug: so.slug, title: so.title }));
-      console.log(`[SpecialOffers] Available slugs in CMS:`, allSlugs);
-      console.error(`[SpecialOffers] Requested slug "${slug}" not found in available slugs`);
-    } else {
-      console.log(`[SpecialOffers] Found special offer:`, {
-        id: specialOfferRes.data[0].id,
-        title: specialOfferRes.data[0].title,
-        slug: specialOfferRes.data[0].slug,
-        publishedAt: specialOfferRes.data[0].publishedAt,
-      });
-    }
-    
-    const specialOffer = specialOfferRes.data?.[0];
-    
-    if (!specialOffer) {
-      console.error(`[SpecialOffers] No special offer found with slug: "${slug}"`);
-      console.error(`[SpecialOffers] This could mean: 1) Slug doesn't exist 2) Not published 3) Wrong slug format`);
+      console.error('[SpecialOfferPage] No special offer found with slug:', slug);
+      
+      // Debug: fetch all slugs
+      try {
+        const allSpecialOffersRes = await strapiFetch<{ data: any[] }>(
+          `/api/special-offers?${qs({ "fields[0]": "slug", "fields[1]": "title", "pagination[pageSize]": "100" })}`,
+          { revalidate: 60, tag: 'special-offers:debug' }
+        );
+        const allSlugs = (allSpecialOffersRes.data || []).map((so: any) => ({ slug: so.slug, title: so.title }));
+        console.log('[SpecialOfferPage] Available slugs in CMS:', allSlugs);
+      } catch (debugError) {
+        console.error('[SpecialOfferPage] Error fetching all slugs:', debugError);
+      }
+      
       notFound();
     }
 
-    // Transform featured merchants data
-    // Handle both singular and plural (in case schema allows multiple)
-    const featuredMerchantData = specialOffer.featured_merchant 
-      ? (Array.isArray(specialOffer.featured_merchant) ? specialOffer.featured_merchant : [specialOffer.featured_merchant])
-      : (specialOffer.featured_merchants || []);
+    const specialOffer = specialOfferRes.data[0];
+    console.log('[SpecialOfferPage] Found special offer:', {
+      id: specialOffer.id,
+      title: specialOffer.title,
+      slug: specialOffer.slug,
+    });
 
-    const featuredMerchants = featuredMerchantData.map((merchant: any) => ({
-      id: merchant.id,
-      name: merchant.merchant_name,
-      slug: merchant.slug,
-      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-      link: `/shop/${merchant.slug}`,
-    }));
+    // Transform featured merchants data
+    // Schema shows featured_merchant is manyToOne (singular), but handle both formats
+    let featuredMerchants: any[] = [];
+    if (specialOffer.featured_merchant) {
+      const merchant = specialOffer.featured_merchant;
+      featuredMerchants = [{
+        id: merchant.id,
+        name: merchant.merchant_name,
+        slug: merchant.slug,
+        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+        link: `/shop/${merchant.slug}`,
+      }];
+    } else if (Array.isArray(specialOffer.featured_merchants)) {
+      featuredMerchants = specialOffer.featured_merchants.map((merchant: any) => ({
+        id: merchant.id,
+        name: merchant.merchant_name,
+        slug: merchant.slug,
+        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+        link: `/shop/${merchant.slug}`,
+      }));
+    }
 
     // Transform coupons data
-    // Handle both singular and plural (in case schema allows multiple)
-    const couponData = specialOffer.coupon
-      ? (Array.isArray(specialOffer.coupon) ? specialOffer.coupon : [specialOffer.coupon])
-      : (specialOffer.coupons || []);
+    // Schema shows coupon is manyToOne (singular), but handle both formats
+    let couponData: any[] = [];
+    if (specialOffer.coupon) {
+      couponData = [specialOffer.coupon];
+    } else if (Array.isArray(specialOffer.coupons)) {
+      couponData = specialOffer.coupons;
+    }
 
     const flashDeals = couponData.map((coupon: any) => ({
       id: coupon.id?.toString(),
