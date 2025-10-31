@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, Calendar, Tag } from "lucide-react";
 
-interface Topic {
+interface SpecialOffer {
   id: number;
   title: string;
   slug: string;
@@ -18,10 +18,10 @@ interface Topic {
 }
 
 interface SpecialOffersIndexClientProps {
-  topics: Topic[];
+  specialOffers: SpecialOffer[];
 }
 
-const SpecialOffersIndexClient = ({ topics }: SpecialOffersIndexClientProps) => {
+const SpecialOffersIndexClient = ({ specialOffers }: SpecialOffersIndexClientProps) => {
   const [activeFilter, setActiveFilter] = useState("全部");
 
   const filters = ["全部", "最新優惠", "熱門優惠"];
@@ -72,13 +72,13 @@ const SpecialOffersIndexClient = ({ topics }: SpecialOffersIndexClientProps) => 
           ))}
         </div>
 
-        {/* Topics Grid */}
+        {/* Special Offers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {topics.map((topic) => (
+          {specialOffers.map((specialOffer) => (
             <Card 
-              key={topic.id}
+              key={specialOffer.id}
               className="cursor-pointer hover:shadow-lg transition-shadow group"
-              onClick={() => window.open(topic.link, '_self')}
+              onClick={() => window.open(specialOffer.link, '_self')}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -89,12 +89,12 @@ const SpecialOffersIndexClient = ({ topics }: SpecialOffersIndexClientProps) => 
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                  {topic.title}
+                  {specialOffer.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-sm line-clamp-3 mb-4">
-                  {topic.intro || topic.seo_description || '精選特別優惠與限時活動'}
+                  {specialOffer.intro || specialOffer.seo_description || '精選特別優惠與限時活動'}
                 </CardDescription>
                 <Button 
                   variant="outline" 

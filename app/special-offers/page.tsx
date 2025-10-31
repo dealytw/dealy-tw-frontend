@@ -18,8 +18,8 @@ export default async function SpecialOffersIndex() {
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
   try {
-    // Fetch all topics for the index page (without market filter for now)
-    const topicParams = {
+    // Fetch all special offers for the index page (without market filter for now)
+    const specialOffersParams = {
       "fields[0]": "id",
       "fields[1]": "title", 
       "fields[2]": "slug",
@@ -30,31 +30,31 @@ export default async function SpecialOffersIndex() {
       "pagination[pageSize]": "20",
     };
 
-    const topicsRes = await strapiFetch<{ data: any[]; meta: any }>(
-      `/api/special-offers?${qs(topicParams)}`,
+    const specialOffersRes = await strapiFetch<{ data: any[]; meta: any }>(
+      `/api/special-offers?${qs(specialOffersParams)}`,
       { revalidate: 600, tag: 'special-offers:index' }
     );
     
-    const topics = topicsRes.data || [];
+    const specialOffers = specialOffersRes.data || [];
     
-    if (topics.length === 0) {
+    if (specialOffers.length === 0) {
       notFound();
     }
 
-    // Transform topics data for the index page
-    const transformedTopics = topics.map((topic: any) => ({
-      id: topic.id,
-      title: topic.title,
-      slug: topic.slug,
-      intro: topic.intro,
-      seo_title: topic.seo_title,
-      seo_description: topic.seo_description,
-      link: `/special-offers/${topic.slug}`,
+    // Transform special offers data for the index page
+    const transformedSpecialOffers = specialOffers.map((specialOffer: any) => ({
+      id: specialOffer.id,
+      title: specialOffer.title,
+      slug: specialOffer.slug,
+      intro: specialOffer.intro,
+      seo_title: specialOffer.seo_title,
+      seo_description: specialOffer.seo_description,
+      link: `/special-offers/${specialOffer.slug}`,
     }));
 
     return (
       <SpecialOffersIndexClient 
-        topics={transformedTopics}
+        specialOffers={transformedSpecialOffers}
       />
     );
   } catch (error) {

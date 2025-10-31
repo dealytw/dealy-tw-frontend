@@ -8,103 +8,103 @@ export const revalidate = 3600; // ISR - revalidate every 60 minutes for stronge
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
 
 export async function generateMetadata({ params }: { params: Promise<{ topicSlug: string }> }) {
-  const { topicSlug } = await params;
+  const { topicSlug: slug } = await params;
   
   try {
-    // Fetch topic data for SEO - match slug exactly (UID field)
-    const topicRes = await strapiFetch<{ data: any[] }>(
+    // Fetch special offer data for SEO - match slug exactly (UID field)
+    const specialOfferRes = await strapiFetch<{ data: any[] }>(
       `/api/special-offers?${qs({
-        "filters[slug][$eq]": topicSlug, // Exact match for UID field
+        "filters[slug][$eq]": slug, // Exact match for UID field
         "fields[0]": "title",
         "fields[1]": "seo_title",
         "fields[2]": "seo_description",
       })}`,
-      { revalidate: 3600, tag: `special-offer:${topicSlug}` }
+      { revalidate: 3600, tag: `special-offer:${slug}` }
     );
     
-    const topic = topicRes.data?.[0];
+    const specialOffer = specialOfferRes.data?.[0];
     
-    if (topic) {
-      const title = topic.seo_title || `${topic.title}｜Dealy`;
-      const description = topic.seo_description || '精選特別優惠與限時活動';
+    if (specialOffer) {
+      const title = specialOffer.seo_title || `${specialOffer.title}｜Dealy`;
+      const description = specialOffer.seo_description || '精選特別優惠與限時活動';
       
       return pageMeta({
         title,
         description,
-        path: `/special-offers/${topicSlug}`,
+        path: `/special-offers/${slug}`,
       });
     }
   } catch (error) {
-    console.error('[SpecialOffers] Error fetching topic metadata:', error);
+    console.error('[SpecialOffers] Error fetching special offer metadata:', error);
   }
   
   // Fallback metadata
   return pageMeta({
     title: '特別優惠｜Dealy',
     description: '精選特別優惠與限時活動',
-    path: `/special-offers/${topicSlug}`,
+    path: `/special-offers/${slug}`,
   });
 }
 
-export default async function SpecialOfferTopic({ 
+export default async function SpecialOfferPage({ 
   params 
 }: { 
   params: Promise<{ topicSlug: string }> 
 }) {
-  const { topicSlug } = await params;
+  const { topicSlug: slug } = await params;
   
-  console.log(`[SpecialOffers] Fetching topic with slug: "${topicSlug}"`);
+  console.log(`[SpecialOffers] Fetching special offer with slug: "${slug}"`);
   
   try {
-    // First, try to fetch with slug filter (exact match for UID field)
-    const topicParams = {
-      "filters[slug][$eq]": topicSlug,
+    // Fetch special offer data with slug filter (exact match for UID field)
+    const specialOfferParams = {
+      "filters[slug][$eq]": slug,
       "populate": "deep", // Populate all relations recursively
     };
 
-    const apiUrl = `/api/special-offers?${qs(topicParams)}`;
+    const apiUrl = `/api/special-offers?${qs(specialOfferParams)}`;
     console.log(`[SpecialOffers] API URL: ${apiUrl}`);
     
-    let topicRes = await strapiFetch<{ data: any[] }>(
+    let specialOfferRes = await strapiFetch<{ data: any[] }>(
       apiUrl,
-      { revalidate: 3600, tag: `special-offer:${topicSlug}` }
+      { revalidate: 3600, tag: `special-offer:${slug}` }
     );
     
-    console.log(`[SpecialOffers] Response data length: ${topicRes.data?.length || 0}`);
+    console.log(`[SpecialOffers] Response data length: ${specialOfferRes.data?.length || 0}`);
     
     // If no results, try to fetch all slugs to debug
-    if (!topicRes.data || topicRes.data.length === 0) {
-      console.warn(`[SpecialOffers] No results found with slug "${topicSlug}". Fetching all slugs to debug...`);
-      const allTopicsRes = await strapiFetch<{ data: any[] }>(
+    if (!specialOfferRes.data || specialOfferRes.data.length === 0) {
+      console.warn(`[SpecialOffers] No results found with slug "${slug}". Fetching all slugs to debug...`);
+      const allSpecialOffersRes = await strapiFetch<{ data: any[] }>(
         `/api/special-offers?${qs({ "fields[0]": "slug", "fields[1]": "title", "pagination[pageSize]": "100" })}`,
         { revalidate: 60, tag: 'special-offers:debug' }
       );
-      const allSlugs = (allTopicsRes.data || []).map((t: any) => ({ slug: t.slug, title: t.title }));
+      const allSlugs = (allSpecialOffersRes.data || []).map((so: any) => ({ slug: so.slug, title: so.title }));
       console.log(`[SpecialOffers] Available slugs in CMS:`, allSlugs);
-      console.error(`[SpecialOffers] Requested slug "${topicSlug}" not found in available slugs`);
+      console.error(`[SpecialOffers] Requested slug "${slug}" not found in available slugs`);
     } else {
-      console.log(`[SpecialOffers] Found topic:`, {
-        id: topicRes.data[0].id,
-        title: topicRes.data[0].title,
-        slug: topicRes.data[0].slug,
-        publishedAt: topicRes.data[0].publishedAt,
+      console.log(`[SpecialOffers] Found special offer:`, {
+        id: specialOfferRes.data[0].id,
+        title: specialOfferRes.data[0].title,
+        slug: specialOfferRes.data[0].slug,
+        publishedAt: specialOfferRes.data[0].publishedAt,
       });
     }
     
-    const topic = topicRes.data?.[0];
+    const specialOffer = specialOfferRes.data?.[0];
     
-    if (!topic) {
-      console.error(`[SpecialOffers] No topic found with slug: "${topicSlug}"`);
+    if (!specialOffer) {
+      console.error(`[SpecialOffers] No special offer found with slug: "${slug}"`);
       console.error(`[SpecialOffers] This could mean: 1) Slug doesn't exist 2) Not published 3) Wrong slug format`);
       notFound();
     }
 
     // Transform featured merchants data
     // Handle both singular and plural (in case schema allows multiple)
-    const featuredMerchantData = topic.featured_merchant 
-      ? (Array.isArray(topic.featured_merchant) ? topic.featured_merchant : [topic.featured_merchant])
-      : (topic.featured_merchants || []);
-    
+    const featuredMerchantData = specialOffer.featured_merchant 
+      ? (Array.isArray(specialOffer.featured_merchant) ? specialOffer.featured_merchant : [specialOffer.featured_merchant])
+      : (specialOffer.featured_merchants || []);
+
     const featuredMerchants = featuredMerchantData.map((merchant: any) => ({
       id: merchant.id,
       name: merchant.merchant_name,
@@ -115,10 +115,10 @@ export default async function SpecialOfferTopic({
 
     // Transform coupons data
     // Handle both singular and plural (in case schema allows multiple)
-    const couponData = topic.coupon
-      ? (Array.isArray(topic.coupon) ? topic.coupon : [topic.coupon])
-      : (topic.coupons || []);
-    
+    const couponData = specialOffer.coupon
+      ? (Array.isArray(specialOffer.coupon) ? specialOffer.coupon : [specialOffer.coupon])
+      : (specialOffer.coupons || []);
+
     const flashDeals = couponData.map((coupon: any) => ({
       id: coupon.id?.toString(),
       coupon_title: coupon.coupon_title,
@@ -141,17 +141,17 @@ export default async function SpecialOfferTopic({
 
     return (
       <SpecialOffersClient 
-        topic={topic}
+        specialOffer={specialOffer}
         featuredMerchants={featuredMerchants}
         flashDeals={flashDeals}
       />
     );
   } catch (error) {
-    console.error('[SpecialOffers] Error fetching special offers data:', error);
+    console.error('[SpecialOffers] Error fetching special offer data:', error);
     console.error('[SpecialOffers] Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      topicSlug,
+      slug,
     });
     notFound();
   }

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-interface Topic {
+interface SpecialOffer {
   id: number;
   title: string;
   slug: string;
@@ -44,7 +44,7 @@ interface FlashDeal {
 }
 
 interface SpecialOffersClientProps {
-  topic: Topic;
+  specialOffer: SpecialOffer;
   featuredMerchants: FeaturedMerchant[];
   flashDeals: FlashDeal[];
 }
@@ -73,7 +73,7 @@ function renderRichText(richText: any): string {
   return extractTextFromRichText(richText);
 }
 
-const SpecialOffersClient = ({ topic, featuredMerchants, flashDeals }: SpecialOffersClientProps) => {
+const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: SpecialOffersClientProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
@@ -142,11 +142,11 @@ const SpecialOffersClient = ({ topic, featuredMerchants, flashDeals }: SpecialOf
         {/* Hero Section */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {topic.title || '✨ 限時搶購！最新快閃優惠一覽 🔔'}
+            {specialOffer.title || '✨ 限時搶購！最新快閃優惠一覽 🔔'}
           </h1>
-          {topic.intro && (
+          {specialOffer.intro && (
             <p className="text-muted-foreground mb-4">
-              {topic.intro}
+              {specialOffer.intro}
             </p>
           )}
         </div>
