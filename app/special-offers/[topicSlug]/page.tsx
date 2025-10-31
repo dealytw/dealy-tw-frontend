@@ -4,16 +4,22 @@ import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import SpecialOffersClient from '../special-offers-client';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 600; // ISR - revalidate every 10 minutes
+export const revalidate = 3600; // ISR - revalidate every 60 minutes for stronger edge hit ratio
+export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
 
-export async function generateMetadata({ params: { topicSlug } }: { params: { topicSlug: string } }) {
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+export async function generateMetadata({ params }: { params: Promise<{ topicSlug: string }> }) {
+  const { topicSlug } = await params;
   
   try {
-    // Fetch topic data for SEO
+    // Fetch topic data for SEO (consistent with main component - no market filter)
     const topicRes = await strapiFetch<{ data: any[] }>(
-      `/api/special-offers?filters[slug][$eq]=${topicSlug}&filters[market][key][$eq]=${market}&fields[0]=title&fields[1]=seo_title&fields[2]=seo_description`,
-      { revalidate: 600, tag: `special-offer:${topicSlug}` }
+      `/api/special-offers?${qs({
+        "filters[slug][$eq]": topicSlug,
+        "fields[0]": "title",
+        "fields[1]": "seo_title",
+        "fields[2]": "seo_description",
+      })}`,
+      { revalidate: 3600, tag: `special-offer:${topicSlug}` }
     );
     
     const topic = topicRes.data?.[0];
@@ -41,11 +47,11 @@ export async function generateMetadata({ params: { topicSlug } }: { params: { to
 }
 
 export default async function SpecialOfferTopic({ 
-  params: { topicSlug } 
+  params 
 }: { 
-  params: { topicSlug: string } 
+  params: Promise<{ topicSlug: string }> 
 }) {
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const { topicSlug } = await params;
   
   try {
     // Fetch topic data with featured merchants and coupons
@@ -55,13 +61,27 @@ export default async function SpecialOfferTopic({
       "fields[1]": "title", 
       "fields[2]": "slug",
       "fields[3]": "intro",
-      "populate[featured_merchants]": "true",
-      "populate[coupons]": "true",
+      "populate[featured_merchants][populate][logo][fields][0]": "url",
+      "populate[coupons][populate][merchant][populate][logo][fields][0]": "url",
+      "populate[coupons][fields][0]": "id",
+      "populate[coupons][fields][1]": "coupon_title",
+      "populate[coupons][fields][2]": "description",
+      "populate[coupons][fields][3]": "value",
+      "populate[coupons][fields][4]": "code",
+      "populate[coupons][fields][5]": "coupon_type",
+      "populate[coupons][fields][6]": "expires_at",
+      "populate[coupons][fields][7]": "user_count",
+      "populate[coupons][fields][8]": "display_count",
+      "populate[coupons][fields][9]": "affiliate_link",
+      "populate[coupons][fields][10]": "editor_tips",
+      "populate[coupons][populate][merchant][fields][0]": "id",
+      "populate[coupons][populate][merchant][fields][1]": "merchant_name",
+      "populate[coupons][populate][merchant][fields][2]": "slug",
     };
 
     const topicRes = await strapiFetch<{ data: any[] }>(
       `/api/special-offers?${qs(topicParams)}`,
-      { revalidate: 600, tag: `special-offer:${topicSlug}` }
+      { revalidate: 3600, tag: `special-offer:${topicSlug}` }
     );
     
     const topic = topicRes.data?.[0];
@@ -88,7 +108,8 @@ export default async function SpecialOfferTopic({
       code: coupon.code,
       coupon_type: coupon.coupon_type,
       expires_at: coupon.expires_at,
-      user_count: coupon.user_count,
+      user_count: coupon.user_count || 0,
+      display_count: coupon.display_count || coupon.user_count || 0,
       affiliate_link: coupon.affiliate_link,
       editor_tips: coupon.editor_tips,
       merchant: {

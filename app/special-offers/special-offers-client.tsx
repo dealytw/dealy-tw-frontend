@@ -32,6 +32,7 @@ interface FlashDeal {
   coupon_type: string;
   expires_at: string;
   user_count: number;
+  display_count?: number;
   affiliate_link: string;
   editor_tips?: string;
   merchant: {
@@ -48,6 +49,30 @@ interface SpecialOffersClientProps {
   flashDeals: FlashDeal[];
 }
 
+// Helper function to extract text from Strapi rich text
+function extractTextFromRichText(richText: any): string {
+  if (!richText) return "";
+  if (typeof richText === "string") return richText;
+  if (Array.isArray(richText)) {
+    return richText
+      .map((node: any) => {
+        if (node.type === "text" && node.text) return node.text;
+        if (node.children) return extractTextFromRichText(node.children);
+        return "";
+      })
+      .join(" ");
+  }
+  return "";
+}
+
+// Helper function to render rich text as HTML
+function renderRichText(richText: any): string {
+  if (!richText) return "";
+  if (typeof richText === "string") return richText;
+  // For now, return the extracted text. Can be enhanced to return formatted HTML if needed.
+  return extractTextFromRichText(richText);
+}
+
 const SpecialOffersClient = ({ topic, featuredMerchants, flashDeals }: SpecialOffersClientProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,12 +80,48 @@ const SpecialOffersClient = ({ topic, featuredMerchants, flashDeals }: SpecialOf
 
   const filters = ["全部", "最新優惠碼", "最新折扣"];
 
-  const handleCouponClick = (coupon: any) => {
-    setSelectedCoupon(coupon);
+  // Transform CMS coupon to DealyCouponCard format
+  const transformCoupon = (coupon: FlashDeal) => {
+    if (!coupon) return null;
+
+    const value = coupon.value || '';
+    const currencyPattern = /([$¥€£]|\w+)\s*(\d+)/i;
+    const discountValue = value ? value.replace(currencyPattern, '$1') : '0';
+    
+    return {
+      id: coupon.id,
+      code: coupon.code || '',
+      title: coupon.coupon_title || 'Untitled Coupon',
+      description: extractTextFromRichText(coupon.description),
+      discount: value,
+      discountValue: discountValue,
+      expiry: coupon.expires_at || "長期有效",
+      usageCount: coupon.display_count || coupon.user_count || 0,
+      steps: renderRichText(coupon.description),
+      terms: extractTextFromRichText(coupon.editor_tips),
+      affiliateLink: coupon.affiliate_link || '#',
+      coupon_type: coupon.coupon_type,
+      merchant: {
+        name: coupon.merchant.merchant_name || 'Unknown Merchant',
+        logo: coupon.merchant.logo || '',
+      }
+    };
+  };
+
+  const handleCouponClick = (coupon: FlashDeal) => {
+    const transformedCoupon = transformCoupon(coupon);
+    if (!transformedCoupon) {
+      console.error('Failed to transform coupon:', coupon);
+      return;
+    }
+    
+    setSelectedCoupon(transformedCoupon);
     setIsModalOpen(true);
     
     // Open affiliate link in same tab
-    window.open(coupon.affiliate_link, '_self');
+    if (transformedCoupon.affiliateLink && transformedCoupon.affiliateLink !== '#') {
+      window.open(transformedCoupon.affiliateLink, '_self');
+    }
   };
 
   return (
@@ -81,16 +142,13 @@ const SpecialOffersClient = ({ topic, featuredMerchants, flashDeals }: SpecialOf
         {/* Hero Section */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            ✨ 限時搶購！2025最新8月快閃優惠一覽 🔔
+            {topic.title || '✨ 限時搶購！最新快閃優惠一覽 🔔'}
           </h1>
           {topic.intro && (
             <p className="text-muted-foreground mb-4">
               {topic.intro}
             </p>
           )}
-          <p className="text-sm text-orange-600 font-medium">
-            ⭐ 現在處於銷售高峰期的商店，或請請優先下波訂看所有自時最新優惠，趕緊限時買團！立即搶購！
-          </p>
         </div>
 
         {/* Featured Merchants Section */}
@@ -159,14 +217,19 @@ const SpecialOffersClient = ({ topic, featuredMerchants, flashDeals }: SpecialOf
 
           {/* Flash Deals Grid */}
           <div className="space-y-0">
-            {flashDeals.map((coupon) => (
-              <div key={coupon.id} id={`coupon-${coupon.id}`}>
-                <DealyCouponCard
-                  coupon={coupon}
-                  onClick={() => handleCouponClick(coupon)}
-                />
-              </div>
-            ))}
+            {flashDeals.map((coupon) => {
+              const transformedCoupon = transformCoupon(coupon);
+              if (!transformedCoupon) return null;
+              
+              return (
+                <div key={coupon.id} id={`coupon-${coupon.id}`}>
+                  <DealyCouponCard
+                    coupon={transformedCoupon}
+                    onClick={() => handleCouponClick(coupon)}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       </main>
