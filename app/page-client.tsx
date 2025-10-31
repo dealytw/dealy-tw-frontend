@@ -154,7 +154,11 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
   const handleCouponClick = (coupon: CouponRailItem) => {
     // Step 1: Open merchant page with coupon popup in new tab (immediate - before navigation)
     if (coupon.merchantSlug) {
-      const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${coupon.id}`;
+      // Extract numeric ID if coupon.id already has "coupon-" prefix
+      const couponId = coupon.id.startsWith('coupon-') 
+        ? coupon.id.replace('coupon-', '') 
+        : coupon.id;
+      const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${couponId}`;
       window.open(merchantUrl, '_blank');
     } else {
       // Fallback: if no merchant slug, open modal for backward compatibility
