@@ -35,7 +35,7 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
           <button
             key={button.id}
             onClick={() => handleClick(button)}
-            className="relative flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out
+            className="relative flex items-center justify-center w-16 h-16 rounded-full shadow-2xl transition-all duration-300 ease-in-out overflow-hidden
                        bg-white text-gray-800 hover:scale-105
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             style={{
@@ -54,9 +54,9 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
               <Image 
                 src={iconUrl} 
                 alt={label || "icon"} 
-                width={24} 
-                height={24} 
-                className="w-6 h-6" 
+                width={64} 
+                height={64} 
+                className="w-full h-full object-cover rounded-full" 
               />
             ) : (
               <span className="text-sm font-semibold">{label?.charAt(0).toUpperCase()}</span>
