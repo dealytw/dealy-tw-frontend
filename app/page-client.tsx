@@ -152,20 +152,12 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
   };
 
   const handleCouponClick = (coupon: CouponRailItem) => {
-    // Step 1: Open affiliate link in same tab
-    if (coupon.affiliateLink && coupon.affiliateLink !== '#') {
-      window.open(coupon.affiliateLink, '_self');
-    }
-    
-    // Step 2: Open merchant page with coupon popup in new tab
+    // Step 1: Open merchant page with coupon popup in new tab (immediate - before navigation)
     if (coupon.merchantSlug) {
       const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${coupon.id}`;
-      // Small delay to ensure affiliate link navigation starts first
-      setTimeout(() => {
-        window.open(merchantUrl, '_blank');
-      }, 100);
+      window.open(merchantUrl, '_blank');
     } else {
-      // Fallback: if no merchant slug, still open modal for backward compatibility
+      // Fallback: if no merchant slug, open modal for backward compatibility
       const transformedCoupon = transformCoupon(coupon);
       if (!transformedCoupon) {
         console.error('Failed to transform coupon for modal:', coupon);
@@ -174,6 +166,13 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       
       setSelectedCoupon(transformedCoupon);
       setIsModalOpen(true);
+    }
+    
+    // Step 2: Redirect current tab to affiliate link (after short delay)
+    if (coupon.affiliateLink && coupon.affiliateLink !== '#') {
+      setTimeout(() => {
+        window.open(coupon.affiliateLink, '_self');
+      }, 100);
     }
   };
 
