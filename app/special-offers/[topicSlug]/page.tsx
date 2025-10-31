@@ -11,10 +11,10 @@ export async function generateMetadata({ params }: { params: Promise<{ topicSlug
   const { topicSlug } = await params;
   
   try {
-    // Fetch topic data for SEO (consistent with main component - no market filter)
+    // Fetch topic data for SEO - match slug exactly (UID field)
     const topicRes = await strapiFetch<{ data: any[] }>(
       `/api/special-offers?${qs({
-        "filters[slug][$eq]": topicSlug,
+        "filters[slug][$eq]": topicSlug, // Exact match for UID field
         "fields[0]": "title",
         "fields[1]": "seo_title",
         "fields[2]": "seo_description",
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ topicSlug
       });
     }
   } catch (error) {
-    console.error('Error fetching topic metadata:', error);
+    console.error('[SpecialOffers] Error fetching topic metadata:', error);
   }
   
   // Fallback metadata
@@ -56,8 +56,7 @@ export default async function SpecialOfferTopic({
   console.log(`[SpecialOffers] Fetching topic with slug: "${topicSlug}"`);
   
   try {
-    // Fetch topic data with featured merchants and coupons
-    // Use deep populate to get all relations automatically
+    // First, try to fetch with slug filter (exact match for UID field)
     const topicParams = {
       "filters[slug][$eq]": topicSlug,
       "populate": "deep", // Populate all relations recursively
@@ -66,18 +65,31 @@ export default async function SpecialOfferTopic({
     const apiUrl = `/api/special-offers?${qs(topicParams)}`;
     console.log(`[SpecialOffers] API URL: ${apiUrl}`);
     
-    const topicRes = await strapiFetch<{ data: any[] }>(
+    let topicRes = await strapiFetch<{ data: any[] }>(
       apiUrl,
       { revalidate: 3600, tag: `special-offer:${topicSlug}` }
     );
     
     console.log(`[SpecialOffers] Response data length: ${topicRes.data?.length || 0}`);
-    console.log(`[SpecialOffers] First item:`, topicRes.data?.[0] ? {
-      id: topicRes.data[0].id,
-      title: topicRes.data[0].title,
-      slug: topicRes.data[0].slug,
-      publishedAt: topicRes.data[0].publishedAt,
-    } : 'none');
+    
+    // If no results, try to fetch all slugs to debug
+    if (!topicRes.data || topicRes.data.length === 0) {
+      console.warn(`[SpecialOffers] No results found with slug "${topicSlug}". Fetching all slugs to debug...`);
+      const allTopicsRes = await strapiFetch<{ data: any[] }>(
+        `/api/special-offers?${qs({ "fields[0]": "slug", "fields[1]": "title", "pagination[pageSize]": "100" })}`,
+        { revalidate: 60, tag: 'special-offers:debug' }
+      );
+      const allSlugs = (allTopicsRes.data || []).map((t: any) => ({ slug: t.slug, title: t.title }));
+      console.log(`[SpecialOffers] Available slugs in CMS:`, allSlugs);
+      console.error(`[SpecialOffers] Requested slug "${topicSlug}" not found in available slugs`);
+    } else {
+      console.log(`[SpecialOffers] Found topic:`, {
+        id: topicRes.data[0].id,
+        title: topicRes.data[0].title,
+        slug: topicRes.data[0].slug,
+        publishedAt: topicRes.data[0].publishedAt,
+      });
+    }
     
     const topic = topicRes.data?.[0];
     
