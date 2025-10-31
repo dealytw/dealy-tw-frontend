@@ -1,4 +1,4 @@
-// app/special-offers/[topicSlug]/page.tsx - Server Component with ISR
+// app/special-offers/[id]/page.tsx - Server Component with ISR
 import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import SpecialOffersClient from '../special-offers-client';
@@ -7,8 +7,8 @@ import { notFound } from 'next/navigation';
 export const revalidate = 3600; // ISR - revalidate every 60 minutes for stronger edge hit ratio
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
 
-export async function generateMetadata({ params }: { params: Promise<{ topicSlug: string }> }) {
-  const { topicSlug: slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id: slug } = await params;
   
   try {
     // Fetch special offer data for SEO - match slug exactly (UID field)
@@ -49,9 +49,9 @@ export async function generateMetadata({ params }: { params: Promise<{ topicSlug
 export default async function SpecialOfferPage({ 
   params 
 }: { 
-  params: Promise<{ topicSlug: string }> 
+  params: Promise<{ id: string }> 
 }) {
-  const { topicSlug: slug } = await params;
+  const { id: slug } = await params;
   
   console.log(`[SpecialOffers] Fetching special offer with slug: "${slug}"`);
   
@@ -156,3 +156,4 @@ export default async function SpecialOfferPage({
     notFound();
   }
 }
+
