@@ -53,6 +53,8 @@ export default async function SpecialOfferTopic({
 }) {
   const { topicSlug } = await params;
   
+  console.log(`[SpecialOffers] Fetching topic with slug: "${topicSlug}"`);
+  
   try {
     // Fetch topic data with featured merchants and coupons
     // Use deep populate to get all relations automatically
@@ -61,14 +63,27 @@ export default async function SpecialOfferTopic({
       "populate": "deep", // Populate all relations recursively
     };
 
+    const apiUrl = `/api/special-offers?${qs(topicParams)}`;
+    console.log(`[SpecialOffers] API URL: ${apiUrl}`);
+    
     const topicRes = await strapiFetch<{ data: any[] }>(
-      `/api/special-offers?${qs(topicParams)}`,
+      apiUrl,
       { revalidate: 3600, tag: `special-offer:${topicSlug}` }
     );
+    
+    console.log(`[SpecialOffers] Response data length: ${topicRes.data?.length || 0}`);
+    console.log(`[SpecialOffers] First item:`, topicRes.data?.[0] ? {
+      id: topicRes.data[0].id,
+      title: topicRes.data[0].title,
+      slug: topicRes.data[0].slug,
+      publishedAt: topicRes.data[0].publishedAt,
+    } : 'none');
     
     const topic = topicRes.data?.[0];
     
     if (!topic) {
+      console.error(`[SpecialOffers] No topic found with slug: "${topicSlug}"`);
+      console.error(`[SpecialOffers] This could mean: 1) Slug doesn't exist 2) Not published 3) Wrong slug format`);
       notFound();
     }
 
@@ -120,7 +135,12 @@ export default async function SpecialOfferTopic({
       />
     );
   } catch (error) {
-    console.error('Error fetching special offers data:', error);
+    console.error('[SpecialOffers] Error fetching special offers data:', error);
+    console.error('[SpecialOffers] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      topicSlug,
+    });
     notFound();
   }
 }
