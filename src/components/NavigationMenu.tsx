@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -74,27 +73,18 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
         className="w-full sm:w-[400px] md:w-[500px] overflow-y-auto bg-gray-900 md:bg-stone-50"
       >
         <SheetHeader className="mb-6">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="text-2xl font-bold">
-              <Link href="/" onClick={() => onOpenChange(false)} className="md:hidden">
-                <span className="text-pink-500 text-2xl font-bold">dealy</span>
-              </Link>
-              <Link href="/" onClick={() => onOpenChange(false)} className="hidden md:block">
-                <img 
-                  src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
-                  alt="dealy logo"
-                  className="h-8 w-auto"
-                />
-              </Link>
-            </SheetTitle>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
-            >
-              <X className="h-6 w-6 text-white md:text-gray-800" />
-              <span className="sr-only">Close</span>
-            </button>
-          </div>
+          <SheetTitle className="text-2xl font-bold">
+            <Link href="/" onClick={() => onOpenChange(false)} className="md:hidden">
+              <span className="text-pink-500 text-2xl font-bold">dealy</span>
+            </Link>
+            <Link href="/" onClick={() => onOpenChange(false)} className="hidden md:block">
+              <img 
+                src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
+                alt="dealy logo"
+                className="h-8 w-auto"
+              />
+            </Link>
+          </SheetTitle>
         </SheetHeader>
 
         {/* Navigation Links */}
