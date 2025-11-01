@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, AlertTriangle, Copy, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DealyCouponCardProps {
