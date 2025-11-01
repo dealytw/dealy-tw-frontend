@@ -297,7 +297,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               {initialData.categoryBlock?.heading || "2025優惠主題一覽"}
             </h2>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-8">
+            <div className="flex flex-wrap justify-center gap-8">
               {initialData.categoryBlock.categories.map((category) => (
                 <div 
                   key={category.id} 
