@@ -405,8 +405,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
       />
-      // JSON-LD scripts
-      /* eslint-disable @next/next/no-sync-scripts */
+      {/* JSON-LD scripts */}
+      {/* eslint-disable @next/next/no-sync-scripts */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(merchantOrg) }} />
