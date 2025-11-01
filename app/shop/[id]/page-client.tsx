@@ -402,7 +402,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               </div>
 
               {/* Expired Coupons Section */}
-              <Card className="shadow-md bg-gray-100/50">
+              <div className="relative">
+                <Card className="shadow-md relative">
                   <CardHeader>
                     <CardTitle className="text-xl font-bold text-gray-800">已過期但仍可嘗試</CardTitle>
                   </CardHeader>
@@ -442,6 +443,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                       </div>
                     )}
                   </CardContent>
+                  {/* Grey overlay on top to make all colors pale */}
+                  <div className="absolute inset-0 bg-white/70 rounded-lg pointer-events-none z-10"></div>
                 </Card>
               </div>
 
