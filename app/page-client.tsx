@@ -305,11 +305,15 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                   onClick={() => router.push(`/special-offers/${category.slug}`)}
                 >
                   <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
-                    <img
-                      src={category.iconUrl}
-                      alt={category.name}
-                      className="w-full h-full object-cover"
-                    />
+                    {category.iconUrl ? (
+                      <img
+                        src={category.iconUrl}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-400 text-xs">{category.name}</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
                 </div>
