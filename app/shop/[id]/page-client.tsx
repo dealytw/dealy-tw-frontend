@@ -189,10 +189,16 @@ interface MerchantProps {
   coupons: any[];
   expiredCoupons: any[];
   relatedMerchants: any[];
+  hotstoreMerchants?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+  }>;
   market: string;
 }
 
-const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstoreMerchants = [], market }: MerchantProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
@@ -570,7 +576,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, market 
           
           {/* Right Column - Sidebar */}
           <div className="lg:col-span-1">
-            <MerchantSidebar merchant={merchant} coupons={coupons} expiredCoupons={expiredCoupons} />
+            <MerchantSidebar merchant={merchant} coupons={coupons} expiredCoupons={expiredCoupons} hotstoreMerchants={hotstoreMerchants} />
           </div>
         </div>
 

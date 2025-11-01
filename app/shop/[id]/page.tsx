@@ -114,7 +114,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
   try {
     // Use server-only Strapi fetch with ISR
-    const [merchantRes, couponsRes] = await Promise.all([
+    const [merchantRes, couponsRes, hotstoreRes] = await Promise.all([
       // Fetch merchant data with ISR (including related_merchants for manyToMany)
       strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
         "filters[slug][$eq]": id,
@@ -159,6 +159,17 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       })}`, { 
         revalidate: 300, 
         tag: `merchant:${id}` 
+      }),
+      // Fetch hotstore data for popular merchants section
+      strapiFetch<{ data: any[] }>(`/api/hotstores?${qs({
+        "filters[market][key][$eq]": marketKey,
+        "populate[merchants][fields][0]": "id",
+        "populate[merchants][fields][1]": "merchant_name",
+        "populate[merchants][fields][2]": "slug",
+        "populate[merchants][populate][logo][fields][0]": "url",
+      })}`, { 
+        revalidate: 3600, 
+        tag: `hotstore:${marketKey}` 
       })
     ]);
 
@@ -282,6 +293,31 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       relatedMerchants: relatedMerchants
     };
 
+    // Process hotstore merchants for popular merchants section
+    let hotstoreMerchants: any[] = [];
+    if (hotstoreRes.data && hotstoreRes.data.length > 0) {
+      const hotstore = hotstoreRes.data[0]; // Get first hotstore entry for this market
+      
+      // Extract merchants from hotstore.merchants
+      let merchantsFromCMS = [];
+      if (Array.isArray(hotstore?.merchants)) {
+        if (hotstore.merchants[0]?.data) {
+          merchantsFromCMS = hotstore.merchants.map((item: any) => item.data || item);
+        } else {
+          merchantsFromCMS = hotstore.merchants;
+        }
+      } else if (hotstore?.merchants?.data) {
+        merchantsFromCMS = hotstore.merchants.data;
+      }
+
+      hotstoreMerchants = merchantsFromCMS.map((merchant: any) => ({
+        id: merchant.id.toString(),
+        name: merchant.merchant_name || merchant.name || '',
+        slug: merchant.slug || '',
+        logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : null,
+      }));
+    }
+
     // Transform coupons data
     const transformedCoupons = allCoupons.map((coupon: any) => ({
       id: coupon.id.toString(),
@@ -366,6 +402,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         coupons={activeCoupons}
         expiredCoupons={expiredCoupons}
         relatedMerchants={relatedMerchants}
+        hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
       />
       // JSON-LD scripts

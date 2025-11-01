@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 // Helper function to extract text from Strapi rich text
 function extractTextFromRichText(richText: any): string {
@@ -20,9 +21,17 @@ interface MerchantSidebarProps {
   merchant: any;
   coupons: any[];
   expiredCoupons?: any[];
+  hotstoreMerchants?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+  }>;
 }
 
-const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [] }: MerchantSidebarProps) => {
+const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerchants = [] }: MerchantSidebarProps) => {
+  const router = useRouter();
+  
   // Debug: Log merchant data to see what fields are available
   console.log('MerchantSidebar received merchant:', merchant);
   console.log('store_description:', merchant.store_description);
@@ -150,36 +159,36 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [] }: MerchantSid
           <h3 className="text-sm font-semibold text-gray-800">熱門商店</h3>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          {[
-            { name: "kkday", logo: "/api/placeholder/48/48" },
-            { name: "Trip.com", logo: "/api/placeholder/48/48" },
-            { name: "klook", logo: "/api/placeholder/48/48" },
-            { name: "SEPHORA", logo: "/api/placeholder/48/48" },
-            { name: "NIKE", logo: "/api/placeholder/48/48" },
-            { name: "adidas", logo: "/api/placeholder/48/48" },
-            { name: "SASA", logo: "/api/placeholder/48/48" },
-            { name: "DYNES", logo: "/api/placeholder/48/48" },
-            { name: "dyson", logo: "/api/placeholder/48/48" },
-            { name: "NET-A-PORTER", logo: "/api/placeholder/48/48" },
-            { name: "Expedia", logo: "/api/placeholder/48/48" },
-            { name: "agoda", logo: "/api/placeholder/48/48" },
-            { name: "CATHAY PACIFIC", logo: "/api/placeholder/48/48" },
-            { name: "amazon.com", logo: "/api/placeholder/48/48" },
-            { name: "Apple", logo: "/api/placeholder/48/48" },
-            { name: "Booking.com", logo: "/api/placeholder/48/48" },
-            { name: "CHARLES & KEITH", logo: "/api/placeholder/48/48" },
-          ].map((merchant, index) => (
-            <div key={index} className="text-center cursor-pointer group">
-              <div className="w-12 h-12 mx-auto mb-1 border rounded-full overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
-                <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-xs text-gray-400">{merchant.name.charAt(0)}</span>
+          {hotstoreMerchants && hotstoreMerchants.length > 0 ? (
+            hotstoreMerchants.map((merchant) => (
+              <div 
+                key={merchant.id} 
+                className="text-center cursor-pointer group"
+                onClick={() => router.push(`/shop/${merchant.slug}`)}
+              >
+                <div className="w-12 h-12 mx-auto mb-1 border rounded-full overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
+                  {merchant.logoUrl ? (
+                    <img 
+                      src={merchant.logoUrl} 
+                      alt={merchant.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-gray-400">{merchant.name.charAt(0)}</span>
+                    </div>
+                  )}
                 </div>
+                <p className="text-[10px] text-gray-600 font-medium leading-tight truncate">
+                  {merchant.name}
+                </p>
               </div>
-              <p className="text-[10px] text-gray-600 font-medium leading-tight truncate">
-                {merchant.name}
-              </p>
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-4">
+              <p className="text-[10px] text-gray-500">No merchants available</p>
             </div>
-          ))}
+          )}
         </div>
       </Card>
     </div>
