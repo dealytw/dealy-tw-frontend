@@ -209,12 +209,9 @@ const DealyCouponCard = ({
           {/* Bottom yellow note - moved outside foldable section */}
           {coupon.terms && (
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-4">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm">
-                  <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
-                  <div className="text-yellow-700">{coupon.terms}</div>
-                </div>
+              <div className="text-sm">
+                <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
+                <div className="text-yellow-700">{coupon.terms}</div>
               </div>
             </div>
           )}
@@ -329,12 +326,9 @@ const DealyCouponCard = ({
             {/* Mobile bottom yellow note - moved outside foldable section */}
             {coupon.terms && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mt-3">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs">
-                    <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
-                    <div className="text-yellow-700">{coupon.terms}</div>
-                  </div>
+                <div className="text-xs">
+                  <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
+                  <div className="text-yellow-700">{coupon.terms}</div>
                 </div>
               </div>
             )}
