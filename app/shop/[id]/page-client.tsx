@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart } from "lucide-react";
+import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp } from "lucide-react";
 import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -203,6 +203,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
   const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
+  const [expiredCouponDetails, setExpiredCouponDetails] = useState<Record<string, boolean>>({});
   const filters = ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
 
   // Helper function to get button text based on coupon type
@@ -415,6 +416,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           console.error('Skipping invalid expired coupon:', coupon);
                           return null;
                         }
+                        const showDetails = expiredCouponDetails[coupon.id] || false;
                         return (
                           <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
                             <div className="flex items-start gap-4">
@@ -431,7 +433,37 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                                  <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
                                    {getButtonText(coupon.coupon_type)} ➤
                                  </Button>
-                                <p className="text-xs text-gray-600">{transformedCoupon.description}</p>
+                                 
+                                 {/* Collapsible Description Section */}
+                                 <div className="mt-2">
+                                   <Button 
+                                     variant="ghost" 
+                                     size="sm" 
+                                     onClick={() => setExpiredCouponDetails(prev => ({ ...prev, [coupon.id]: !showDetails }))}
+                                     className="text-xs text-blue-600 p-0 h-auto hover:underline"
+                                   >
+                                     {showDetails ? '隱藏優惠詳情' : '顯示優惠詳情'}
+                                     {showDetails ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                                   </Button>
+                                   
+                                   {showDetails && (
+                                     <div className="mt-3 space-y-3">
+                                       {transformedCoupon.steps && (
+                                         <div className="text-xs text-gray-600">
+                                           <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: transformedCoupon.steps }}></div>
+                                         </div>
+                                       )}
+                                       {transformedCoupon.terms && (
+                                         <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                                           <div className="text-xs">
+                                             <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
+                                             <div className="text-yellow-700">{transformedCoupon.terms}</div>
+                                           </div>
+                                         </div>
+                                       )}
+                                     </div>
+                                   )}
+                                 </div>
                               </div>
                             </div>
                           </div>
