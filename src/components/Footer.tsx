@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const Footer = () => {
   return (
@@ -55,6 +56,8 @@ const Footer = () => {
             © 2025 Dealy.TW. 版權所有。
           </p>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             <p className="text-xs text-gray-400">
               透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。
             </p>

@@ -15,13 +15,13 @@ interface LanguageOption {
 const LANGUAGES: LanguageOption[] = [
   {
     code: "tw",
-    label: "中文 (TW)",
+    label: "繁體中文(台灣)",
     domain: "dealy.tw",
     hreflang: "zh-TW",
   },
   {
     code: "hk",
-    label: "中文 (HK)",
+    label: "繁體中文(香港)",
     domain: "dealy.hk",
     hreflang: "zh-HK",
   },
@@ -101,7 +101,7 @@ export function LanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
           {LANGUAGES.map((language) => (
             <button
               key={language.code}
