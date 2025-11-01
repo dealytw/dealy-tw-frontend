@@ -158,7 +158,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     id: specialOffer.id,
     name: specialOffer.title,
     slug: specialOffer.slug,
-    iconUrl: "", // Special-offers don't have icons yet, could use a default icon
+    iconUrl: specialOffer.logo?.url ? absolutizeMedia(specialOffer.logo.url) : "",
   })) || [];
 
   // Process coupon rail merchants with real coupon data

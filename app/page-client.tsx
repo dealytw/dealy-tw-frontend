@@ -302,7 +302,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                 <div 
                   key={category.id} 
                   className="text-center group cursor-pointer"
-                  onClick={() => router.push(`/category/${category.slug}`)}
+                  onClick={() => router.push(`/special-offers/${category.slug}`)}
                 >
                   <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                     <img
