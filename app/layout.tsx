@@ -3,6 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/jsonld";
 import FloatingActionContainer from "@/components/FloatingActionContainer";
+import { getDomainConfig, getMarketLocale, localeToHtmlLang, localeToHreflang } from "@/lib/domain-config";
+import { getHreflangLinks } from "@/seo/meta";
 
 export const metadata: Metadata = {
   title: "Dealy - 香港最佳優惠碼平台",
@@ -21,9 +23,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Get domain configuration
+  const domainConfig = getDomainConfig();
+  const marketKey = domainConfig.market;
+  
+  // Fetch market locale from CMS (uses Market.defaultLocale)
+  const marketLocale = await getMarketLocale(marketKey);
+  const htmlLang = localeToHtmlLang(marketLocale);
+  const hreflangCode = localeToHreflang(marketLocale);
+  
+  // Get site URLs
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+  const alternateUrl = `https://${domainConfig.alternateDomain}`;
+  
+  // Generate hreflang links for homepage
+  const hreflangLinks = getHreflangLinks('/');
+  
+  // Build sameAs array for Organization schema (link to other domain)
+  const sameAs = [alternateUrl];
+  
   return (
-    <html lang="zh-HK" suppressHydrationWarning>
+    <html lang={htmlLang} suppressHydrationWarning>
       <head>
         {/* Preconnect to CMS for faster API calls */}
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
@@ -32,6 +53,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Preconnect to external domains for faster loading */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        
+        {/* Hreflang tags for cross-domain SEO */}
+        {hreflangLinks.map((link) => (
+          <link key={link.hreflang} rel="alternate" hreflang={link.hreflang} href={link.href} />
+        ))}
       </head>
       <body suppressHydrationWarning>
         <Providers>
@@ -40,7 +66,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify(
-                websiteJsonLd({ siteName: "Dealy TW", siteUrl: "https://dealy.tw", searchUrl: "https://dealy.tw/search" })
+                websiteJsonLd({ 
+                  siteName: domainConfig.name, 
+                  siteUrl: siteUrl, 
+                  searchUrl: `${siteUrl}/search`,
+                  locale: marketLocale
+                })
               ),
             }}
           />
@@ -48,7 +79,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify(
-                organizationJsonLd({ name: "Dealy TW", url: "https://dealy.tw", logo: "https://dealy.tw/favicon.ico" })
+                organizationJsonLd({ 
+                  name: domainConfig.name, 
+                  url: siteUrl, 
+                  logo: `${siteUrl}/favicon.ico`,
+                  sameAs: sameAs
+                })
               ),
             }}
           />
@@ -57,9 +93,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             dangerouslySetInnerHTML={{
               __html: JSON.stringify(
                 siteNavigationJsonLd([
-                  { name: '首頁', url: 'https://dealy.tw/' },
-                  { name: '商家', url: 'https://dealy.tw/shop' },
-                  { name: '特別優惠', url: 'https://dealy.tw/special-offers' },
+                  { name: '首頁', url: `${siteUrl}/` },
+                  { name: '商家', url: `${siteUrl}/shop` },
+                  { name: '特別優惠', url: `${siteUrl}/special-offers` },
                 ])
               ),
             }}

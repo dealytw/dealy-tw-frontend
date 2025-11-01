@@ -3,6 +3,7 @@ import { Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const Header = () => {
   const router = useRouter();
@@ -58,6 +59,11 @@ const Header = () => {
               required
             />
           </form>
+          
+          {/* Language Switcher */}
+          <div className="hidden md:block">
+            <LanguageSwitcher />
+          </div>
           
           <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
             最新快訊訊息

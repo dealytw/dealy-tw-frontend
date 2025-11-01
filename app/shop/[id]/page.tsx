@@ -4,6 +4,7 @@ import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd } from '@/lib/jsonld';
+import { getDomainConfig, getMarketLocale } from '@/lib/domain-config';
 
 // ISR Configuration - Critical for SEO
 export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
@@ -125,6 +126,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[related_merchants][fields][1]": "merchant_name",
         "populate[related_merchants][fields][2]": "slug",
         "populate[related_merchants][populate][logo][fields][0]": "url",
+        "populate[market][fields][0]": "key",
+        "populate[market][fields][1]": "defaultLocale",
       })}`, { 
         revalidate: 300, 
         tag: `merchant:${id}` 
@@ -152,6 +155,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[merchant][fields][2]": "slug",
         "populate[merchant][populate][logo][fields][0]": "url",
         "populate[market][fields][0]": "key",
+        "populate[market][fields][1]": "defaultLocale",
       })}`, { 
         revalidate: 300, 
         tag: `merchant:${id}` 
@@ -245,6 +249,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
     const merchantData = merchantRes.data[0];
     const allCoupons = couponsRes.data || [];
+    
+    // Get market locale from merchant data or fetch separately
+    const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
+    const domainConfig = getDomainConfig();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
     // Transform merchant data to match frontend structure
     const merchant = {
@@ -310,10 +319,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
     // Build JSON-LD blocks
-    const merchantUrl = `https://dealy.tw/shop/${merchant.slug}`;
+    const merchantUrl = `${siteUrl}/shop/${merchant.slug}`;
     const breadcrumb = breadcrumbJsonLd([
-      { name: '首頁', url: 'https://dealy.tw/' },
-      { name: '商家', url: 'https://dealy.tw/shop' },
+      { name: '首頁', url: `${siteUrl}/` },
+      { name: '商家', url: `${siteUrl}/shop` },
       { name: merchant.name, url: merchantUrl },
     ]);
     const merchantOrg = organizationJsonLd({
@@ -341,6 +350,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       description: merchant.seoDescription || merchant.description || undefined,
       image: pageImage || undefined,
       dateModified: merchant.updatedAt,
+      locale: marketLocale,
     });
     const imageObj = pageImage ? imageObjectJsonLd({ url: pageImage }) : undefined;
     const aggregate = aggregateOfferJsonLd({

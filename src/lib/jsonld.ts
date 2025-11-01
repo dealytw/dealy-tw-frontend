@@ -11,14 +11,26 @@ function toTaipeiIso(dateStr?: string | null): string | undefined {
   return iso.replace(/Z$/, '+08:00');
 }
 
-export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; searchUrl?: UrlString }) {
-  const { siteName, siteUrl, searchUrl } = opts;
+export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; searchUrl?: UrlString; locale?: string }) {
+  const { siteName, siteUrl, searchUrl, locale } = opts;
+  
+  // Convert Market.defaultLocale to schema.org format
+  // "zh-Hant-HK" -> "zh-HK", "zh-Hant-TW" -> "zh-TW"
+  let inLanguage = 'zh-TW'; // Default fallback
+  if (locale === 'zh-Hant-HK') {
+    inLanguage = 'zh-HK';
+  } else if (locale === 'zh-Hant-TW') {
+    inLanguage = 'zh-TW';
+  } else if (locale) {
+    inLanguage = locale;
+  }
+  
   const obj: any = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: siteName,
     url: siteUrl,
-    inLanguage: 'zh-TW',
+    inLanguage,
   };
   if (searchUrl) {
     obj.potentialAction = {
@@ -120,8 +132,19 @@ export function imageObjectJsonLd(opts: { url: UrlString; width?: number; height
   };
 }
 
-export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string }) {
-  const { name, url, description, image, dateModified } = opts;
+export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; locale?: string }) {
+  const { name, url, description, image, dateModified, locale } = opts;
+  
+  // Convert Market.defaultLocale to schema.org format
+  let inLanguage = 'zh-TW'; // Default fallback
+  if (locale === 'zh-Hant-HK') {
+    inLanguage = 'zh-HK';
+  } else if (locale === 'zh-Hant-TW') {
+    inLanguage = 'zh-TW';
+  } else if (locale) {
+    inLanguage = locale;
+  }
+  
   return {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -130,7 +153,7 @@ export function webPageJsonLd(opts: { name: string; url: UrlString; description?
     description,
     primaryImageOfPage: image ? { '@type': 'ImageObject', contentUrl: image, url: image } : undefined,
     dateModified: dateModified ? toTaipeiIso(dateModified) : undefined,
-    inLanguage: 'zh-TW',
+    inLanguage,
   };
 }
 
