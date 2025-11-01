@@ -255,7 +255,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               {initialData.popularMerchants?.heading || "台灣最新折扣優惠"}
             </h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8">
+            <div className="flex flex-wrap justify-center gap-8">
               {initialData.popularMerchants.items && initialData.popularMerchants.items.length > 0 ? (
                 initialData.popularMerchants.items.map((merchant) => (
                   <div 
@@ -279,7 +279,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-8">
+                <div className="w-full text-center py-8">
                   <p className="text-gray-500">No merchants available. Please add merchants in Strapi CMS.</p>
                 </div>
               )}
