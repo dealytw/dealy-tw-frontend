@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { getDomainConfig } from "@/lib/domain-config";
+import { getDomainConfig } from "@/lib/domain-config.client";
 
 interface LanguageOption {
   code: string;

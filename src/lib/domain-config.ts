@@ -1,62 +1,13 @@
-// Domain and locale configuration for multi-domain SEO
-// Uses Market.defaultLocale from CMS to determine language
+// Server-only domain configuration
+// This file imports server-only modules and should only be used in Server Components
 
-export const DOMAIN_CONFIG = {
-  'dealy.tw': {
-    domain: 'dealy.tw',
-    market: 'tw',
-    locale: 'zh-TW',
-    hreflang: 'zh-TW',
-    alternateDomain: 'dealy.hk',
-    alternateLocale: 'zh-HK',
-    alternateHreflang: 'zh-HK',
-    name: 'Dealy TW',
-  },
-  'dealy.hk': {
-    domain: 'dealy.hk',
-    market: 'hk',
-    locale: 'zh-HK',
-    hreflang: 'zh-HK',
-    alternateDomain: 'dealy.tw',
-    alternateLocale: 'zh-TW',
-    alternateHreflang: 'zh-TW',
-    name: 'Dealy HK',
-  },
-  'www.dealy.tw': {
-    domain: 'dealy.tw',
-    market: 'tw',
-    locale: 'zh-TW',
-    hreflang: 'zh-TW',
-    alternateDomain: 'dealy.hk',
-    alternateLocale: 'zh-HK',
-    alternateHreflang: 'zh-HK',
-    name: 'Dealy TW',
-  },
-  'www.dealy.hk': {
-    domain: 'dealy.hk',
-    market: 'hk',
-    locale: 'zh-HK',
-    hreflang: 'zh-HK',
-    alternateDomain: 'dealy.tw',
-    alternateLocale: 'zh-TW',
-    alternateHreflang: 'zh-TW',
-    name: 'Dealy HK',
-  },
-} as const;
-
-export type DomainConfig = typeof DOMAIN_CONFIG[keyof typeof DOMAIN_CONFIG];
+import { DOMAIN_CONFIG, type DomainConfig } from './domain-config.client';
 
 /**
- * Get domain configuration based on hostname or environment
- * Server-side: Uses NEXT_PUBLIC_SITE_URL or request headers
- * Client-side: Uses window.location.hostname
+ * Get domain configuration based on hostname or environment (server-side)
+ * Server-side: Uses NEXT_PUBLIC_SITE_URL
  */
 export function getDomainConfig(): DomainConfig {
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    return DOMAIN_CONFIG[hostname as keyof typeof DOMAIN_CONFIG] || DOMAIN_CONFIG['dealy.tw'];
-  }
-  
   // Server-side: check environment variables
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
   if (siteUrl.includes('dealy.hk')) {
@@ -66,6 +17,9 @@ export function getDomainConfig(): DomainConfig {
   // Default to TW
   return DOMAIN_CONFIG['dealy.tw'];
 }
+
+// Re-export client-safe constants and types
+export { DOMAIN_CONFIG, type DomainConfig };
 
 /**
  * Convert Market.defaultLocale enum to HTML lang attribute

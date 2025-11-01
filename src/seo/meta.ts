@@ -1,4 +1,5 @@
 // src/seo/meta.ts
+// This file is server-only (used in Server Components)
 import { getDomainConfig } from '@/lib/domain-config';
 
 export function canonical(pathOrAbs?: string) {

@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/jsonld";
 import FloatingActionContainer from "@/components/FloatingActionContainer";
-import { getDomainConfig, getMarketLocale, localeToHtmlLang, localeToHreflang } from "@/lib/domain-config";
+import { getDomainConfig as getDomainConfigServer, getMarketLocale, localeToHtmlLang, localeToHreflang } from "@/lib/domain-config";
 import { getHreflangLinks } from "@/seo/meta";
 
 export const metadata: Metadata = {
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Get domain configuration
-  const domainConfig = getDomainConfig();
+  // Get domain configuration (server-side)
+  const domainConfig = getDomainConfigServer();
   const marketKey = domainConfig.market;
   
   // Fetch market locale from CMS (uses Market.defaultLocale)

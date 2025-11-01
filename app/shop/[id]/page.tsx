@@ -4,7 +4,7 @@ import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd } from '@/lib/jsonld';
-import { getDomainConfig, getMarketLocale } from '@/lib/domain-config';
+import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
 // ISR Configuration - Critical for SEO
 export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
@@ -252,7 +252,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     
     // Get market locale from merchant data or fetch separately
     const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
-    const domainConfig = getDomainConfig();
+    const domainConfig = getDomainConfigServer();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
     // Transform merchant data to match frontend structure
