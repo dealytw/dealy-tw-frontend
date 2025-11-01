@@ -1,11 +1,14 @@
 "use client";
+import { useState } from "react";
 import { Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import NavigationMenu from "@/components/NavigationMenu";
 
 const Header = () => {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,11 +70,20 @@ const Header = () => {
               提交優惠券
             </Button>
           </Link>
-          <Button variant="ghost" size="icon" className="md:hidden">
+          {/* Hamburger Menu Button - Visible on all screens */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setMenuOpen(true)}
+            className="flex"
+          >
             <Menu className="h-5 w-5" />
           </Button>
         </div>
       </div>
+      
+      {/* Navigation Menu */}
+      <NavigationMenu open={menuOpen} onOpenChange={setMenuOpen} />
     </header>
   );
 };
