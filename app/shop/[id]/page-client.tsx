@@ -402,47 +402,48 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               </div>
 
               {/* Expired Coupons Section */}
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-800">已過期但仍可嘗試</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {expiredCoupons.length > 0 ? (
-                    expiredCoupons.map(coupon => {
-                      const transformedCoupon = transformCoupon(coupon);
-                      if (!transformedCoupon) {
-                        console.error('Skipping invalid expired coupon:', coupon);
-                        return null;
-                      }
-                      return (
-                        <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-start gap-4">
-                            <div className="text-center min-w-[80px]">
-                              <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center">
-                                <img src={transformedCoupon.merchant?.logo || merchant.logo} alt={transformedCoupon.merchant?.name || merchant.name} className="max-w-full max-h-full object-contain" />
+              <Card className="shadow-md bg-gray-100/50">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-gray-800">已過期但仍可嘗試</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {expiredCoupons.length > 0 ? (
+                      expiredCoupons.map(coupon => {
+                        const transformedCoupon = transformCoupon(coupon);
+                        if (!transformedCoupon) {
+                          console.error('Skipping invalid expired coupon:', coupon);
+                          return null;
+                        }
+                        return (
+                          <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-start gap-4">
+                              <div className="text-center min-w-[80px]">
+                                <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center">
+                                  <img src={transformedCoupon.merchant?.logo || merchant.logo} alt={transformedCoupon.merchant?.name || merchant.name} className="max-w-full max-h-full object-contain" />
+                                </div>
+                                <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
+                                <div className="text-sm text-gray-500">優惠</div>
                               </div>
-                              <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
-                              <div className="text-sm text-gray-500">優惠</div>
-                            </div>
-                            <div className="flex-1">
-                              <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
-                              <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
-                               <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
-                                 {getButtonText(coupon.coupon_type)} ➤
-                               </Button>
-                              <p className="text-xs text-gray-600">{transformedCoupon.description}</p>
+                              <div className="flex-1">
+                                <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
+                                <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
+                                 <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
+                                   {getButtonText(coupon.coupon_type)} ➤
+                                 </Button>
+                                <p className="text-xs text-gray-600">{transformedCoupon.description}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    }).filter(Boolean)
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>暫無已過期的優惠券</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        );
+                      }).filter(Boolean)
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>暫無已過期的優惠券</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* Related Merchants Section */}
               <Card className="shadow-md">
