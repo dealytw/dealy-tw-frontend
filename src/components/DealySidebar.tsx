@@ -40,11 +40,11 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
                   className="text-center cursor-pointer group"
                   onClick={() => router.push(`/shop/${merchant.slug}`)}
                 >
-                  <div className="w-16 h-16 mx-auto mb-2 border rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
+                  <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-lg group-hover:shadow-xl transition-shadow">
                     <img 
                       src={merchant.logoUrl} 
                       alt={merchant.name}
-                      className="max-w-full max-h-full object-contain"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <p className="text-xs text-blue-600 font-medium leading-tight">

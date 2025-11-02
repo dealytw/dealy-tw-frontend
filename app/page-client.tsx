@@ -149,20 +149,35 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (!container || merchants.length === 0) return;
+
+    let retryCount = 0;
+    const maxRetries = 20; // Max 2 seconds of retries
 
     // Wait a bit for container to be fully rendered
     const checkOverflow = () => {
       const hasOverflow = container.scrollWidth > container.clientWidth;
+      
       if (!hasOverflow) {
-        // Retry after a short delay
-        setTimeout(checkOverflow, 100);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          // Retry after a short delay
+          setTimeout(checkOverflow, 100);
+          return;
+        }
+        // If still no overflow after max retries, don't start scrolling
+        console.log('MerchantSlider: No overflow detected, skipping auto-scroll');
         return;
       }
 
       const scrollSpeed = 0.15; // Even slower speed (pixels per frame)
 
       const scroll = () => {
+        // Check if still mounted and has overflow
+        if (!container || container.scrollWidth <= container.clientWidth) {
+          return;
+        }
+
         if (isPaused || isDragging) {
           // Just keep the animation frame alive, don't scroll
           animationFrameRef.current = requestAnimationFrame(scroll);
@@ -185,6 +200,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
         animationFrameRef.current = requestAnimationFrame(scroll);
       };
 
+      // Start scrolling immediately if not paused
       animationFrameRef.current = requestAnimationFrame(scroll);
     };
 
@@ -194,6 +210,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
     };
   }, [merchants, isPaused, isDragging]);
@@ -205,12 +222,14 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     <div 
       className="relative overflow-hidden"
       onMouseEnter={() => {
+        // Only pause if not dragging
         if (!isDragging) {
           setIsPaused(true);
         }
       }}
       onMouseLeave={(e) => {
         handleMouseLeave(e);
+        // Always resume when mouse leaves (unless dragging)
         if (!isDragging) {
           setIsPaused(false);
         }
@@ -240,14 +259,12 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
               hasDraggedRef.current = false;
             }}
           >
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
-              <div className="w-full h-full flex items-center justify-center">
-                <img
-                  src={merchant.logoUrl}
-                  alt={merchant.name}
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
+              <img
+                src={merchant.logoUrl}
+                alt={merchant.name}
+                className="w-full h-full object-cover"
+              />
             </div>
             <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
             <p className="text-xs text-gray-600 leading-tight px-2">
