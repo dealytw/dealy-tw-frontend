@@ -82,7 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 organizationJsonLd({ 
                   name: domainConfig.name, 
                   url: siteUrl, 
-                  logo: `${siteUrl}/favicon.ico`,
+                  logo: `${siteUrl}/icon.png`,
                   sameAs: sameAs
                 })
               ),
