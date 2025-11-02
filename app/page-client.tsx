@@ -88,64 +88,43 @@ interface MerchantSliderProps {
 // Horizontal auto-scrolling slider component for merchants with infinite loop
 const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPausedRef = useRef(false);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container || merchants.length === 0) return;
 
-    // Force unpaused and ensure scroll always starts
-    isPausedRef.current = false;
-    setIsPaused(false);
+    // Clean up any existing interval
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+    }
 
-    const scrollSpeed = 0.15; // Slower speed (pixels per frame)
-    let hasStarted = false; // Track if scroll has started at least once
-
-    const scroll = () => {
-      // Check if container still exists
-      if (!container || !scrollContainerRef.current) {
-        return;
-      }
-
-      // Only check pause state AFTER scroll has started at least once
-      // This ensures scroll always starts regardless of mouse position
-      if (hasStarted && isPausedRef.current) {
-        // Just keep the animation frame alive, don't scroll
-        animationFrameRef.current = requestAnimationFrame(scroll);
-        return;
-      }
-
-      // Mark as started on first actual scroll
-      hasStarted = true;
-
-      // Get current scroll position
+    // Function to perform the scroll
+    const performScroll = () => {
+      if (!container || isPausedRef.current) return;
+      
+      const scrollAmount = 1; // Pixels to scroll per step
       const currentScroll = container.scrollLeft;
       const maxScroll = container.scrollWidth - container.clientWidth;
-      
-      // Continue from current position
-      let nextScroll = currentScroll + scrollSpeed;
-      
-      // If reached the end, seamlessly loop back to start
-      if (nextScroll >= maxScroll) {
-        nextScroll = 0;
-      }
 
-      container.scrollLeft = nextScroll;
-      animationFrameRef.current = requestAnimationFrame(scroll);
+      // If we've reached the end, reset to start for seamless loop
+      if (currentScroll >= maxScroll - 1) {
+        container.scrollLeft = 0;
+      } else {
+        container.scrollLeft = currentScroll + scrollAmount;
+      }
     };
 
-    // Start scrolling after a short delay to ensure DOM is ready
-    const timeoutId = setTimeout(() => {
-      animationFrameRef.current = requestAnimationFrame(scroll);
-    }, 100);
+    // Start auto-scrolling immediately with setInterval
+    // Using 16ms ≈ 60fps for smooth animation
+    scrollIntervalRef.current = setInterval(performScroll, 16);
 
+    // Cleanup on unmount
     return () => {
-      clearTimeout(timeoutId);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current);
+        scrollIntervalRef.current = null;
       }
     };
   }, [merchants]);
@@ -164,11 +143,9 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
         }}
         onMouseEnter={() => {
           isPausedRef.current = true;
-          setIsPaused(true);
         }}
         onMouseLeave={() => {
           isPausedRef.current = false;
-          setIsPaused(false);
         }}
       >
         {duplicatedMerchants.map((merchant, index) => (
@@ -195,8 +172,8 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       </div>
       
       {/* Fade gradients on edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
-      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
     </div>
   );
 };
