@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -90,177 +90,51 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
-  const hasDraggedRef = useRef(false);
-  // Use refs to track state for scroll function (avoids stale closures)
   const isPausedRef = useRef(false);
-  const isDraggingRef = useRef(false);
-
-  // Handle drag to scroll - attach mouse move/up to document for proper dragging
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDraggingRef.current) return;
-    e.preventDefault();
-    
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    
-    const x = e.pageX - container.offsetLeft;
-    const walk = (x - dragStartRef.current.x) * 2; // Scroll speed multiplier
-    container.scrollLeft = dragStartRef.current.scrollLeft - walk;
-    
-    // Track if user has dragged (moved more than 5px)
-    if (Math.abs(walk) > 5) {
-      hasDraggedRef.current = true;
-    }
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    if (!isDraggingRef.current) return;
-    
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.style.cursor = 'grab';
-      container.style.userSelect = '';
-    }
-    
-    isDraggingRef.current = false;
-    setIsDragging(false);
-    
-    // Remove document listeners
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    
-    // Resume auto-scroll after a short delay
-    setTimeout(() => {
-      isPausedRef.current = false;
-      setIsPaused(false);
-    }, 1000);
-  }, [handleMouseMove]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    
-    hasDraggedRef.current = false;
-    isDraggingRef.current = true;
-    isPausedRef.current = true;
-    setIsDragging(true);
-    setIsPaused(true);
-    dragStartRef.current = {
-      x: e.pageX - container.offsetLeft,
-      scrollLeft: container.scrollLeft,
-    };
-    container.style.cursor = 'grabbing';
-    container.style.userSelect = 'none';
-    
-    // Add document listeners for dragging
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseLeave = (e?: React.MouseEvent) => {
-    if (isDraggingRef.current) {
-      isDraggingRef.current = false;
-      setIsDragging(false);
-      const container = scrollContainerRef.current;
-      if (container) {
-        container.style.cursor = 'grab';
-        container.style.userSelect = '';
-      }
-      // Remove document listeners
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      setTimeout(() => {
-        isPausedRef.current = false;
-        setIsPaused(false);
-      }, 1000);
-    }
-  };
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container || merchants.length === 0) {
-      console.log('MerchantSlider: No container or merchants', { container: !!container, merchantsLength: merchants.length });
-      return;
-    }
+    if (!container || merchants.length === 0) return;
 
-    // Reset pause/drag state to ensure scroll starts
+    // Reset pause state to ensure scroll starts
     isPausedRef.current = false;
-    isDraggingRef.current = false;
     setIsPaused(false);
-    setIsDragging(false);
 
-    // Wait for container to be fully rendered and check overflow
-    let attempts = 0;
-    const maxAttempts = 10;
-    const checkAndStart = () => {
-      attempts++;
-      const hasOverflow = container.scrollWidth > container.clientWidth;
-      
-      console.log(`MerchantSlider: Attempt ${attempts} - Checking overflow`, {
-        scrollWidth: container.scrollWidth,
-        clientWidth: container.clientWidth,
-        hasOverflow,
-        children: container.children.length
-      });
+    const scrollSpeed = 0.15; // Slower speed (pixels per frame)
 
-      if (!hasOverflow && attempts < maxAttempts) {
-        // Retry after a short delay if no overflow yet
-        setTimeout(checkAndStart, 100);
+    const scroll = () => {
+      // Check if container still exists
+      if (!container || !scrollContainerRef.current) {
         return;
       }
 
-      if (!hasOverflow) {
-        console.log('MerchantSlider: No overflow detected after all attempts, skipping auto-scroll');
-        return;
-      }
-
-      const scrollSpeed = 0.15; // Slower speed (pixels per frame)
-      console.log('MerchantSlider: Starting auto-scroll', { 
-        scrollSpeed, 
-        isPaused: isPausedRef.current, 
-        isDragging: isDraggingRef.current,
-        maxScroll: container.scrollWidth - container.clientWidth
-      });
-
-      const scroll = () => {
-        // Check if container still exists
-        if (!container || !scrollContainerRef.current) {
-          console.log('MerchantSlider: Container no longer exists, stopping scroll');
-          return;
-        }
-
-        // Check pause/drag state using refs (always current)
-        if (isPausedRef.current || isDraggingRef.current) {
-          // Just keep the animation frame alive, don't scroll
-          animationFrameRef.current = requestAnimationFrame(scroll);
-          return;
-        }
-
-        // Get current scroll position
-        const currentScroll = container.scrollLeft;
-        const maxScroll = container.scrollWidth - container.clientWidth;
-        
-        // Continue from current position
-        let nextScroll = currentScroll + scrollSpeed;
-        
-        // If reached the end, seamlessly loop back to start
-        if (nextScroll >= maxScroll) {
-          nextScroll = 0;
-        }
-
-        container.scrollLeft = nextScroll;
+      // Check pause state using ref (always current)
+      if (isPausedRef.current) {
+        // Just keep the animation frame alive, don't scroll
         animationFrameRef.current = requestAnimationFrame(scroll);
-      };
+        return;
+      }
 
-      // Start scrolling immediately
-      console.log('MerchantSlider: Calling requestAnimationFrame');
+      // Get current scroll position
+      const currentScroll = container.scrollLeft;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      
+      // Continue from current position
+      let nextScroll = currentScroll + scrollSpeed;
+      
+      // If reached the end, seamlessly loop back to start
+      if (nextScroll >= maxScroll) {
+        nextScroll = 0;
+      }
+
+      container.scrollLeft = nextScroll;
       animationFrameRef.current = requestAnimationFrame(scroll);
     };
 
-    // Start checking after initial delay
-    const timeoutId = setTimeout(checkAndStart, 100);
+    // Start scrolling after a short delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      animationFrameRef.current = requestAnimationFrame(scroll);
+    }, 100);
 
     return () => {
       clearTimeout(timeoutId);
@@ -278,36 +152,26 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     <div className="relative overflow-hidden">
       <div
         ref={scrollContainerRef}
-        className="flex gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
+        className="flex gap-8 overflow-x-auto scrollbar-hide"
         style={{
           scrollBehavior: 'auto',
           WebkitOverflowScrolling: 'touch',
         }}
         onMouseEnter={() => {
-          if (!isDraggingRef.current) {
-            isPausedRef.current = true;
-            setIsPaused(true);
-          }
+          isPausedRef.current = true;
+          setIsPaused(true);
         }}
-        onMouseLeave={(e) => {
-          handleMouseLeave(e);
-          if (!isDraggingRef.current) {
-            isPausedRef.current = false;
-            setIsPaused(false);
-          }
+        onMouseLeave={() => {
+          isPausedRef.current = false;
+          setIsPaused(false);
         }}
-        onMouseDown={handleMouseDown}
       >
         {duplicatedMerchants.map((merchant, index) => (
           <div
             key={`${merchant.id}-${index}`}
             className="flex-shrink-0 text-center group cursor-pointer w-[180px]"
-            onClick={(e) => {
-              // Only navigate if user didn't drag
-              if (!hasDraggedRef.current) {
-                router.push(`/shop/${merchant.slug}`);
-              }
-              hasDraggedRef.current = false;
+            onClick={() => {
+              router.push(`/shop/${merchant.slug}`);
             }}
           >
             <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
