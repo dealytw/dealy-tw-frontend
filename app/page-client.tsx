@@ -93,6 +93,9 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
   const hasDraggedRef = useRef(false);
+  // Use refs to track state for scroll function (avoids stale closures)
+  const isPausedRef = useRef(false);
+  const isDraggingRef = useRef(false);
 
   // Handle drag to scroll
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -100,6 +103,8 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     if (!container) return;
     
     hasDraggedRef.current = false;
+    isDraggingRef.current = true;
+    isPausedRef.current = true;
     setIsDragging(true);
     setIsPaused(true);
     dragStartRef.current = {
@@ -136,9 +141,13 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       container.style.userSelect = '';
     }
     
+    isDraggingRef.current = false;
     setIsDragging(false);
     // Resume auto-scroll after a short delay
-    setTimeout(() => setIsPaused(false), 1000);
+    setTimeout(() => {
+      isPausedRef.current = false;
+      setIsPaused(false);
+    }, 1000);
   };
 
   const handleMouseLeave = (e?: React.MouseEvent) => {
@@ -162,34 +171,27 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       const scrollSpeed = 0.15; // Slower speed (pixels per frame)
 
       const scroll = () => {
-        // Use functional updates to get latest state
-        setIsPaused((currentPaused) => {
-          setIsDragging((currentDragging) => {
-            if (currentPaused || currentDragging) {
-              // Just keep the animation frame alive, don't scroll
-              animationFrameRef.current = requestAnimationFrame(scroll);
-              return currentDragging;
-            }
+        // Check pause/drag state using refs (always current)
+        if (isPausedRef.current || isDraggingRef.current) {
+          // Just keep the animation frame alive, don't scroll
+          animationFrameRef.current = requestAnimationFrame(scroll);
+          return;
+        }
 
-            // Get current scroll position
-            const currentScroll = container.scrollLeft;
-            const maxScroll = container.scrollWidth - container.clientWidth;
-            
-            // Continue from current position
-            let nextScroll = currentScroll + scrollSpeed;
-            
-            // If reached the end, seamlessly loop back to start
-            if (nextScroll >= maxScroll) {
-              nextScroll = 0;
-            }
+        // Get current scroll position
+        const currentScroll = container.scrollLeft;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        
+        // Continue from current position
+        let nextScroll = currentScroll + scrollSpeed;
+        
+        // If reached the end, seamlessly loop back to start
+        if (nextScroll >= maxScroll) {
+          nextScroll = 0;
+        }
 
-            container.scrollLeft = nextScroll;
-            animationFrameRef.current = requestAnimationFrame(scroll);
-            
-            return currentDragging;
-          });
-          return currentPaused;
-        });
+        container.scrollLeft = nextScroll;
+        animationFrameRef.current = requestAnimationFrame(scroll);
       };
 
       // Start scrolling immediately
@@ -218,13 +220,15 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
           WebkitOverflowScrolling: 'touch',
         }}
         onMouseEnter={() => {
-          if (!isDragging) {
+          if (!isDraggingRef.current) {
+            isPausedRef.current = true;
             setIsPaused(true);
           }
         }}
         onMouseLeave={(e) => {
           handleMouseLeave(e);
-          if (!isDragging) {
+          if (!isDraggingRef.current) {
+            isPausedRef.current = false;
             setIsPaused(false);
           }
         }}
