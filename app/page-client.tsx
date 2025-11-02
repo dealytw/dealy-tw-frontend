@@ -151,69 +151,59 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     const container = scrollContainerRef.current;
     if (!container || merchants.length === 0) return;
 
-    let retryCount = 0;
-    const maxRetries = 20; // Max 2 seconds of retries
-
     // Wait a bit for container to be fully rendered
-    const checkOverflow = () => {
+    const timeoutId = setTimeout(() => {
       const hasOverflow = container.scrollWidth > container.clientWidth;
-      
       if (!hasOverflow) {
-        retryCount++;
-        if (retryCount < maxRetries) {
-          // Retry after a short delay
-          setTimeout(checkOverflow, 100);
-          return;
-        }
-        // If still no overflow after max retries, don't start scrolling
         console.log('MerchantSlider: No overflow detected, skipping auto-scroll');
         return;
       }
 
-      const scrollSpeed = 0.15; // Even slower speed (pixels per frame)
+      const scrollSpeed = 0.15; // Slower speed (pixels per frame)
 
       const scroll = () => {
-        // Check if still mounted and has overflow
-        if (!container || container.scrollWidth <= container.clientWidth) {
-          return;
-        }
+        // Use functional updates to get latest state
+        setIsPaused((currentPaused) => {
+          setIsDragging((currentDragging) => {
+            if (currentPaused || currentDragging) {
+              // Just keep the animation frame alive, don't scroll
+              animationFrameRef.current = requestAnimationFrame(scroll);
+              return currentDragging;
+            }
 
-        if (isPaused || isDragging) {
-          // Just keep the animation frame alive, don't scroll
-          animationFrameRef.current = requestAnimationFrame(scroll);
-          return;
-        }
+            // Get current scroll position
+            const currentScroll = container.scrollLeft;
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            
+            // Continue from current position
+            let nextScroll = currentScroll + scrollSpeed;
+            
+            // If reached the end, seamlessly loop back to start
+            if (nextScroll >= maxScroll) {
+              nextScroll = 0;
+            }
 
-        // Get current scroll position
-        const currentScroll = container.scrollLeft;
-        const maxScroll = container.scrollWidth - container.clientWidth;
-        
-        // Continue from current position
-        let nextScroll = currentScroll + scrollSpeed;
-        
-        // If reached the end, seamlessly loop back to start
-        if (nextScroll >= maxScroll) {
-          nextScroll = 0;
-        }
-
-        container.scrollLeft = nextScroll;
-        animationFrameRef.current = requestAnimationFrame(scroll);
+            container.scrollLeft = nextScroll;
+            animationFrameRef.current = requestAnimationFrame(scroll);
+            
+            return currentDragging;
+          });
+          return currentPaused;
+        });
       };
 
-      // Start scrolling immediately if not paused
+      // Start scrolling immediately
       animationFrameRef.current = requestAnimationFrame(scroll);
-    };
-
-    // Small delay to ensure DOM is ready
-    setTimeout(checkOverflow, 100);
+    }, 300); // Give DOM more time to render
 
     return () => {
+      clearTimeout(timeoutId);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
     };
-  }, [merchants, isPaused, isDragging]);
+  }, [merchants]);
 
   // Duplicate merchants for seamless infinite loop
   const duplicatedMerchants = [...merchants, ...merchants];
