@@ -219,22 +219,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const duplicatedMerchants = [...merchants, ...merchants];
 
   return (
-    <div 
-      className="relative overflow-hidden"
-      onMouseEnter={() => {
-        // Only pause if not dragging
-        if (!isDragging) {
-          setIsPaused(true);
-        }
-      }}
-      onMouseLeave={(e) => {
-        handleMouseLeave(e);
-        // Always resume when mouse leaves (unless dragging)
-        if (!isDragging) {
-          setIsPaused(false);
-        }
-      }}
-    >
+    <div className="relative overflow-hidden">
       <div
         ref={scrollContainerRef}
         className="flex gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
@@ -242,10 +227,20 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
           scrollBehavior: 'auto',
           WebkitOverflowScrolling: 'touch',
         }}
+        onMouseEnter={() => {
+          if (!isDragging) {
+            setIsPaused(true);
+          }
+        }}
+        onMouseLeave={(e) => {
+          handleMouseLeave(e);
+          if (!isDragging) {
+            setIsPaused(false);
+          }
+        }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
       >
         {duplicatedMerchants.map((merchant, index) => (
           <div
@@ -275,8 +270,8 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       </div>
       
       {/* Fade gradients on edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
-      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
     </div>
   );
 };
