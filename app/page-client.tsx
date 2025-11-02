@@ -158,7 +158,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
             </div>
             <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
             <p className="text-xs text-gray-600 leading-tight px-2">
-              {merchant.topCouponTitle || merchant.description}
+              {merchant.topCouponTitle || ""}
             </p>
           </div>
         ))}
