@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -97,7 +97,47 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const isPausedRef = useRef(false);
   const isDraggingRef = useRef(false);
 
-  // Handle drag to scroll
+  // Handle drag to scroll - attach mouse move/up to document for proper dragging
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDraggingRef.current) return;
+    e.preventDefault();
+    
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    const x = e.pageX - container.offsetLeft;
+    const walk = (x - dragStartRef.current.x) * 2; // Scroll speed multiplier
+    container.scrollLeft = dragStartRef.current.scrollLeft - walk;
+    
+    // Track if user has dragged (moved more than 5px)
+    if (Math.abs(walk) > 5) {
+      hasDraggedRef.current = true;
+    }
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDraggingRef.current) return;
+    
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.style.cursor = 'grab';
+      container.style.userSelect = '';
+    }
+    
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    
+    // Remove document listeners
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    
+    // Resume auto-scroll after a short delay
+    setTimeout(() => {
+      isPausedRef.current = false;
+      setIsPaused(false);
+    }, 1000);
+  }, [handleMouseMove]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -113,46 +153,28 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     };
     container.style.cursor = 'grabbing';
     container.style.userSelect = 'none';
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
     
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    
-    const x = e.pageX - container.offsetLeft;
-    const walk = (x - dragStartRef.current.x) * 2; // Scroll speed multiplier
-    container.scrollLeft = dragStartRef.current.scrollLeft - walk;
-    
-    // Track if user has dragged (moved more than 5px)
-    if (Math.abs(walk) > 5) {
-      hasDraggedRef.current = true;
-    }
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging) return;
-    
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.style.cursor = 'grab';
-      container.style.userSelect = '';
-    }
-    
-    isDraggingRef.current = false;
-    setIsDragging(false);
-    // Resume auto-scroll after a short delay
-    setTimeout(() => {
-      isPausedRef.current = false;
-      setIsPaused(false);
-    }, 1000);
+    // Add document listeners for dragging
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleMouseLeave = (e?: React.MouseEvent) => {
-    if (isDragging) {
-      handleMouseUp();
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      const container = scrollContainerRef.current;
+      if (container) {
+        container.style.cursor = 'grab';
+        container.style.userSelect = '';
+      }
+      // Remove document listeners
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      setTimeout(() => {
+        isPausedRef.current = false;
+        setIsPaused(false);
+      }, 1000);
     }
   };
 
@@ -275,8 +297,6 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
           }
         }}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
       >
         {duplicatedMerchants.map((merchant, index) => (
           <div
