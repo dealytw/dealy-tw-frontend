@@ -119,6 +119,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
           <FloatingActionContainer />
         </Providers>
+        
+        {/* Ad Link verification script */}
+        <script dangerouslySetInnerHTML={{
+          __html: 'var ConverlyCustomData = {channelId: null};'
+        }} />
+        <script 
+          async 
+          defer 
+          src="https://cdn.affiliates.one/production/adlinks/1c6d7c838b3bde9154ede84d8c4ef4ab8420bf1990f82b63a3af81acecfc3323.js"
+        />
       </body>
     </html>
   );
