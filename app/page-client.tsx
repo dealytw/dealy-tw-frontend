@@ -132,7 +132,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     setTimeout(() => setIsPaused(false), 1000);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (e?: React.MouseEvent) => {
     if (isDragging) {
       handleMouseUp();
     }
@@ -528,7 +528,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               <div className="hidden lg:block">
                 <DealySidebar 
                   popularMerchants={initialData.popularMerchants}
-                  sidebarCategories={initialData.sidebarCategories}
+                  sidebarCategories={initialData.sidebarCategories || { heading: "熱門分類", categories: [] }}
                 />
               </div>
             </div>
