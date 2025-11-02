@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { strapiFetch, qs, absolutizeMedia } from '@/lib/strapi.server';
 
+// Mark as dynamic since we use request.url
+export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
 export async function GET(request: Request) {
