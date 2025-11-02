@@ -96,11 +96,12 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     const container = scrollContainerRef.current;
     if (!container || merchants.length === 0) return;
 
-    // Reset pause state to ensure scroll starts
+    // Force unpaused and ensure scroll always starts
     isPausedRef.current = false;
     setIsPaused(false);
 
     const scrollSpeed = 0.15; // Slower speed (pixels per frame)
+    let hasStarted = false; // Track if scroll has started at least once
 
     const scroll = () => {
       // Check if container still exists
@@ -108,12 +109,16 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
         return;
       }
 
-      // Check pause state using ref (always current)
-      if (isPausedRef.current) {
+      // Only check pause state AFTER scroll has started at least once
+      // This ensures scroll always starts regardless of mouse position
+      if (hasStarted && isPausedRef.current) {
         // Just keep the animation frame alive, don't scroll
         animationFrameRef.current = requestAnimationFrame(scroll);
         return;
       }
+
+      // Mark as started on first actual scroll
+      hasStarted = true;
 
       // Get current scroll position
       const currentScroll = container.scrollLeft;
