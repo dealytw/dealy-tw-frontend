@@ -69,6 +69,15 @@ type HomePageData = {
     heading: string;
     items: CouponRailItem[];
   };
+  sidebarCategories?: {
+    heading: string;
+    categories: Array<{
+      id: number;
+      name: string;
+      slug: string;
+      iconUrl: string;
+    }>;
+  };
 };
 
 interface MerchantSliderProps {
