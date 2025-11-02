@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -69,6 +69,98 @@ type HomePageData = {
     heading: string;
     items: CouponRailItem[];
   };
+};
+
+interface MerchantSliderProps {
+  merchants: PopularMerchant[];
+  router: ReturnType<typeof useRouter>;
+}
+
+// Horizontal auto-scrolling slider component for merchants
+const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Check if content overflows
+    const hasOverflow = container.scrollWidth > container.clientWidth;
+    if (!hasOverflow) return;
+
+    let scrollPosition = 0;
+    const scrollSpeed = 0.5; // Pixels per frame (adjust for speed)
+
+    const scroll = () => {
+      if (isPaused) {
+        animationFrameRef.current = requestAnimationFrame(scroll);
+        return;
+      }
+
+      scrollPosition += scrollSpeed;
+      
+      // Reset to start when reaching the end
+      if (scrollPosition >= container.scrollWidth - container.clientWidth) {
+        scrollPosition = 0;
+      }
+
+      container.scrollLeft = scrollPosition;
+      animationFrameRef.current = requestAnimationFrame(scroll);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(scroll);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [merchants, isPaused]);
+
+  return (
+    <div 
+      className="relative overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div
+        ref={scrollContainerRef}
+        className="flex gap-8 overflow-x-auto scrollbar-hide"
+        style={{
+          scrollBehavior: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {merchants.map((merchant) => (
+          <div
+            key={merchant.id}
+            className="flex-shrink-0 text-center group cursor-pointer w-[180px]"
+            onClick={() => router.push(`/shop/${merchant.slug}`)}
+          >
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
+              <div className="w-full h-full flex items-center justify-center">
+                <img
+                  src={merchant.logoUrl}
+                  alt={merchant.name}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            </div>
+            <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
+            <p className="text-xs text-gray-600 leading-tight px-2">
+              {merchant.topCouponTitle || merchant.description}
+            </p>
+          </div>
+        ))}
+      </div>
+      
+      {/* Fade gradients on edges */}
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
+    </div>
+  );
 };
 
 interface HomePageClientProps {
@@ -258,35 +350,13 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               {initialData.popularMerchants?.heading || "台灣最新折扣優惠"}
             </h2>
             
-            <div className="flex flex-wrap justify-center gap-8">
-              {initialData.popularMerchants.items && initialData.popularMerchants.items.length > 0 ? (
-                initialData.popularMerchants.items.map((merchant) => (
-                  <div 
-                    key={merchant.id} 
-                    className="text-center group cursor-pointer"
-                    onClick={() => router.push(`/shop/${merchant.slug}`)}
-                  >
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <img
-                          src={merchant.logoUrl}
-                          alt={merchant.name}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                    </div>
-                    <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
-                    <p className="text-xs text-gray-600 leading-tight px-2">
-                      {merchant.topCouponTitle || merchant.description}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <div className="w-full text-center py-8">
-                  <p className="text-gray-500">No merchants available. Please add merchants in Strapi CMS.</p>
-                </div>
-              )}
-            </div>
+            {initialData.popularMerchants.items && initialData.popularMerchants.items.length > 0 ? (
+              <MerchantSlider merchants={initialData.popularMerchants.items} router={router} />
+            ) : (
+              <div className="w-full text-center py-8">
+                <p className="text-gray-500">No merchants available. Please add merchants in Strapi CMS.</p>
+              </div>
+            )}
           </div>
         </section>
       )}
