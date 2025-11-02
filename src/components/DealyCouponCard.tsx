@@ -217,16 +217,16 @@ const DealyCouponCard = ({
             {coupon.title}
           </h3>
           
-          {/* Show countdown timer if within 48 hours, otherwise show expiry date or expired message */}
-          {timeDisplay && (
-            <div className={`text-sm mb-3 ${isExpired ? 'text-gray-500' : 'text-orange-600'}`}>
-              {isExpired ? timeDisplay : `⏳ ${timeDisplay}`}
+          {/* Show countdown timer if within 48 hours (but not if expired) */}
+          {timeDisplay && !isExpired && (
+            <div className="text-sm text-orange-600 mb-3">
+              ⏳ {timeDisplay}
             </div>
           )}
           
           <div className="text-xs text-red-500 mb-3 flex items-center gap-2">
             {isExpired ? (
-              <span className="text-gray-500">{timeDisplay}</span>
+              <span className="text-red-500">{timeDisplay}</span>
             ) : timeDisplay ? (
               <span>優惠期限 倒數計時中</span>
             ) : (
@@ -339,16 +339,16 @@ const DealyCouponCard = ({
               {coupon.title}
             </h3>
             
-            {/* Show countdown timer if within 48 hours, otherwise show expiry date or expired message */}
-            {timeDisplay && (
-              <div className={`text-xs mb-2 ${isExpired ? 'text-gray-500' : 'text-orange-600'}`}>
-                {isExpired ? timeDisplay : `⏳ ${timeDisplay}`}
+            {/* Show countdown timer if within 48 hours (but not if expired) */}
+            {timeDisplay && !isExpired && (
+              <div className="text-xs text-orange-600 mb-2">
+                ⏳ {timeDisplay}
               </div>
             )}
             
             <div className="text-xs text-red-500 mb-3 flex items-center gap-2">
               {isExpired ? (
-                <span className="text-gray-500">{timeDisplay}</span>
+                <span className="text-red-500">{timeDisplay}</span>
               ) : timeDisplay ? (
                 <span>優惠期限 倒數計時中</span>
               ) : (
