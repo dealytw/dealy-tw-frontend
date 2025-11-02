@@ -76,7 +76,7 @@ interface MerchantSliderProps {
   router: ReturnType<typeof useRouter>;
 }
 
-// Horizontal auto-scrolling slider component for merchants
+// Horizontal auto-scrolling slider component for merchants with infinite loop
 const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -90,23 +90,28 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     const hasOverflow = container.scrollWidth > container.clientWidth;
     if (!hasOverflow) return;
 
-    let scrollPosition = 0;
-    const scrollSpeed = 0.5; // Pixels per frame (adjust for speed)
+    const scrollSpeed = 0.25; // Slower speed (pixels per frame)
 
     const scroll = () => {
       if (isPaused) {
+        // Just keep the animation frame alive, don't scroll
         animationFrameRef.current = requestAnimationFrame(scroll);
         return;
       }
 
-      scrollPosition += scrollSpeed;
+      // Get current scroll position
+      const currentScroll = container.scrollLeft;
+      const maxScroll = container.scrollWidth - container.clientWidth;
       
-      // Reset to start when reaching the end
-      if (scrollPosition >= container.scrollWidth - container.clientWidth) {
-        scrollPosition = 0;
+      // Continue from current position
+      let nextScroll = currentScroll + scrollSpeed;
+      
+      // If reached the end, seamlessly loop back to start
+      if (nextScroll >= maxScroll) {
+        nextScroll = 0;
       }
 
-      container.scrollLeft = scrollPosition;
+      container.scrollLeft = nextScroll;
       animationFrameRef.current = requestAnimationFrame(scroll);
     };
 
@@ -118,6 +123,9 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       }
     };
   }, [merchants, isPaused]);
+
+  // Duplicate merchants for seamless infinite loop
+  const duplicatedMerchants = [...merchants, ...merchants];
 
   return (
     <div 
@@ -133,9 +141,9 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        {merchants.map((merchant) => (
+        {duplicatedMerchants.map((merchant, index) => (
           <div
-            key={merchant.id}
+            key={`${merchant.id}-${index}`}
             className="flex-shrink-0 text-center group cursor-pointer w-[180px]"
             onClick={() => router.push(`/shop/${merchant.slug}`)}
           >
