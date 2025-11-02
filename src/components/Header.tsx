@@ -26,8 +26,8 @@ const Header = () => {
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
             <img 
-              src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
-              alt="dealy.hk logo"
+              src="/dealytwlogo.svg"
+              alt="dealy logo"
               className="h-8 w-auto"
             />
           </Link>

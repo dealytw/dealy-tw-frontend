@@ -79,7 +79,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
             </Link>
             <Link href="/" onClick={() => onOpenChange(false)} className="hidden md:block">
               <img 
-                src="https://dealy.hk/wp-content/uploads/2025/06/dealyhkpinklogo-01-01.svg"
+                src="/dealytwlogo.svg"
                 alt="dealy logo"
                 className="h-8 w-auto"
               />
