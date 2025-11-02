@@ -11,9 +11,12 @@ export const metadata: Metadata = {
   description: "發現最新最優惠的折扣碼，為你的購物節省更多。Dealy 為您精選 Trip.com、Booking.com 等知名商店的優惠碼，100% 免費使用。",
   authors: [{ name: "Dealy" }],
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   openGraph: {
     title: "Dealy - 香港最佳優惠碼平台",
@@ -64,10 +67,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <link key={link.hreflang} rel="alternate" hreflang={link.hreflang} href={link.href} />
         ))}
         
-        {/* Explicit favicon links to override browser cache */}
-        <link rel="icon" type="image/png" href="/icon.png" />
-        <link rel="shortcut icon" type="image/png" href="/icon.png" />
-        <link rel="apple-touch-icon" href="/icon.png" />
+        {/* Explicit favicon links for best SEO and browser compatibility */}
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" />
+        <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
+        {/* Fallback for older browsers */}
+        <link rel="alternate icon" href="/favicon.svg" />
       </head>
       <body suppressHydrationWarning>
         <Providers>
@@ -92,7 +98,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 organizationJsonLd({ 
                   name: domainConfig.name, 
                   url: siteUrl, 
-                  logo: `${siteUrl}/icon.png`,
+                  logo: `${siteUrl}/favicon.svg`,
                   sameAs: sameAs
                 })
               ),
