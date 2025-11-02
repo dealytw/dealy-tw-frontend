@@ -142,36 +142,45 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    // Check if content overflows
-    const hasOverflow = container.scrollWidth > container.clientWidth;
-    if (!hasOverflow) return;
-
-    const scrollSpeed = 0.15; // Even slower speed (pixels per frame)
-
-    const scroll = () => {
-      if (isPaused || isDragging) {
-        // Just keep the animation frame alive, don't scroll
-        animationFrameRef.current = requestAnimationFrame(scroll);
+    // Wait a bit for container to be fully rendered
+    const checkOverflow = () => {
+      const hasOverflow = container.scrollWidth > container.clientWidth;
+      if (!hasOverflow) {
+        // Retry after a short delay
+        setTimeout(checkOverflow, 100);
         return;
       }
 
-      // Get current scroll position
-      const currentScroll = container.scrollLeft;
-      const maxScroll = container.scrollWidth - container.clientWidth;
-      
-      // Continue from current position
-      let nextScroll = currentScroll + scrollSpeed;
-      
-      // If reached the end, seamlessly loop back to start
-      if (nextScroll >= maxScroll) {
-        nextScroll = 0;
-      }
+      const scrollSpeed = 0.15; // Even slower speed (pixels per frame)
 
-      container.scrollLeft = nextScroll;
+      const scroll = () => {
+        if (isPaused || isDragging) {
+          // Just keep the animation frame alive, don't scroll
+          animationFrameRef.current = requestAnimationFrame(scroll);
+          return;
+        }
+
+        // Get current scroll position
+        const currentScroll = container.scrollLeft;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        
+        // Continue from current position
+        let nextScroll = currentScroll + scrollSpeed;
+        
+        // If reached the end, seamlessly loop back to start
+        if (nextScroll >= maxScroll) {
+          nextScroll = 0;
+        }
+
+        container.scrollLeft = nextScroll;
+        animationFrameRef.current = requestAnimationFrame(scroll);
+      };
+
       animationFrameRef.current = requestAnimationFrame(scroll);
     };
 
-    animationFrameRef.current = requestAnimationFrame(scroll);
+    // Small delay to ensure DOM is ready
+    setTimeout(checkOverflow, 100);
 
     return () => {
       if (animationFrameRef.current) {
@@ -186,8 +195,17 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   return (
     <div 
       className="relative overflow-hidden"
-      onMouseEnter={() => !isDragging && setIsPaused(true)}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => {
+        if (!isDragging) {
+          setIsPaused(true);
+        }
+      }}
+      onMouseLeave={(e) => {
+        handleMouseLeave(e);
+        if (!isDragging) {
+          setIsPaused(false);
+        }
+      }}
     >
       <div
         ref={scrollContainerRef}
