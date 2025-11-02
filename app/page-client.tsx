@@ -163,22 +163,44 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       return;
     }
 
-    // Wait a bit for container to be fully rendered
-    const timeoutId = setTimeout(() => {
-      console.log('MerchantSlider: Checking overflow', {
+    // Reset pause/drag state to ensure scroll starts
+    isPausedRef.current = false;
+    isDraggingRef.current = false;
+    setIsPaused(false);
+    setIsDragging(false);
+
+    // Wait for container to be fully rendered and check overflow
+    let attempts = 0;
+    const maxAttempts = 10;
+    const checkAndStart = () => {
+      attempts++;
+      const hasOverflow = container.scrollWidth > container.clientWidth;
+      
+      console.log(`MerchantSlider: Attempt ${attempts} - Checking overflow`, {
         scrollWidth: container.scrollWidth,
         clientWidth: container.clientWidth,
-        hasOverflow: container.scrollWidth > container.clientWidth
+        hasOverflow,
+        children: container.children.length
       });
 
-      const hasOverflow = container.scrollWidth > container.clientWidth;
+      if (!hasOverflow && attempts < maxAttempts) {
+        // Retry after a short delay if no overflow yet
+        setTimeout(checkAndStart, 100);
+        return;
+      }
+
       if (!hasOverflow) {
-        console.log('MerchantSlider: No overflow detected, skipping auto-scroll');
+        console.log('MerchantSlider: No overflow detected after all attempts, skipping auto-scroll');
         return;
       }
 
       const scrollSpeed = 0.15; // Slower speed (pixels per frame)
-      console.log('MerchantSlider: Starting auto-scroll', { scrollSpeed, isPaused: isPausedRef.current, isDragging: isDraggingRef.current });
+      console.log('MerchantSlider: Starting auto-scroll', { 
+        scrollSpeed, 
+        isPaused: isPausedRef.current, 
+        isDragging: isDraggingRef.current,
+        maxScroll: container.scrollWidth - container.clientWidth
+      });
 
       const scroll = () => {
         // Check if container still exists
@@ -213,7 +235,10 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       // Start scrolling immediately
       console.log('MerchantSlider: Calling requestAnimationFrame');
       animationFrameRef.current = requestAnimationFrame(scroll);
-    }, 300); // Give DOM more time to render
+    };
+
+    // Start checking after initial delay
+    const timeoutId = setTimeout(checkAndStart, 100);
 
     return () => {
       clearTimeout(timeoutId);
