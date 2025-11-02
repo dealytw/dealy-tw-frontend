@@ -81,6 +81,55 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
+
+  // Handle drag to scroll
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    setIsDragging(true);
+    setIsPaused(true);
+    dragStartRef.current = {
+      x: e.pageX - container.offsetLeft,
+      scrollLeft: container.scrollLeft,
+    };
+    container.style.cursor = 'grabbing';
+    container.style.userSelect = 'none';
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    const x = e.pageX - container.offsetLeft;
+    const walk = (x - dragStartRef.current.x) * 2; // Scroll speed multiplier
+    container.scrollLeft = dragStartRef.current.scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.style.cursor = 'grab';
+      container.style.userSelect = '';
+    }
+    
+    setIsDragging(false);
+    // Resume auto-scroll after a short delay
+    setTimeout(() => setIsPaused(false), 1000);
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      handleMouseUp();
+    }
+  };
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -90,10 +139,10 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     const hasOverflow = container.scrollWidth > container.clientWidth;
     if (!hasOverflow) return;
 
-    const scrollSpeed = 0.25; // Slower speed (pixels per frame)
+    const scrollSpeed = 0.15; // Even slower speed (pixels per frame)
 
     const scroll = () => {
-      if (isPaused) {
+      if (isPaused || isDragging) {
         // Just keep the animation frame alive, don't scroll
         animationFrameRef.current = requestAnimationFrame(scroll);
         return;
@@ -122,7 +171,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [merchants, isPaused]);
+  }, [merchants, isPaused, isDragging]);
 
   // Duplicate merchants for seamless infinite loop
   const duplicatedMerchants = [...merchants, ...merchants];
@@ -130,16 +179,20 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   return (
     <div 
       className="relative overflow-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={() => !isDragging && setIsPaused(true)}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         ref={scrollContainerRef}
-        className="flex gap-8 overflow-x-auto scrollbar-hide"
+        className="flex gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
         style={{
           scrollBehavior: 'auto',
           WebkitOverflowScrolling: 'touch',
         }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       >
         {duplicatedMerchants.map((merchant, index) => (
           <div
