@@ -215,10 +215,13 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
           </div>
           <div className="space-y-2 text-gray-700 mb-8">
             <div className="text-lg">
-              {initialData.hero?.description || "🛍 台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡"}
+              {initialData.hero?.description || "🛍 全台最新優惠情報｜每日更新！ ✨"}
             </div>
             <div className="text-lg">
-              📦 超過 100+ 熱門商店優惠 💸折扣、優惠碼、獨家Promo Code 一次睇哂！
+              💸 精選超過 100+ 熱門網店優惠，折扣、優惠碼、獨家 Promo Code 一次看透！
+            </div>
+            <div className="text-lg">
+              📦 最划算的好康 Deals 任你挑選！ 🧡
             </div>
           </div>
           

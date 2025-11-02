@@ -12,7 +12,7 @@ export const dynamic = 'auto'; // Allow ISR revalidation
 export async function generateMetadata() {
   return pageMeta({
     title: 'Dealy.TW 台灣每日最新優惠折扣平台',
-    description: '台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡',
+    description: '全台最新優惠情報｜每日更新！ ✨',
     path: '/',
   });
 }
@@ -33,12 +33,12 @@ export default async function HomePage() {
     const fallbackData = {
       seo: {
         title: "Dealy.TW 台灣每日最新優惠折扣平台",
-        description: "台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡"
+        description: "全台最新優惠情報｜每日更新！ ✨"
       },
       hero: {
         title: "Dealy.TW 台灣每日最新優惠折扣平台",
         subtitle: "NEVER Pay Full Price",
-        description: "🛍 台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡",
+        description: "🛍 全台最新優惠情報｜每日更新！ ✨",
         bgUrl: "",
         searchPlaceholder: "搜尋最抵Deal"
       },

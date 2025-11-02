@@ -88,8 +88,8 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     console.log(`No homepage found for market: ${marketKey}, using fallback data`);
     // Return fallback data if no homepage is found
     return {
-      seo: { title: "Dealy.TW 台灣每日最新優惠折扣平台", description: "台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡" },
-      hero: { title: "Dealy.TW 台灣每日最新優惠折扣平台", subtitle: "NEVER Pay Full Price", description: "🛍 台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡", bgUrl: "", searchPlaceholder: "搜尋最抵Deal" },
+      seo: { title: "Dealy.TW 台灣每日最新優惠折扣平台", description: "全台最新優惠情報｜每日更新！ ✨" },
+      hero: { title: "Dealy.TW 台灣每日最新優惠折扣平台", subtitle: "NEVER Pay Full Price", description: "🛍 全台最新優惠情報｜每日更新！ ✨", bgUrl: "", searchPlaceholder: "搜尋最抵Deal" },
       popularMerchants: { heading: "台灣最新折扣優惠", items: [] },
       categoryBlock: { heading: "2025優惠主題一覽", categories: [], disclaimer: "通過本站連結完成購物訂單，我們可能會因此獲得佣金，而您無需額外付費。" },
       couponRail: { heading: "今日最新最受歡迎優惠券/Promo Code/優惠碼", items: [] }
@@ -230,13 +230,13 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   return {
     seo: { 
       title: a.title ?? hero.title ?? "Dealy.TW 台灣每日最新優惠折扣平台", 
-      description: hero.description ?? "台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡" 
+      description: hero.description ?? "全台最新優惠情報｜每日更新！ ✨" 
     },
     hero: {
       bgUrl: hero.bgUrl,
       title: hero.title ?? a.title ?? "Dealy.TW 台灣每日最新優惠折扣平台",
       subtitle: hero.subtitle ?? "NEVER Pay Full Price",
-      description: hero.description ?? "🛍 台灣最新優惠網站｜每日更新 ✨ 至抵 Deal 任你揀 🧡",
+      description: hero.description ?? "🛍 全台最新優惠情報｜每日更新！ ✨",
       searchPlaceholder: hero.searchPlaceholder ?? "搜尋最抵Deal"
     },
     popularMerchants: { 
