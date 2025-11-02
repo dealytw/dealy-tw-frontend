@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Dealy - 香港最佳優惠碼平台",
   description: "發現最新最優惠的折扣碼，為你的購物節省更多。Dealy 為您精選 Trip.com、Booking.com 等知名商店的優惠碼，100% 免費使用。",
   authors: [{ name: "Dealy" }],
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
   openGraph: {
     title: "Dealy - 香港最佳優惠碼平台",
     description: "發現最新最優惠的折扣碼，為你的購物節省更多。精選知名商店優惠碼，100% 免費使用。",
@@ -58,6 +63,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {hreflangLinks.map((link) => (
           <link key={link.hreflang} rel="alternate" hreflang={link.hreflang} href={link.href} />
         ))}
+        
+        {/* Explicit favicon links to override browser cache */}
+        <link rel="icon" type="image/png" href="/icon.png" />
+        <link rel="shortcut icon" type="image/png" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body suppressHydrationWarning>
         <Providers>
