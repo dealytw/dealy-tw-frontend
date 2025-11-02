@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
@@ -36,7 +36,88 @@ const DealyCouponCard = ({
 }: DealyCouponCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [timeDisplay, setTimeDisplay] = useState<string>("");
+  const [isExpired, setIsExpired] = useState(false);
   const { toast } = useToast();
+
+  // Parse expiry date and calculate time display
+  useEffect(() => {
+    const parseExpiry = () => {
+      // If "長期有效", always show as is
+      if (coupon.expiry === "長期有效" || !coupon.expiry) {
+        setTimeDisplay("");
+        setIsExpired(false);
+        return;
+      }
+
+      // Try to parse the expiry date
+      let expiryDate: Date | null = null;
+      
+      // Try various date formats
+      const dateFormats = [
+        coupon.expiry, // Try as-is (ISO format)
+        coupon.expiry.replace(/\//g, '-'), // Replace / with -
+      ];
+
+      for (const dateStr of dateFormats) {
+        expiryDate = new Date(dateStr);
+        if (!isNaN(expiryDate.getTime())) {
+          break;
+        }
+      }
+
+      if (!expiryDate || isNaN(expiryDate.getTime())) {
+        // If can't parse, show original expiry
+        setTimeDisplay("");
+        setIsExpired(false);
+        return;
+      }
+
+      // Set time to end of day (23:59:59)
+      expiryDate.setHours(23, 59, 59, 999);
+
+      const updateTime = () => {
+        const now = new Date();
+        const diff = expiryDate!.getTime() - now.getTime();
+
+        if (diff <= 0) {
+          // Expired - show expired message
+          setIsExpired(true);
+          setTimeDisplay("優惠或已過期，惟一般有幾日寬限期");
+          return;
+        }
+
+        // Convert to hours
+        const hoursLeft = diff / (1000 * 60 * 60);
+
+        if (hoursLeft <= 48) {
+          // Within 48 hours - show countdown timer
+          setIsExpired(false);
+          const hours = Math.floor(hoursLeft);
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          setTimeDisplay(`${hours} 小時 ${minutes} 分 ${seconds} 秒`);
+        } else {
+          // More than 48 hours - show original expiry date
+          setIsExpired(false);
+          setTimeDisplay("");
+        }
+      };
+
+      // Initial update
+      updateTime();
+
+      // Update every second to check if we need to show timer
+      const interval = setInterval(() => {
+        updateTime();
+      }, 1000);
+
+      return () => clearInterval(interval);
+    };
+
+    const cleanup = parseExpiry();
+    return cleanup;
+  }, [coupon.expiry]);
   
   // Track coupon click
   const trackCouponClick = async () => {
@@ -136,14 +217,21 @@ const DealyCouponCard = ({
             {coupon.title}
           </h3>
           
-          {coupon.timeLeft && (
-            <div className="text-sm text-orange-600 mb-3">
-              ⏳ {coupon.timeLeft}
+          {/* Show countdown timer if within 48 hours, otherwise show expiry date or expired message */}
+          {timeDisplay && (
+            <div className={`text-sm mb-3 ${isExpired ? 'text-gray-500' : 'text-orange-600'}`}>
+              {isExpired ? timeDisplay : `⏳ ${timeDisplay}`}
             </div>
           )}
           
           <div className="text-xs text-red-500 mb-3 flex items-center gap-2">
-            <span>優惠期限 {coupon.expiry}</span>
+            {isExpired ? (
+              <span className="text-gray-500">{timeDisplay}</span>
+            ) : timeDisplay ? (
+              <span>優惠期限 倒數計時中</span>
+            ) : (
+              <span>優惠期限 {coupon.expiry}</span>
+            )}
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
           </div>
@@ -251,14 +339,21 @@ const DealyCouponCard = ({
               {coupon.title}
             </h3>
             
-            {coupon.timeLeft && (
-              <div className="text-xs text-orange-600 mb-2">
-                ⏳ {coupon.timeLeft}
+            {/* Show countdown timer if within 48 hours, otherwise show expiry date or expired message */}
+            {timeDisplay && (
+              <div className={`text-xs mb-2 ${isExpired ? 'text-gray-500' : 'text-orange-600'}`}>
+                {isExpired ? timeDisplay : `⏳ ${timeDisplay}`}
               </div>
             )}
             
             <div className="text-xs text-red-500 mb-3 flex items-center gap-2">
-              <span>優惠期限 {coupon.expiry}</span>
+              {isExpired ? (
+                <span className="text-gray-500">{timeDisplay}</span>
+              ) : timeDisplay ? (
+                <span>優惠期限 倒數計時中</span>
+              ) : (
+                <span>優惠期限 {coupon.expiry}</span>
+              )}
               <span className="text-gray-400">•</span>
               <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
             </div>
