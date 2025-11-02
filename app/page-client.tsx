@@ -83,12 +83,14 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
   const [isPaused, setIsPaused] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
+  const hasDraggedRef = useRef(false);
 
   // Handle drag to scroll
   const handleMouseDown = (e: React.MouseEvent) => {
     const container = scrollContainerRef.current;
     if (!container) return;
     
+    hasDraggedRef.current = false;
     setIsDragging(true);
     setIsPaused(true);
     dragStartRef.current = {
@@ -109,6 +111,11 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
     const x = e.pageX - container.offsetLeft;
     const walk = (x - dragStartRef.current.x) * 2; // Scroll speed multiplier
     container.scrollLeft = dragStartRef.current.scrollLeft - walk;
+    
+    // Track if user has dragged (moved more than 5px)
+    if (Math.abs(walk) > 5) {
+      hasDraggedRef.current = true;
+    }
   };
 
   const handleMouseUp = () => {
@@ -198,7 +205,13 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
           <div
             key={`${merchant.id}-${index}`}
             className="flex-shrink-0 text-center group cursor-pointer w-[180px]"
-            onClick={() => router.push(`/shop/${merchant.slug}`)}
+            onClick={(e) => {
+              // Only navigate if user didn't drag
+              if (!hasDraggedRef.current) {
+                router.push(`/shop/${merchant.slug}`);
+              }
+              hasDraggedRef.current = false;
+            }}
           >
             <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
               <div className="w-full h-full flex items-center justify-center">
