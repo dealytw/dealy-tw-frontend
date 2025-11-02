@@ -158,10 +158,19 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container || merchants.length === 0) return;
+    if (!container || merchants.length === 0) {
+      console.log('MerchantSlider: No container or merchants', { container: !!container, merchantsLength: merchants.length });
+      return;
+    }
 
     // Wait a bit for container to be fully rendered
     const timeoutId = setTimeout(() => {
+      console.log('MerchantSlider: Checking overflow', {
+        scrollWidth: container.scrollWidth,
+        clientWidth: container.clientWidth,
+        hasOverflow: container.scrollWidth > container.clientWidth
+      });
+
       const hasOverflow = container.scrollWidth > container.clientWidth;
       if (!hasOverflow) {
         console.log('MerchantSlider: No overflow detected, skipping auto-scroll');
@@ -169,8 +178,15 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       }
 
       const scrollSpeed = 0.15; // Slower speed (pixels per frame)
+      console.log('MerchantSlider: Starting auto-scroll', { scrollSpeed, isPaused: isPausedRef.current, isDragging: isDraggingRef.current });
 
       const scroll = () => {
+        // Check if container still exists
+        if (!container || !scrollContainerRef.current) {
+          console.log('MerchantSlider: Container no longer exists, stopping scroll');
+          return;
+        }
+
         // Check pause/drag state using refs (always current)
         if (isPausedRef.current || isDraggingRef.current) {
           // Just keep the animation frame alive, don't scroll
@@ -195,6 +211,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
       };
 
       // Start scrolling immediately
+      console.log('MerchantSlider: Calling requestAnimationFrame');
       animationFrameRef.current = requestAnimationFrame(scroll);
     }, 300); // Give DOM more time to render
 
