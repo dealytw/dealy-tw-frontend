@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,13 +7,62 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-
-export const metadata = {
-  title: "聯絡我們/提交優惠券 | Dealy.TW",
-  description: "提交您的優惠券或與我們聯絡",
-};
+import { useToast } from "@/hooks/use-toast";
 
 export default function SubmitCouponsPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      merchant: formData.get('merchant') as string,
+      coupon: formData.get('coupon') as string,
+      value: formData.get('value') as string,
+      message: formData.get('message') as string,
+    };
+
+    try {
+      const response = await fetch('/api/submit-coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "提交成功！",
+          description: "我們會盡快回覆您的訊息。",
+        });
+        // Reset form
+        e.currentTarget.reset();
+      } else {
+        toast({
+          title: "提交失敗",
+          description: result.error || "請稍後再試。",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "提交失敗",
+        description: "請稍後再試。",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -43,87 +94,99 @@ export default function SubmitCouponsPage() {
                 提交優惠券 / 聯絡我們
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                  ✍️ 您的姓名 *
-                </Label>
-                <Input 
-                  id="name" 
-                  placeholder="請輸入您的姓名"
-                  required
-                  className="w-full"
-                />
-              </div>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                    ✍️ 您的姓名 *
+                  </Label>
+                  <Input 
+                    id="name" 
+                    name="name"
+                    placeholder="請輸入您的姓名"
+                    required
+                    className="w-full"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                  💗 您的電郵地址 *
-                </Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="example@email.com"
-                  required
-                  className="w-full"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                    💗 您的電郵地址 *
+                  </Label>
+                  <Input 
+                    id="email" 
+                    name="email"
+                    type="email" 
+                    placeholder="your@email.com"
+                    required
+                    className="w-full"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="merchant" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                  🏪 商家名稱
-                </Label>
-                <Input 
-                  id="merchant" 
-                  placeholder="例如：Amazon、Uber Eats 等"
-                  className="w-full"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="merchant" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                    🏪 商家名稱
+                  </Label>
+                  <Input 
+                    id="merchant" 
+                    name="merchant"
+                    placeholder="例如：Amazon、Uber Eats 等"
+                    className="w-full"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="coupon" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                  🎟️ 優惠券代碼 / 優惠詳情
-                </Label>
-                <Input 
-                  id="coupon" 
-                  placeholder="例如：SAVE20、FIRST50OFF 等"
-                  className="w-full"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="coupon" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                    🎟️ 優惠券代碼 / 優惠詳情
+                  </Label>
+                  <Input 
+                    id="coupon" 
+                    name="coupon"
+                    placeholder="例如：SAVE20、FIRST50OFF 等"
+                    className="w-full"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="value" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                  💰 優惠金額
-                </Label>
-                <Input 
-                  id="value" 
-                  placeholder="例如：NT$300、20% OFF 等"
-                  className="w-full"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="value" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                    💰 優惠金額
+                  </Label>
+                  <Input 
+                    id="value" 
+                    name="value"
+                    placeholder="例如：NT$300、20% OFF 等"
+                    className="w-full"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="message" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                  ✉️ 您的訊息 / 意見 *
-                </Label>
-                <Textarea 
-                  id="message" 
-                  rows={8}
-                  placeholder="請詳細描述您的優惠券資訊、問題或建議..."
-                  required
-                  className="w-full"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="message" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                    ✉️ 您的訊息 / 意見 *
+                  </Label>
+                  <Textarea 
+                    id="message" 
+                    name="message"
+                    rows={8}
+                    placeholder="請詳細描述您的優惠券資訊、問題或建議..."
+                    required
+                    className="w-full"
+                  />
+                </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  💡 <strong>小提示：</strong>提供更多詳情（如優惠券期限、使用條件等）可幫助我們更快速地處理您的提交。謝謝！
-                </p>
-              </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>小提示：</strong>提供更多詳情（如優惠券期限、使用條件等）可幫助我們更快速地處理您的提交。謝謝！
+                  </p>
+                </div>
 
-              <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 text-lg font-semibold">
-                📧 提交
-              </Button>
+                <Button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 text-lg font-semibold disabled:opacity-50"
+                >
+                  {isSubmitting ? '提交中...' : '📧 提交'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 
@@ -149,7 +212,7 @@ export default function SubmitCouponsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-gray-600">
-                <p>• 電郵：contact@dealy.tw</p>
+                <p>• 電郵：<a href="mailto:info@dealy.hk" className="text-blue-600 hover:underline">info@dealy.hk</a></p>
                 <p>• 追蹤我們的最新優惠資訊</p>
                 <p>• 感謝您的支持與信任</p>
               </CardContent>
