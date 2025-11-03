@@ -9,7 +9,7 @@ export const revalidate = 86400; // Revalidate every day
 export const dynamic = 'auto'; // Enable ISR
 
 // Reserved slugs that should not be handled by this page
-const RESERVED_SLUGS = ['shop', 'blog', 'category', 'special-offers', 'search', 'submit-coupons', 'coupons-demo', 'api', '_next', 'sitemap'];
+const RESERVED_SLUGS = ['shop', 'blog', 'category', 'special-offers', 'search', 'submit-coupons', 'api', '_next', 'sitemap'];
 
 // Generate static params at build time
 export async function generateStaticParams() {

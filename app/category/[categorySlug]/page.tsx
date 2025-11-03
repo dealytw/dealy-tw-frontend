@@ -4,7 +4,7 @@ import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import CategoryView from './category-view';
 
-export const revalidate = 300; // ISR - revalidate every 5 minutes
+export const revalidate = 3600; // ISR - revalidate every 1 hour
 
 export async function generateMetadata({ 
   params 
@@ -17,7 +17,7 @@ export async function generateMetadata({
     // Fetch category SEO data from Strapi
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?filters[slug][$eq]=${categorySlug}&fields[0]=name&fields[1]=slug&fields[2]=seo_title&fields[3]=seo_description`,
-      { revalidate: 300, tag: `category:${categorySlug}` }
+      { revalidate: 3600, tag: `category:${categorySlug}` }
     );
     
     const category = categoryData?.data?.[0];
@@ -70,7 +70,7 @@ export default async function CategoryPage({
     // Fetch category data
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?filters[slug][$eq]=${categorySlug}&fields[0]=id&fields[1]=name&fields[2]=slug&fields[3]=summary`,
-      { revalidate: 300, tag: `category:${categorySlug}` }
+      { revalidate: 3600, tag: `category:${categorySlug}` }
     );
 
     const category = categoryData?.data?.[0];
@@ -96,7 +96,7 @@ export default async function CategoryPage({
 
     const merchantsData = await strapiFetch<{ data: any[] }>(
       `/api/merchants?${qs(merchantParams)}`,
-      { revalidate: 300, tag: `category:${categorySlug}` }
+      { revalidate: 3600, tag: `category:${categorySlug}` }
     );
 
     // Fetch paginated coupons for this category
@@ -127,7 +127,7 @@ export default async function CategoryPage({
 
     const couponsData = await strapiFetch<{ data: any[]; meta: any }>(
       `/api/coupons?${qs(couponParams)}`,
-      { revalidate: 300, tag: `category:${categorySlug}` }
+      { revalidate: 3600, tag: `category:${categorySlug}` }
     );
 
     // Transform merchants data

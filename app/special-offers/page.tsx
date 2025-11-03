@@ -4,7 +4,7 @@ import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import SpecialOffersIndexClient from './special-offers-index-client';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 600; // ISR - revalidate every 10 minutes
+export const revalidate = 3600; // ISR - revalidate every 1 hour
 
 export async function generateMetadata() {
   return pageMeta({
@@ -32,7 +32,7 @@ export default async function SpecialOffersIndex() {
 
     const specialOffersRes = await strapiFetch<{ data: any[]; meta: any }>(
       `/api/special-offers?${qs(specialOffersParams)}`,
-      { revalidate: 600, tag: 'special-offers:index' }
+      { revalidate: 3600, tag: 'special-offers:index' }
     );
     
     const specialOffers = specialOffersRes.data || [];
