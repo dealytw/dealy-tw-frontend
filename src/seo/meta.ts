@@ -18,6 +18,9 @@ export function getHreflangLinks(currentPath: string): Array<{ hreflang: string;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${config.domain}`;
   const alternateUrl = `https://${config.alternateDomain}`;
   
+  // x-default should always point to TW domain (primary/default)
+  const defaultUrl = 'https://dealy.tw';
+  
   // Main pages that exist on both domains
   const mainPages = ['/', '/shop', '/special-offers', '/blog'];
   
@@ -28,7 +31,7 @@ export function getHreflangLinks(currentPath: string): Array<{ hreflang: string;
     // For specific pages, only add self and x-default (no alternate since pages differ)
     return [
       { hreflang: config.hreflang, href: `${baseUrl}${currentPath}` },
-      { hreflang: 'x-default', href: `${baseUrl}${currentPath}` },
+      { hreflang: 'x-default', href: `${defaultUrl}${currentPath}` },
     ];
   }
   
@@ -36,7 +39,7 @@ export function getHreflangLinks(currentPath: string): Array<{ hreflang: string;
   return [
     { hreflang: config.hreflang, href: `${baseUrl}${currentPath}` },
     { hreflang: config.alternateHreflang, href: `${alternateUrl}${currentPath}` },
-    { hreflang: 'x-default', href: `${baseUrl}${currentPath}` },
+    { hreflang: 'x-default', href: `${defaultUrl}${currentPath}` },
   ];
 }
 
