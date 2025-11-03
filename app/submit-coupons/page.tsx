@@ -212,7 +212,7 @@ export default function SubmitCouponsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-gray-600">
-                <p>• 電郵：<a href="mailto:info@dealy.hk" className="text-blue-600 hover:underline">info@dealy.hk</a></p>
+                <p>• 電郵：<a href="mailto:info@dealy.tw" className="text-blue-600 hover:underline">info@dealy.tw</a></p>
                 <p>• 追蹤我們的最新優惠資訊</p>
                 <p>• 感謝您的支持與信任</p>
               </CardContent>

@@ -71,7 +71,7 @@ ${message}
     try {
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'noreply@dealy.tw',
-        to: 'info@dealy.hk',
+        to: 'info@dealy.tw',
         replyTo: email,
         subject: emailSubject,
         text: emailText,
