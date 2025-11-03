@@ -19,10 +19,95 @@ import { TransformedShop } from "@/types/cms";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CouponCard from "@/components/CouponCard";
 import RelatedMerchantCouponCard from "@/components/RelatedMerchantCouponCard";
+import { useToast } from "@/hooks/use-toast";
 
 // Get Taiwan time (UTC+8)
 function getTaiwanDate() {
   return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+}
+
+// Contact Form Component
+function ContactForm({ merchantName }: { merchantName: string }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      message: formData.get('message') as string,
+      merchantName: merchantName,
+    };
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "提交成功！",
+          description: "我們會盡快回覆您的訊息。",
+        });
+        // Reset form
+        e.currentTarget.reset();
+      } else {
+        toast({
+          title: "提交失敗",
+          description: result.error || "請稍後再試。",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "提交失敗",
+        description: "請稍後再試。",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="contact-name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+          ✍️ 你的名字 *
+        </Label>
+        <Input id="contact-name" name="name" required className="mt-1" />
+      </div>
+      <div>
+        <Label htmlFor="contact-email" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+          💗 你的電郵 *
+        </Label>
+        <Input id="contact-email" name="email" type="email" required className="mt-1" />
+      </div>
+      <div>
+        <Label htmlFor="contact-message" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+          ✍️ 你的信息 （歡迎任何意見或問題） *
+        </Label>
+        <Textarea id="contact-message" name="message" rows={6} required className="mt-1" />
+      </div>
+      <Button 
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 disabled:opacity-50"
+      >
+        {isSubmitting ? '提交中...' : '📧提交'}
+      </Button>
+    </form>
+  );
 }
 
 // Helper function to extract text from Strapi rich text
@@ -583,28 +668,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-gray-800">聯絡我們</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      ✍️ 你的名字
-                    </Label>
-                    <Input id="name" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      💗 你的電郵
-                    </Label>
-                    <Input id="email" type="email" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="message" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      ✍️ 你的信息 （歡迎任何意見或問題）
-                    </Label>
-                    <Textarea id="message" rows={6} className="mt-1" />
-                  </div>
-                  <Button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2">
-                    📧提交
-                  </Button>
+                <CardContent>
+                  <ContactForm merchantName={merchant.name} />
                 </CardContent>
               </Card>
             </div>
