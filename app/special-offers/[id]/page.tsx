@@ -3,6 +3,8 @@ import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import SpecialOffersClient from '../special-offers-client';
 import { notFound } from 'next/navigation';
+import { breadcrumbJsonLd } from '@/lib/jsonld';
+import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 
 export const revalidate = 3600; // ISR - revalidate every 60 minutes for stronger edge hit ratio
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
@@ -172,12 +174,26 @@ export default async function SpecialOfferPage({
       },
     }));
 
+    // Build breadcrumb JSON-LD
+    const domainConfig = getDomainConfigServer();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+    const specialOfferUrl = `${siteUrl}/special-offers/${slug}`;
+    const breadcrumb = breadcrumbJsonLd([
+      { name: '首頁', url: `${siteUrl}/` },
+      { name: '特別優惠', url: `${siteUrl}/special-offers` },
+      { name: specialOffer.title, url: specialOfferUrl },
+    ]);
+
     return (
-      <SpecialOffersClient 
-        specialOffer={specialOffer}
-        featuredMerchants={featuredMerchants}
-        flashDeals={flashDeals}
-      />
+      <>
+        <SpecialOffersClient 
+          specialOffer={specialOffer}
+          featuredMerchants={featuredMerchants}
+          flashDeals={flashDeals}
+        />
+        {/* Breadcrumb JSON-LD */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      </>
     );
   } catch (error) {
     console.error('[SpecialOffers] Error fetching special offer data:', error);

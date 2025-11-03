@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import ArticleView from './article-view';
+import { breadcrumbJsonLd } from '@/lib/jsonld';
+import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 
 export const revalidate = 86400; // ISR - revalidate every 24 hours (articles rarely change)
 
@@ -106,7 +108,23 @@ export default async function BlogPost({
       })),
     };
 
-    return <ArticleView post={transformedPost} />;
+    // Build breadcrumb JSON-LD
+    const domainConfig = getDomainConfigServer();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+    const blogPostUrl = `${siteUrl}/blog/${slug}`;
+    const breadcrumb = breadcrumbJsonLd([
+      { name: '首頁', url: `${siteUrl}/` },
+      { name: '部落格', url: `${siteUrl}/blog` },
+      { name: transformedPost.title, url: blogPostUrl },
+    ]);
+
+    return (
+      <>
+        <ArticleView post={transformedPost} />
+        {/* Breadcrumb JSON-LD */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      </>
+    );
 
   } catch (error) {
     console.error('Error fetching blog post:', error);

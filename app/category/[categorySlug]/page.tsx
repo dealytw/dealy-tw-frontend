@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import CategoryView from './category-view';
+import { breadcrumbJsonLd } from '@/lib/jsonld';
+import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 
 export const revalidate = 3600; // ISR - revalidate every 1 hour
 
@@ -154,14 +156,28 @@ export default async function CategoryPage({
       },
     }));
 
+    // Build breadcrumb JSON-LD
+    const domainConfig = getDomainConfigServer();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+    const categoryUrl = `${siteUrl}/category/${categorySlug}`;
+    const breadcrumb = breadcrumbJsonLd([
+      { name: '首頁', url: `${siteUrl}/` },
+      { name: '分類', url: `${siteUrl}/category` },
+      { name: category.name, url: categoryUrl },
+    ]);
+
     return (
-      <CategoryView 
-        category={category}
-        merchants={merchants}
-        coupons={coupons}
-        pagination={couponsData?.meta?.pagination}
-        categorySlug={categorySlug}
-      />
+      <>
+        <CategoryView 
+          category={category}
+          merchants={merchants}
+          coupons={coupons}
+          pagination={couponsData?.meta?.pagination}
+          categorySlug={categorySlug}
+        />
+        {/* Breadcrumb JSON-LD */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      </>
     );
 
   } catch (error) {
