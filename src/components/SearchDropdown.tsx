@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,14 +30,18 @@ export default function SearchDropdown({
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isPending, startTransition] = useTransition();
+  
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Score suggestions for better matching (name starts with query gets higher priority)
-  const getMatchScore = (name: string, website: string | undefined, query: string): number => {
+  const getMatchScore = useCallback((name: string, website: string | undefined, query: string): number => {
     const nameLower = name.toLowerCase();
     const q = query.toLowerCase();
     
@@ -45,10 +49,25 @@ export default function SearchDropdown({
     if (nameLower.includes(q)) return 50;
     if (website?.toLowerCase().includes(q)) return 25;
     return 0;
-  };
+  }, []);
 
-  // Debounced search function
+  // Memoize processed suggestions for better performance
+  const processedSuggestions = useMemo(() => {
+    if (!suggestions.length) return [];
+    
+    return suggestions.map((suggestion, index) => ({
+      ...suggestion,
+      isSelected: index === selectedIndex,
+    }));
+  }, [suggestions, selectedIndex]);
+
+  // Debounced search function with request cancellation
   useEffect(() => {
+    // Cancel previous request if still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     // Clear previous timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -59,18 +78,40 @@ export default function SearchDropdown({
       setSuggestions([]);
       setShowDropdown(false);
       setIsLoading(false);
+      setError(null);
       return;
     }
 
     // Set loading state
     setIsLoading(true);
+    setError(null);
     setShowDropdown(true);
+
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
 
     // Debounce API call
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, {
+          signal: abortControllerRef.current?.signal,
+        });
+
+        // Check if request was aborted
+        if (abortControllerRef.current?.signal.aborted) {
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.statusText}`);
+        }
+
         const data = await response.json();
+
+        // Check if request was aborted after data fetch
+        if (abortControllerRef.current?.signal.aborted) {
+          return;
+        }
 
         // Combine merchants and coupons, prioritize merchants and best matches
         const merchants = (data.merchants || []).slice(0, 5);
@@ -110,11 +151,20 @@ export default function SearchDropdown({
           .slice(0, 5) // Top 5
           .map(({ score, ...rest }) => rest); // Remove score before setting state
 
-        setSuggestions(allResults);
-      } catch (error) {
+        // Use startTransition for non-urgent state updates
+        startTransition(() => {
+          setSuggestions(allResults);
+          setIsLoading(false);
+        });
+      } catch (error: any) {
+        // Ignore abort errors
+        if (error.name === 'AbortError') {
+          return;
+        }
+        
         console.error('Search error:', error);
+        setError('搜尋時發生錯誤，請稍後再試');
         setSuggestions([]);
-      } finally {
         setIsLoading(false);
       }
     }, 300); // 300ms debounce
@@ -123,8 +173,11 @@ export default function SearchDropdown({
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [query]);
+  }, [query, getMatchScore, startTransition]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -139,8 +192,13 @@ export default function SearchDropdown({
   }, []);
 
   // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || suggestions.length === 0) return;
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showDropdown || suggestions.length === 0) {
+      if (e.key === 'Enter' && query.trim()) {
+        handleSearchSubmit(e);
+      }
+      return;
+    }
 
     switch (e.key) {
       case 'ArrowDown':
@@ -158,7 +216,6 @@ export default function SearchDropdown({
         if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
           handleSuggestionClick(suggestions[selectedIndex]);
         } else {
-          // Submit search form
           handleSearchSubmit(e);
         }
         break;
@@ -166,49 +223,52 @@ export default function SearchDropdown({
         setShowDropdown(false);
         setQuery("");
         setSelectedIndex(-1);
+        inputRef.current?.blur();
         break;
     }
-  };
+  }, [showDropdown, suggestions, selectedIndex, query]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
       setShowDropdown(false);
       if (onClose) onClose();
     }
-  };
+  }, [query, router, onClose]);
 
-  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
+  const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {
     if (suggestion.type === 'merchant' && suggestion.slug) {
       router.push(`/shop/${suggestion.slug}`);
     } else if (suggestion.type === 'coupon' && suggestion.slug) {
       router.push(`/shop/${suggestion.slug}`);
     } else {
-      // Fallback to search page
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
     setShowDropdown(false);
     setQuery("");
+    setSelectedIndex(-1);
     if (onClose) onClose();
-  };
+  }, [query, router, onClose]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     setSelectedIndex(-1);
-  };
+  }, []);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setQuery("");
     setSuggestions([]);
     setShowDropdown(false);
+    setError(null);
+    setSelectedIndex(-1);
     inputRef.current?.focus();
-  };
+  }, []);
 
   return (
     <div ref={searchRef} className={`relative ${className}`}>
       <form onSubmit={handleSearchSubmit} className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
         <input
           ref={inputRef}
           type="text"
@@ -218,12 +278,18 @@ export default function SearchDropdown({
           onFocus={() => query.trim() && setShowDropdown(true)}
           placeholder={placeholder}
           className="pl-10 pr-10 py-2 w-full bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          aria-label="Search for merchants and coupons"
+          aria-expanded={showDropdown}
+          aria-controls="search-suggestions"
+          aria-autocomplete="list"
+          role="combobox"
         />
         {query && (
           <button
             type="button"
             onClick={handleClear}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            aria-label="Clear search"
           >
             <X className="h-4 w-4" />
           </button>
@@ -232,14 +298,23 @@ export default function SearchDropdown({
 
       {/* Dropdown */}
       {showDropdown && query.trim() && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          {isLoading ? (
-            <div className="p-4 text-center text-gray-500 text-sm">
+        <div
+          id="search-suggestions"
+          className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+          role="listbox"
+          aria-label="Search suggestions"
+        >
+          {isLoading || isPending ? (
+            <div className="p-4 text-center text-gray-500 text-sm" role="status" aria-live="polite">
               搜尋中...
             </div>
-          ) : suggestions.length > 0 ? (
+          ) : error ? (
+            <div className="p-4 text-center text-red-500 text-sm" role="alert" aria-live="assertive">
+              {error}
+            </div>
+          ) : processedSuggestions.length > 0 ? (
             <div className="py-2">
-              {suggestions.map((suggestion, index) => (
+              {processedSuggestions.map((suggestion, index) => (
                 <Link
                   key={`${suggestion.type}-${suggestion.id}`}
                   href={suggestion.type === 'merchant' && suggestion.slug 
@@ -247,15 +322,17 @@ export default function SearchDropdown({
                     : `/search?q=${encodeURIComponent(query.trim())}`}
                   onClick={() => handleSuggestionClick(suggestion)}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                    index === selectedIndex ? 'bg-gray-50' : ''
+                    suggestion.isSelected ? 'bg-gray-50' : ''
                   }`}
+                  role="option"
+                  aria-selected={suggestion.isSelected}
                 >
                   {/* Logo */}
                   <div className="flex-shrink-0 w-10 h-10 rounded overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
                     {suggestion.logo ? (
                       <Image
                         src={suggestion.logo}
-                        alt={suggestion.name}
+                        alt={`${suggestion.name} logo`}
                         width={40}
                         height={40}
                         className="w-full h-full object-contain"
@@ -263,7 +340,7 @@ export default function SearchDropdown({
                         loading="lazy"
                       />
                     ) : (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400" aria-hidden="true">
                         {suggestion.name.charAt(0).toUpperCase()}
                       </span>
                     )}
@@ -284,7 +361,7 @@ export default function SearchDropdown({
               ))}
             </div>
           ) : (
-            <div className="p-4 text-center text-gray-500 text-sm">
+            <div className="p-4 text-center text-gray-500 text-sm" role="status" aria-live="polite">
               找不到相關結果
             </div>
           )}
