@@ -30,10 +30,10 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-4">熱門商戶</h4>
             <ul className="space-y-2">
-              <li><Link href="/shop/klook" className="text-sm text-gray-600 hover:text-gray-900">Klook</Link></li>
-              <li><Link href="/shop/trip" className="text-sm text-gray-600 hover:text-gray-900">Trip.com</Link></li>
-              <li><Link href="/shop/agoda" className="text-sm text-gray-600 hover:text-gray-900">Agoda</Link></li>
-              <li><Link href="/shop/booking" className="text-sm text-gray-600 hover:text-gray-900">Booking.com</Link></li>
+              <li><Link href="/shop/klook.com" className="text-sm text-gray-600 hover:text-gray-900">Klook</Link></li>
+              <li><Link href="/shop/trip.com" className="text-sm text-gray-600 hover:text-gray-900">Trip.com</Link></li>
+              <li><Link href="/shop/agoda.com" className="text-sm text-gray-600 hover:text-gray-900">Agoda</Link></li>
+              <li><Link href="/shop/booking.com" className="text-sm text-gray-600 hover:text-gray-900">Booking.com</Link></li>
             </ul>
           </div>
 
