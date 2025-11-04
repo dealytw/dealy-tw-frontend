@@ -188,21 +188,39 @@ export default function SearchDropdown({
           signal: abortControllerRef.current?.signal,
         });
         
-        if (!response.ok) {
-          throw new Error(`Search failed: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-
         // Check if request was aborted
         if (abortControllerRef.current?.signal.aborted) {
           return;
         }
 
-        // Handle error
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => response.statusText);
+          console.error('❌ API Error:', response.status, errorText);
+          throw new Error(`Search failed: ${response.status} ${errorText.slice(0, 100)}`);
+        }
+        
+        const data = await response.json();
+
+        // Check if request was aborted after data fetch
+        if (abortControllerRef.current?.signal.aborted) {
+          return;
+        }
+
+        // Handle error from API response
         if (data.error) {
           console.error('❌ Search error:', data.error);
           throw new Error(data.error);
+        }
+
+        // Ensure we have valid data structure
+        if (!data || (!data.merchants && !data.coupons)) {
+          console.warn('⚠️ Invalid API response:', data);
+          // Don't throw error, just show empty results
+          startTransition(() => {
+            setSuggestions([]);
+            setIsLoading(false);
+          });
+          return;
         }
 
         // Combine merchants and coupons, prioritize merchants and best matches
