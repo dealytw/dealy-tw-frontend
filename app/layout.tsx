@@ -81,48 +81,50 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body suppressHydrationWarning>
         <Providers>
-          {/* Site-wide JSON-LD: WebSite + Organization */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(
-                websiteJsonLd({ 
-                  siteName: domainConfig.name, 
-                  siteUrl: siteUrl, 
-                  searchUrl: `${siteUrl}/search`,
-                  locale: marketLocale
-                })
-              ),
-            }}
-          />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(
-                organizationJsonLd({ 
-                  name: domainConfig.name, 
-                  url: siteUrl, 
-                  logo: `${siteUrl}/favicon.svg`,
-                  sameAs: sameAs
-                })
-              ),
-            }}
-          />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(
-                siteNavigationJsonLd([
-                  { name: '首頁', url: `${siteUrl}/` },
-                  { name: '商家', url: `${siteUrl}/shop` },
-                  { name: '特別優惠', url: `${siteUrl}/special-offers` },
-                ])
-              ),
-            }}
-          />
-          {children}
-          <FloatingActionContainer />
-          <CWVTracker />
+          <SearchProvider>
+            {/* Site-wide JSON-LD: WebSite + Organization */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(
+                  websiteJsonLd({ 
+                    siteName: domainConfig.name, 
+                    siteUrl: siteUrl, 
+                    searchUrl: `${siteUrl}/search`,
+                    locale: marketLocale
+                  })
+                ),
+              }}
+            />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(
+                  organizationJsonLd({ 
+                    name: domainConfig.name, 
+                    url: siteUrl, 
+                    logo: `${siteUrl}/favicon.svg`,
+                    sameAs: sameAs
+                  })
+                ),
+              }}
+            />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(
+                  siteNavigationJsonLd([
+                    { name: '首頁', url: `${siteUrl}/` },
+                    { name: '商家', url: `${siteUrl}/shop` },
+                    { name: '特別優惠', url: `${siteUrl}/special-offers` },
+                  ])
+                ),
+              }}
+            />
+            {children}
+            <FloatingActionContainer />
+            <CWVTracker />
+          </SearchProvider>
         </Providers>
         
         {/* Ad Link verification script - Load after interactive */}

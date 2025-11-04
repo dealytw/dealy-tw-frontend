@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, X } from "lucide-react";
+import { useSearchMerchants } from "./SearchProvider";
 
 interface SearchSuggestion {
   id: string | number;
@@ -19,13 +20,6 @@ interface SearchDropdownProps {
   placeholder?: string;
   className?: string;
   onClose?: () => void;
-  prefetchedMerchants?: Array<{
-    id: string | number;
-    name: string;
-    slug: string;
-    logo: string;
-    website: string;
-  }>;
 }
 
 // Global cache for all merchants (set once on page load)
@@ -92,10 +86,10 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
 export default function SearchDropdown({ 
   placeholder = "搜尋最抵Deal",
   className = "",
-  onClose,
-  prefetchedMerchants = []
+  onClose
 }: SearchDropdownProps) {
   const router = useRouter();
+  const { merchants: prefetchedMerchants } = useSearchMerchants();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,7 +103,7 @@ export default function SearchDropdown({
   const debounceTimerRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Initialize global cache with prefetched merchants
+  // Initialize global cache with prefetched merchants from context
   useEffect(() => {
     if (prefetchedMerchants.length > 0) {
       globalMerchantsCache = prefetchedMerchants;
