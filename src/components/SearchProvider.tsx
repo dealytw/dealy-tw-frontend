@@ -26,7 +26,9 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Prefetch all merchants on mount
+    // Defer prefetch to not block initial page load
+    // Use requestIdleCallback for low-priority background fetch
+    // Falls back to setTimeout if requestIdleCallback is not available
     const prefetchMerchants = async () => {
       try {
         const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
@@ -40,7 +42,13 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    prefetchMerchants();
+    // Defer until browser is idle (after initial render)
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(prefetchMerchants, { timeout: 2000 }); // Wait max 2s
+    } else {
+      // Fallback: delay by 1 second to let page render first
+      setTimeout(prefetchMerchants, 1000);
+    }
   }, []);
 
   return (

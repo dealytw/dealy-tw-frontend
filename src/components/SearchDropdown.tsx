@@ -89,7 +89,7 @@ export default function SearchDropdown({
   onClose
 }: SearchDropdownProps) {
   const router = useRouter();
-  const { merchants: prefetchedMerchants } = useSearchMerchants();
+  const { merchants: prefetchedMerchants, isLoading: merchantsLoading } = useSearchMerchants();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,9 +103,9 @@ export default function SearchDropdown({
   const debounceTimerRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Initialize global cache with prefetched merchants from context
+  // Initialize global cache with prefetched merchants from context (non-blocking)
   useEffect(() => {
-    if (prefetchedMerchants.length > 0) {
+    if (prefetchedMerchants.length > 0 && globalMerchantsCache.length === 0) {
       globalMerchantsCache = prefetchedMerchants;
       console.log(`✅ Loaded ${globalMerchantsCache.length} merchants into search cache`);
     }
@@ -120,6 +120,25 @@ export default function SearchDropdown({
       isSelected: index === selectedIndex,
     }));
   }, [suggestions, selectedIndex]);
+
+  // Trigger prefetch when user focuses on search input
+  useEffect(() => {
+    const handleFocus = () => {
+      // If cache is empty and not loading, trigger prefetch
+      if (globalMerchantsCache.length === 0 && !isLoading) {
+        const { merchants } = useSearchMerchants();
+        if (merchants.length > 0) {
+          globalMerchantsCache = merchants;
+        }
+      }
+    };
+
+    const input = inputRef.current;
+    if (input) {
+      input.addEventListener('focus', handleFocus);
+      return () => input.removeEventListener('focus', handleFocus);
+    }
+  }, [isLoading]);
 
   // Instant search using cached merchants (no debounce needed!)
   useEffect(() => {
