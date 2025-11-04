@@ -9,7 +9,7 @@ import CouponModal from "@/components/CouponModal";
 import DealySidebar from "@/components/DealySidebar";
 import { Button } from "@/components/ui/button";
 import DealyCouponCard from "@/components/DealyCouponCard";
-import { Search } from "lucide-react";
+import SearchDropdown from "@/components/SearchDropdown";
 
 // Types matching homepage-code-usage.json
 type PopularMerchant = {
