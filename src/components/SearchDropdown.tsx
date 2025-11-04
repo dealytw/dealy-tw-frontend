@@ -90,32 +90,28 @@ export default function SearchDropdown({
     // Create new AbortController for this request
     abortControllerRef.current = new AbortController();
 
-    // Debounce API call
-    debounceTimerRef.current = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, {
-          signal: abortControllerRef.current?.signal,
-        });
+        // Debounce API call
+        debounceTimerRef.current = setTimeout(async () => {
+          try {
+            // Use Server Action for better error handling and server-side processing
+            const { searchAction } = await import('@/lib/search-actions');
+            const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+            
+            const data = await searchAction(query.trim(), market);
 
-        // Check if request was aborted
-        if (abortControllerRef.current?.signal.aborted) {
-          return;
-        }
+            // Check if request was aborted
+            if (abortControllerRef.current?.signal.aborted) {
+              return;
+            }
 
-        if (!response.ok) {
-          throw new Error(`Search failed: ${response.statusText}`);
-        }
+            // Handle error from server action
+            if (data.error) {
+              throw new Error(data.error);
+            }
 
-        const data = await response.json();
-
-        // Check if request was aborted after data fetch
-        if (abortControllerRef.current?.signal.aborted) {
-          return;
-        }
-
-        // Combine merchants and coupons, prioritize merchants and best matches
-        const merchants = (data.merchants || []).slice(0, 5);
-        const coupons = (data.coupons || []).slice(0, 5);
+            // Combine merchants and coupons, prioritize merchants and best matches
+            const merchants = (data.merchants || []).slice(0, 5);
+            const coupons = (data.coupons || []).slice(0, 5);
         
         // Score and sort merchants
         const scoredMerchants = merchants.map((m: any) => ({
