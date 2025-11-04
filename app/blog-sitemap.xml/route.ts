@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server'
 import { strapiFetch, qs } from '@/lib/strapi.server'
-import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
 
 export const revalidate = 86400 // ISR - revalidate every 24 hours
 
 export async function GET() {
-  const domainConfig = getDomainConfigServer()
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
+  const baseUrl = 'https://www.dealy.tw'
   const currentDate = new Date()
 
   // Fetch all blog posts dynamically from CMS
-  // Only include published posts (publishedAt exists)
   let blogPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
   try {
     const blogParams = {
-      "filters[publishedAt][$notNull]": true, // Only published posts
       "fields[0]": "slug",
       "fields[1]": "updatedAt",
       "fields[2]": "publishedAt",
@@ -27,16 +23,14 @@ export async function GET() {
       { revalidate: 86400, tag: 'sitemap:blog' }
     )
 
-    blogPages = (blogData?.data || [])
-      .filter((post: any) => post.publishedAt) // Double-check published status
-      .map((post: any) => ({
-        url: `${baseUrl}/blog/${post.slug}`,
-        lastmod: post.updatedAt 
-          ? new Date(post.updatedAt).toISOString() 
-          : (post.publishedAt ? new Date(post.publishedAt).toISOString() : currentDate.toISOString()),
-        changefreq: 'monthly',
-        priority: '0.6',
-      }))
+    blogPages = (blogData?.data || []).map((post: any) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastmod: post.updatedAt 
+        ? new Date(post.updatedAt).toISOString() 
+        : (post.publishedAt ? new Date(post.publishedAt).toISOString() : currentDate.toISOString()),
+      changefreq: 'monthly',
+      priority: '0.6',
+    }))
   } catch (error) {
     console.error('Error fetching blog posts for sitemap:', error)
   }
