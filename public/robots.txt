@@ -1,14 +1,11 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Block admin and API routes from crawling
 User-agent: *
+Disallow: /api/admin/
+Disallow: /api/debug/
+Disallow: /api/env-test/
+Disallow: /api/hero-test/
+Disallow: /api/mapper-test/
+Disallow: /api/media-test/
+
+# Allow everything else
 Allow: /

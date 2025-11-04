@@ -60,33 +60,40 @@ All sitemaps include `<lastmod>` using `updatedAt` from CMS:
 
 ## ✅ Robots.txt
 
-**Status**: ✅ **CORRECT**
+**Status**: ✅ **UPDATED**
 
 **Location**: `public/robots.txt`
 
 **Current Content**:
 ```
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Block admin and API routes from crawling
 User-agent: *
+Disallow: /api/admin/
+Disallow: /api/debug/
+Disallow: /api/env-test/
+Disallow: /api/hero-test/
+Disallow: /api/mapper-test/
+Disallow: /api/media-test/
+
+# Allow everything else
 Allow: /
 ```
 
 **Verification**:
-- ✅ Allows all crawlers to access all pages
+- ✅ Blocks admin and debug API routes from crawling
+- ✅ Allows all other pages to be crawled
 - ✅ Does not block parameters that are noindexed at page level
-- ✅ No `Disallow` rules that would interfere with crawling
-- ✅ Follows best practice: allow everything, use `noindex` in page metadata for pages that shouldn't be indexed
+- ✅ Follows best practice: block admin/debug routes, allow public content
+
+**Important Note**: 
+- This `robots.txt` only applies to `dealy.tw` and `dealy.hk` (main domains)
+- **`cms.dealy.tw` and `admin.dealy.tw` are separate subdomains** and need their own `robots.txt` files
+- Each subdomain should have its own `robots.txt` that blocks everything:
+  ```
+  User-agent: *
+  Disallow: /
+  ```
+- These should be configured on the CMS and admin servers separately
 
 ---
 
