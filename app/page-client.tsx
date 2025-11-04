@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -83,11 +84,10 @@ type HomePageData = {
 
 interface MerchantSliderProps {
   merchants: PopularMerchant[];
-  router: ReturnType<typeof useRouter>;
 }
 
 // Horizontal auto-scrolling slider component for merchants with infinite loop
-const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
+const MerchantSlider = ({ merchants }: MerchantSliderProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPausedRef = useRef(false);
@@ -150,12 +150,10 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
         }}
       >
         {duplicatedMerchants.map((merchant, index) => (
-          <div
+          <Link
             key={`${merchant.id}-${index}`}
+            href={`/shop/${merchant.slug}`}
             className="flex-shrink-0 text-center group cursor-pointer w-[180px]"
-            onClick={() => {
-              router.push(`/shop/${merchant.slug}`);
-            }}
           >
             <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
               <Image
@@ -172,7 +170,7 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
             <p className="text-xs text-gray-600 leading-tight px-2">
               {merchant.topCouponTitle || ""}
             </p>
-          </div>
+          </Link>
         ))}
       </div>
       
@@ -371,7 +369,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
             </h2>
             
             {initialData.popularMerchants.items && initialData.popularMerchants.items.length > 0 ? (
-              <MerchantSlider merchants={initialData.popularMerchants.items} router={router} />
+              <MerchantSlider merchants={initialData.popularMerchants.items} />
             ) : (
               <div className="w-full text-center py-8">
                 <p className="text-gray-500">No merchants available. Please add merchants in Strapi CMS.</p>
