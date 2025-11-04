@@ -32,6 +32,7 @@ export async function searchAction(query: string, market: string = 'tw'): Promis
     }
 
     const searchQuery = query.trim();
+    console.log('[searchAction] Starting search for:', searchQuery, 'market:', market);
 
     // Search merchants
     const merchantParams = {
@@ -49,12 +50,17 @@ export async function searchAction(query: string, market: string = 'tw'): Promis
       "populate[market][fields][0]": "key",
     };
 
+    console.log('[searchAction] Fetching merchants...');
     const merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
       revalidate: 60,
       tag: 'search:merchants'
-    }).catch(() => ({ data: [] }));
+    }).catch((err) => {
+      console.error('[searchAction] Merchant fetch error:', err);
+      return { data: [] };
+    });
     
     const allMerchants = merchantsData?.data || [];
+    console.log('[searchAction] Found', allMerchants.length, 'merchants before filtering');
     
     const merchants = allMerchants
       .filter((merchant: any) => {
@@ -66,11 +72,22 @@ export async function searchAction(query: string, market: string = 'tw'): Promis
         const q = searchQuery.toLowerCase();
         
         // Match in name, slug, summary, website URL, or affiliate link
-        return name.includes(q) || 
+        const matches = name.includes(q) || 
                slug.includes(q) || 
                summary.includes(q) ||
                website.includes(q) ||
                affiliateLink.includes(q);
+        
+        if (matches && q === 'trip') {
+          console.log('[searchAction] Matched merchant:', {
+            name: merchant.merchant_name,
+            slug: merchant.slug,
+            website: merchant.website,
+            affiliateLink: merchant.affiliate_link
+          });
+        }
+        
+        return matches;
       })
       .slice(0, 20)
       .map((merchant: any) => ({
@@ -81,6 +98,8 @@ export async function searchAction(query: string, market: string = 'tw'): Promis
         website: merchant.website || merchant.affiliate_link || "",
         type: 'merchant' as const
       }));
+
+    console.log('[searchAction] Filtered to', merchants.length, 'merchants');
 
     // Search coupons
     let coupons: any[] = [];
@@ -135,12 +154,17 @@ export async function searchAction(query: string, market: string = 'tw'): Promis
       coupons = [];
     }
 
+    console.log('[searchAction] Returning results:', { 
+      merchants: merchants.length, 
+      coupons: coupons.length 
+    });
+
     return {
       merchants,
       coupons,
     };
   } catch (error: any) {
-    console.error('Search action error:', error);
+    console.error('[searchAction] Search action error:', error);
     return {
       merchants: [],
       coupons: [],
