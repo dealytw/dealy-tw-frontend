@@ -65,6 +65,8 @@ export default function MerchantIndex({
 }: MerchantIndexProps) {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("ALL");
+
+  const handlePageChange = (newPage: number) => {
     router.push(`/shop?page=${newPage}`);
   };
 
