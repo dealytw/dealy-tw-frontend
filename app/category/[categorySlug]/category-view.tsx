@@ -60,10 +60,6 @@ export default function CategoryView({
     // TODO: Implement coupon click logic (affiliate link + modal)
   };
 
-  const handleMerchantClick = (merchant: Merchant) => {
-    router.push(`/shop/${merchant.slug}`);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />

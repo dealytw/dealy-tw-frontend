@@ -31,8 +31,6 @@ interface MerchantSidebarProps {
 }
 
 const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerchants = [] }: MerchantSidebarProps) => {
-  const router = useRouter();
-  
   // Debug: Log merchant data to see what fields are available
   console.log('MerchantSidebar received merchant:', merchant);
   console.log('store_description:', merchant.store_description);
