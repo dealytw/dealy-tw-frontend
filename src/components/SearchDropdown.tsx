@@ -124,12 +124,9 @@ export default function SearchDropdown({
   // Trigger prefetch when user focuses on search input
   useEffect(() => {
     const handleFocus = () => {
-      // If cache is empty and not loading, trigger prefetch
-      if (globalMerchantsCache.length === 0 && !isLoading) {
-        const { merchants } = useSearchMerchants();
-        if (merchants.length > 0) {
-          globalMerchantsCache = merchants;
-        }
+      // If cache is empty but merchants are loaded, populate cache
+      if (globalMerchantsCache.length === 0 && prefetchedMerchants.length > 0) {
+        globalMerchantsCache = prefetchedMerchants;
       }
     };
 
@@ -138,7 +135,7 @@ export default function SearchDropdown({
       input.addEventListener('focus', handleFocus);
       return () => input.removeEventListener('focus', handleFocus);
     }
-  }, [isLoading]);
+  }, [prefetchedMerchants]);
 
   // Instant search using cached merchants (no debounce needed!)
   useEffect(() => {
