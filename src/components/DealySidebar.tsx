@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface DealySidebarProps {
   popularMerchants?: {
@@ -41,10 +42,14 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
                   onClick={() => router.push(`/shop/${merchant.slug}`)}
                 >
                   <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-lg group-hover:shadow-xl transition-shadow">
-                    <img 
+                    <Image 
                       src={merchant.logoUrl} 
                       alt={merchant.name}
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
+                      sizes="64px"
+                      loading="lazy"
                     />
                   </div>
                   <p className="text-xs text-blue-600 font-medium leading-tight">

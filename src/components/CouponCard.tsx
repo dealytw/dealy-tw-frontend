@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { useState } from "react";
 
 interface CouponCardProps {
@@ -60,10 +61,14 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
         <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="w-20 h-20 mb-4 flex items-center justify-center">
             {coupon.merchant.logo ? (
-              <img 
+              <Image 
                 src={coupon.merchant.logo} 
                 alt={coupon.merchant.name}
+                width={80}
+                height={80}
                 className="max-w-full max-h-full object-contain"
+                sizes="80px"
+                loading="lazy"
               />
             ) : (
               <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">

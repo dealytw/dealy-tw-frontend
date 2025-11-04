@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 interface NavigationMenuProps {
   open: boolean;
@@ -78,10 +79,14 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
               <span className="text-pink-500 text-2xl font-bold">dealy</span>
             </Link>
             <Link href="/" onClick={() => onOpenChange(false)} className="hidden md:block">
-              <img 
+              <Image 
                 src="/dealytwlogo.svg"
                 alt="dealy logo"
+                width={120}
+                height={32}
                 className="h-8 w-auto"
+                sizes="(max-width: 768px) 100px, 120px"
+                loading="lazy"
               />
             </Link>
           </SheetTitle>
@@ -119,10 +124,14 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   {merchant.logoUrl ? (
-                    <img
+                    <Image
                       src={merchant.logoUrl}
                       alt={merchant.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 object-contain"
+                      sizes="48px"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">

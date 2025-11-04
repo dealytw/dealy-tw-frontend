@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Helper function to extract text from Strapi rich text
 function extractTextFromRichText(richText: any): string {
@@ -77,10 +78,14 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
         <div className="text-center mb-6">
           {merchant.logo && (
             <div className="w-20 h-20 mx-auto mb-4 bg-white border rounded-lg flex items-center justify-center p-2">
-              <img 
+              <Image 
                 src={merchant.logo} 
                 alt={merchant.name}
+                width={80}
+                height={80}
                 className="max-w-full max-h-full object-contain"
+                sizes="80px"
+                loading="lazy"
               />
             </div>
           )}
@@ -168,10 +173,14 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
               >
                 <div className="w-12 h-12 mx-auto mb-1 border rounded-full overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
                   {merchant.logoUrl ? (
-                    <img 
+                    <Image 
                       src={merchant.logoUrl} 
                       alt={merchant.name}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
+                      sizes="48px"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">

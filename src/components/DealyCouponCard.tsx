@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
@@ -192,7 +193,7 @@ const DealyCouponCard = ({
         <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="w-20 h-20 mb-4 flex items-center justify-center">
             {coupon.merchant.logo ? (
-              <img src={coupon.merchant.logo} alt={coupon.merchant.name} className="max-w-full max-h-full object-contain" />
+              <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={80} height={80} className="max-w-full max-h-full object-contain" sizes="80px" loading="lazy" />
             ) : (
               <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                 <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
@@ -313,7 +314,7 @@ const DealyCouponCard = ({
           <div className="flex-shrink-0 w-12">
             <div className="w-10 h-8 mb-1 flex items-center justify-center">
               {coupon.merchant.logo ? (
-                <img src={coupon.merchant.logo} alt={coupon.merchant.name} className="max-w-full max-h-full object-contain" />
+                <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={40} height={32} className="max-w-full max-h-full object-contain" sizes="40px" loading="lazy" />
               ) : (
                 <div className="w-8 h-6 bg-gray-200 rounded flex items-center justify-center">
                   <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
