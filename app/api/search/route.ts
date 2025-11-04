@@ -35,12 +35,20 @@ export async function GET(request: NextRequest) {
       "populate[market][fields][0]": "key",
     };
 
-    const merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
-      revalidate: 60, // Cache for 60 seconds, then revalidate
-      tag: 'search:merchants'
-    });
+    let merchantsData;
+    let allMerchants = [];
     
-    const allMerchants = merchantsData?.data || [];
+    try {
+      merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
+        revalidate: 60, // Cache for 60 seconds, then revalidate
+        tag: 'search:merchants'
+      });
+      allMerchants = merchantsData?.data || [];
+    } catch (merchantError: any) {
+      console.error('[search API] Merchant fetch error:', merchantError);
+      // Continue with empty merchants array instead of failing completely
+      allMerchants = [];
+    }
     
     // Filter merchants on the client side for now
     const merchants = allMerchants
