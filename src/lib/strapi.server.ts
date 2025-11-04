@@ -1,5 +1,6 @@
 // src/lib/strapi.server.ts - Server-only Strapi fetch wrapper
 // Note: This file should only be imported in server components
+// Uses Next.js ISR (Incremental Static Regeneration) for optimal caching
 
 import 'server-only';
 
@@ -16,6 +17,8 @@ export async function strapiFetch<T>(path: string, init?: NextInit) {
   
   console.log('strapiFetch: Making request to', url);
   
+  // Note: We use Next.js 'next' option for ISR instead of 'cache: no-store'
+  // This provides better performance with automatic revalidation
   const res = await fetch(url, {
     ...rest,
     headers: {

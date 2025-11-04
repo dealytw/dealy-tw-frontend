@@ -192,7 +192,8 @@ export async function fetchCouponFreshById(id: string) {
   });
 
   return strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, { 
-    cache: 'no-store' // Always fresh for popups
+    revalidate: 60, // Cache for 60 seconds, then revalidate for popups
+    tag: `coupon:popup:${merchantSlug}`
   });
 }
 

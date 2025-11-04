@@ -60,7 +60,8 @@ export default async function SearchPage({
       };
 
       const merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
-        cache: 'no-store' // Search should be fresh
+        revalidate: 60, // Cache for 60 seconds, then revalidate
+        tag: 'search:merchants'
       });
       
       const allMerchants = merchantsData?.data || [];
@@ -114,7 +115,8 @@ export default async function SearchPage({
         };
 
         const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(couponParams)}`, {
-          cache: 'no-store' // Search should be fresh
+          revalidate: 60, // Cache for 60 seconds, then revalidate
+          tag: 'search:coupons'
         });
         
         const allCoupons = couponData?.data || [];
