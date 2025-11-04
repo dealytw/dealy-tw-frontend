@@ -21,6 +21,47 @@ interface SearchDropdownProps {
   onClose?: () => void;
 }
 
+// Client-side cache for instant search results
+interface CacheEntry {
+  results: SearchSuggestion[];
+  timestamp: number;
+}
+
+const searchCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const MAX_CACHE_SIZE = 50; // Limit cache to 50 entries
+
+function getCachedResults(query: string): SearchSuggestion[] | null {
+  const normalizedQuery = query.trim().toLowerCase();
+  const entry = searchCache.get(normalizedQuery);
+  
+  if (!entry) return null;
+  
+  // Check if cache is still valid
+  if (Date.now() - entry.timestamp > CACHE_TTL) {
+    searchCache.delete(normalizedQuery);
+    return null;
+  }
+  
+  return entry.results;
+}
+
+function setCachedResults(query: string, results: SearchSuggestion[]) {
+  const normalizedQuery = query.trim().toLowerCase();
+  
+  // Limit cache size by removing oldest entries
+  if (searchCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = Array.from(searchCache.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+    searchCache.delete(oldestKey);
+  }
+  
+  searchCache.set(normalizedQuery, {
+    results,
+    timestamp: Date.now()
+  });
+}
+
 export default function SearchDropdown({ 
   placeholder = "搜尋最抵Deal",
   className = "",
@@ -61,7 +102,66 @@ export default function SearchDropdown({
     }));
   }, [suggestions, selectedIndex]);
 
-  // Debounced search function with request cancellation
+  // Prefetch popular search queries on mount
+  useEffect(() => {
+    const popularQueries = ['a', 'b', 'c', 't', 'k', 'f', 'p', 's']; // Popular starting letters
+    
+    const prefetchPopularSearches = async () => {
+      const { searchAction } = await import('@/lib/search-actions');
+      const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+      
+      // Prefetch in background without blocking
+      Promise.all(
+        popularQueries.map(async (q) => {
+          try {
+            const data = await searchAction(q, market);
+            if (!data.error && (data.merchants.length > 0 || data.coupons.length > 0)) {
+              const merchants = (data.merchants || []).slice(0, 5);
+              const coupons = (data.coupons || []).slice(0, 5);
+              
+              const scoredMerchants = merchants.map((m: any) => ({
+                id: m.id,
+                name: m.name,
+                slug: m.slug,
+                logo: m.logo,
+                website: m.website || '',
+                type: 'merchant' as const,
+                score: getMatchScore(m.name, m.website, q)
+              }));
+
+              const scoredCoupons = coupons.map((c: any) => ({
+                id: c.id,
+                name: c.title,
+                slug: c.merchant?.slug,
+                logo: c.merchant?.logo,
+                website: c.merchant?.name || '',
+                type: 'coupon' as const,
+                score: getMatchScore(c.title, c.merchant?.name, q)
+              }));
+
+              const allResults = [...scoredMerchants, ...scoredCoupons]
+                .sort((a, b) => {
+                  if (a.score === b.score) {
+                    return a.type === 'merchant' ? -1 : 1;
+                  }
+                  return b.score - a.score;
+                })
+                .slice(0, 5)
+                .map(({ score, ...rest }) => rest);
+              
+              setCachedResults(q, allResults);
+            }
+          } catch (error) {
+            // Silently fail prefetch
+          }
+        })
+      );
+    };
+
+    prefetchPopularSearches();
+  }, [getMatchScore]);
+
+  // Debounced search function with request cancellation and caching
   useEffect(() => {
     // Cancel previous request if still pending
     if (abortControllerRef.current) {
@@ -82,36 +182,51 @@ export default function SearchDropdown({
       return;
     }
 
-    // Set loading state
-    setIsLoading(true);
+    // Check cache first for instant results
+    const cachedResults = getCachedResults(query);
+    if (cachedResults && cachedResults.length > 0) {
+      // Show cached results immediately
+      startTransition(() => {
+        setSuggestions(cachedResults);
+        setIsLoading(false);
+        setShowDropdown(true);
+      });
+      
+      // Still fetch fresh data in background
+      setIsLoading(true);
+    } else {
+      // Set loading state
+      setIsLoading(true);
+      setShowDropdown(true);
+    }
+
     setError(null);
-    setShowDropdown(true);
 
     // Create new AbortController for this request
     abortControllerRef.current = new AbortController();
 
-        // Debounce API call
-        debounceTimerRef.current = setTimeout(async () => {
-          try {
-            // Use Server Action for better error handling and server-side processing
-            const { searchAction } = await import('@/lib/search-actions');
-            const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
-            
-            const data = await searchAction(query.trim(), market);
+    // Debounce API call
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        // Use Server Action for better error handling and server-side processing
+        const { searchAction } = await import('@/lib/search-actions');
+        const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+        
+        const data = await searchAction(query.trim(), market);
 
-            // Check if request was aborted
-            if (abortControllerRef.current?.signal.aborted) {
-              return;
-            }
+        // Check if request was aborted
+        if (abortControllerRef.current?.signal.aborted) {
+          return;
+        }
 
-            // Handle error from server action
-            if (data.error) {
-              throw new Error(data.error);
-            }
+        // Handle error from server action
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-            // Combine merchants and coupons, prioritize merchants and best matches
-            const merchants = (data.merchants || []).slice(0, 5);
-            const coupons = (data.coupons || []).slice(0, 5);
+        // Combine merchants and coupons, prioritize merchants and best matches
+        const merchants = (data.merchants || []).slice(0, 5);
+        const coupons = (data.coupons || []).slice(0, 5);
         
         // Score and sort merchants
         const scoredMerchants = merchants.map((m: any) => ({
@@ -146,6 +261,9 @@ export default function SearchDropdown({
           })
           .slice(0, 5) // Top 5
           .map(({ score, ...rest }) => rest); // Remove score before setting state
+
+        // Cache the results
+        setCachedResults(query.trim(), allResults);
 
         // Use startTransition for non-urgent state updates
         startTransition(() => {
