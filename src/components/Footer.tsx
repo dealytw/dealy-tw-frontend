@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -18,10 +19,10 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-4">快速連結</h4>
             <ul className="space-y-2">
-              <li><a href="/shop" className="text-sm text-gray-600 hover:text-gray-900">所有商戶</a></li>
-              <li><a href="/category/travel" className="text-sm text-gray-600 hover:text-gray-900">旅遊優惠</a></li>
-              <li><a href="/category/shopping" className="text-sm text-gray-600 hover:text-gray-900">購物優惠</a></li>
-              <li><a href="/special-offers" className="text-sm text-gray-600 hover:text-gray-900">特別優惠</a></li>
+              <li><Link href="/shop" className="text-sm text-gray-600 hover:text-gray-900">所有商戶</Link></li>
+              <li><Link href="/category/travel" className="text-sm text-gray-600 hover:text-gray-900">旅遊優惠</Link></li>
+              <li><Link href="/category/shopping" className="text-sm text-gray-600 hover:text-gray-900">購物優惠</Link></li>
+              <li><Link href="/special-offers" className="text-sm text-gray-600 hover:text-gray-900">特別優惠</Link></li>
             </ul>
           </div>
 
@@ -29,10 +30,10 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-4">熱門商戶</h4>
             <ul className="space-y-2">
-              <li><a href="/shop/klook" className="text-sm text-gray-600 hover:text-gray-900">Klook</a></li>
-              <li><a href="/shop/trip" className="text-sm text-gray-600 hover:text-gray-900">Trip.com</a></li>
-              <li><a href="/shop/agoda" className="text-sm text-gray-600 hover:text-gray-900">Agoda</a></li>
-              <li><a href="/shop/booking" className="text-sm text-gray-600 hover:text-gray-900">Booking.com</a></li>
+              <li><Link href="/shop/klook" className="text-sm text-gray-600 hover:text-gray-900">Klook</Link></li>
+              <li><Link href="/shop/trip" className="text-sm text-gray-600 hover:text-gray-900">Trip.com</Link></li>
+              <li><Link href="/shop/agoda" className="text-sm text-gray-600 hover:text-gray-900">Agoda</Link></li>
+              <li><Link href="/shop/booking" className="text-sm text-gray-600 hover:text-gray-900">Booking.com</Link></li>
             </ul>
           </div>
 
@@ -40,10 +41,10 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-4">支援</h4>
             <ul className="space-y-2">
-              <li><a href="/about" className="text-sm text-gray-600 hover:text-gray-900">關於我們</a></li>
-              <li><a href="/submit-coupons" className="text-sm text-gray-600 hover:text-gray-900">聯絡我們</a></li>
-              <li><a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">私隱政策</a></li>
-              <li><a href="/terms" className="text-sm text-gray-600 hover:text-gray-900">使用條款</a></li>
+              <li><Link href="/about" className="text-sm text-gray-600 hover:text-gray-900">關於我們</Link></li>
+              <li><Link href="/submit-coupons" className="text-sm text-gray-600 hover:text-gray-900">聯絡我們</Link></li>
+              <li><Link href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">私隱政策</Link></li>
+              <li><Link href="/terms" className="text-sm text-gray-600 hover:text-gray-900">使用條款</Link></li>
             </ul>
           </div>
         </div>

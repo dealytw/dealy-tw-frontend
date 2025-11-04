@@ -40,7 +40,7 @@ const Header = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <a href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</a>
+          <Link href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</Link>
           <form onSubmit={handleSearchSubmit} className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
