@@ -424,51 +424,54 @@ export default function SearchDropdown({
             </div>
           ) : processedSuggestions.length > 0 ? (
             <div className="py-2">
-              {processedSuggestions.map((suggestion, index) => (
-                <Link
-                  key={`${suggestion.type}-${suggestion.id}`}
-                  href={suggestion.type === 'merchant' && suggestion.slug 
-                    ? `/shop/${suggestion.slug}` 
-                    : `/search?q=${encodeURIComponent(query.trim())}`}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                    suggestion.isSelected ? 'bg-gray-50' : ''
-                  }`}
-                  role="option"
-                  aria-selected={suggestion.isSelected}
-                >
-                  {/* Logo */}
-                  <div className="flex-shrink-0 w-10 h-10 rounded overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
-                    {suggestion.logo ? (
-                      <Image
-                        src={suggestion.logo}
-                        alt={`${suggestion.name} logo`}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-contain"
-                        sizes="40px"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-400" aria-hidden="true">
-                        {suggestion.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+              {processedSuggestions.map((suggestion, index) => {
+                // For merchants, use slug to link to merchant page
+                // For coupons, link to search results
+                const merchantLink = suggestion.type === 'merchant' && suggestion.slug 
+                  ? `/shop/${suggestion.slug}` 
+                  : null;
+                const linkHref = merchantLink || `/search?q=${encodeURIComponent(query.trim())}`;
 
-                  {/* Text Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-blue-600 truncate">
-                      {suggestion.name}
-                    </div>
-                    {suggestion.website && (
-                      <div className="text-xs text-gray-500 truncate">
-                        {suggestion.website}
+                return (
+                  <Link
+                    key={`${suggestion.type}-${suggestion.id}`}
+                    href={linkHref}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
+                      suggestion.isSelected ? 'bg-gray-50' : ''
+                    }`}
+                    role="option"
+                    aria-selected={suggestion.isSelected}
+                  >
+                    {/* Merchant Logo */}
+                    {suggestion.logo && (
+                      <div className="flex-shrink-0 w-10 h-10 rounded overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
+                        <Image
+                          src={suggestion.logo}
+                          alt={`${suggestion.name} logo`}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-contain"
+                          sizes="40px"
+                          loading="lazy"
+                        />
                       </div>
                     )}
-                  </div>
-                </Link>
-              ))}
+
+                    {/* Merchant Name */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {suggestion.name}
+                      </div>
+                      {suggestion.type === 'merchant' && suggestion.website && (
+                        <div className="text-xs text-gray-500 truncate">
+                          {suggestion.website}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="p-4 text-center text-gray-500 text-sm" role="status" aria-live="polite">
