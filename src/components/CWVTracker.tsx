@@ -14,8 +14,8 @@ declare global {
  * Tracks LCP, CLS, and INP and sends to analytics
  * SLOs: LCP < 2.5s p75, CLS < 0.1, INP < 200ms
  * 
- * Optional: Install web-vitals package for full tracking:
- * npm install web-vitals
+ * Note: web-vitals package is optional. Install with: npm install web-vitals
+ * This component will gracefully skip tracking if web-vitals is not installed.
  */
 export default function CWVTracker() {
   useEffect(() => {
@@ -25,8 +25,17 @@ export default function CWVTracker() {
     // Check if web-vitals is available (optional dependency)
     const trackCWV = async () => {
       try {
-        // Dynamic import to avoid SSR issues
-        const { onCLS, onINP, onLCP } = await import('web-vitals');
+        // Dynamic import to avoid SSR issues and build failures
+        // Use a more defensive approach that won't fail the build
+        const webVitalsModule = await import('web-vitals').catch(() => null);
+        
+        if (!webVitalsModule) {
+          // web-vitals not installed - that's okay, just skip tracking
+          console.debug('web-vitals not available. Install with: npm install web-vitals');
+          return;
+        }
+
+        const { onCLS, onINP, onLCP } = webVitalsModule;
         
         // Track Largest Contentful Paint (LCP)
         onLCP((metric) => {
@@ -68,7 +77,7 @@ export default function CWVTracker() {
           }
         });
       } catch (error) {
-        // web-vitals not installed - that's okay, just log
+        // web-vitals not installed or failed to load - that's okay
         console.debug('web-vitals not available. Install with: npm install web-vitals');
       }
     };

@@ -58,14 +58,6 @@ export default function MerchantIndex({
     }, {} as Record<string, Merchant[]>);
   }, [filteredMerchants]);
 
-export default function MerchantIndex({ 
-  merchants, 
-  pagination, 
-  initialPage 
-}: MerchantIndexProps) {
-  const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState("ALL");
-
   const handlePageChange = (newPage: number) => {
     router.push(`/shop?page=${newPage}`);
   };
