@@ -1,24 +1,14 @@
 "use client";
 import { useState } from "react";
-import { Search, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import NavigationMenu from "@/components/NavigationMenu";
+import SearchDropdown from "@/components/SearchDropdown";
 
 const Header = () => {
-  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
-    const query = formData.get('search') as string;
-    if (query && query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100">
@@ -41,31 +31,15 @@ const Header = () => {
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</Link>
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              name="search"
-              type="text"
-              placeholder="搜尋最抵Deal"
-              className="pl-10 pr-4 py-2 w-64 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </form>
+          <SearchDropdown placeholder="搜尋最抵Deal" className="w-64" />
         </nav>
 
         {/* Right Actions */}
         <div className="flex items-center space-x-3">
           {/* Mobile Search */}
-          <form onSubmit={handleSearchSubmit} className="md:hidden relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              name="search"
-              type="text"
-              placeholder="搜尋"
-              className="pl-10 pr-4 py-2 w-32 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </form>
+          <div className="md:hidden">
+            <SearchDropdown placeholder="搜尋" className="w-32" />
+          </div>
           
           <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
             最新快訊訊息

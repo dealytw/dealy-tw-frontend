@@ -303,6 +303,10 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
     }
   };
 
+  const handleSearchSubmitFromDropdown = () => {
+    // This will be handled by SearchDropdown component
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -337,24 +341,26 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
           
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto relative">
-            <form onSubmit={handleSearchSubmit} className="flex bg-white rounded-full shadow-lg overflow-hidden">
-              <div className="flex items-center pl-6 pr-3">
-                <Search className="h-5 w-5 text-gray-400" />
+            <div className="flex bg-white rounded-full shadow-lg overflow-hidden items-center">
+              <div className="flex-1">
+                <SearchDropdown 
+                  placeholder={initialData.hero?.searchPlaceholder || "搜尋最抵Deal"}
+                  className="w-full"
+                />
               </div>
-              <input
-                type="text"
-                name="search"
-                placeholder={initialData.hero?.searchPlaceholder || "搜尋最抵Deal"}
-                className="flex-1 py-4 px-2 text-lg outline-none"
-                required
-              />
               <Button 
-                type="submit"
+                type="button"
+                onClick={() => {
+                  const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                  if (input?.value.trim()) {
+                    router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
+                  }
+                }}
                 className="m-2 px-8 py-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full"
               >
                 搜尋
               </Button>
-            </form>
+            </div>
           </div>
         </div>
       </section>
