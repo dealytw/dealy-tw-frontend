@@ -61,9 +61,16 @@ export async function searchAction(query: string, market: string = 'tw'): Promis
         const name = merchant.merchant_name?.toLowerCase() || '';
         const slug = merchant.slug?.toLowerCase() || '';
         const summary = merchant.summary?.toLowerCase() || '';
+        const website = merchant.website?.toLowerCase() || '';
+        const affiliateLink = merchant.affiliate_link?.toLowerCase() || '';
         const q = searchQuery.toLowerCase();
         
-        return name.includes(q) || slug.includes(q) || summary.includes(q);
+        // Match in name, slug, summary, website URL, or affiliate link
+        return name.includes(q) || 
+               slug.includes(q) || 
+               summary.includes(q) ||
+               website.includes(q) ||
+               affiliateLink.includes(q);
       })
       .slice(0, 20)
       .map((merchant: any) => ({

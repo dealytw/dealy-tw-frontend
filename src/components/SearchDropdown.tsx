@@ -212,7 +212,13 @@ export default function SearchDropdown({
         const { searchAction } = await import('@/lib/search-actions');
         const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
         
+        console.log('🔍 Searching for:', query.trim(), 'market:', market);
         const data = await searchAction(query.trim(), market);
+        console.log('📦 Search results:', { 
+          merchants: data.merchants?.length || 0, 
+          coupons: data.coupons?.length || 0,
+          error: data.error 
+        });
 
         // Check if request was aborted
         if (abortControllerRef.current?.signal.aborted) {
@@ -221,6 +227,7 @@ export default function SearchDropdown({
 
         // Handle error from server action
         if (data.error) {
+          console.error('❌ Search error:', data.error);
           throw new Error(data.error);
         }
 
