@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FloatingButton } from "@/lib/floating-buttons";
 
 interface FloatingActionButtonsProps {
@@ -9,14 +9,13 @@ interface FloatingActionButtonsProps {
 }
 
 export default function FloatingActionButtons({ buttons }: FloatingActionButtonsProps) {
-  const router = useRouter();
-
-  const handleClick = (button: FloatingButton) => {
+  const getHref = (button: FloatingButton): string => {
     if (button.merchant) {
-      router.push(`/shop/${button.merchant.slug}`);
+      return `/shop/${button.merchant.slug}`;
     } else if (button.special_offer) {
-      router.push(`/special-offers/${button.special_offer.slug}`);
+      return `/special-offers/${button.special_offer.slug}`;
     }
+    return '#';
   };
 
   return (
@@ -30,11 +29,12 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
       {buttons.map((button) => {
         const iconUrl = button.icon?.url;
         const label = button.button_label;
+        const href = getHref(button);
 
         return (
-          <button
+          <Link
             key={button.id}
-            onClick={() => handleClick(button)}
+            href={href}
             className="relative flex items-center justify-center w-16 h-16 rounded-full shadow-2xl transition-all duration-300 ease-in-out overflow-hidden
                        bg-white text-gray-800 hover:scale-105
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -61,7 +61,7 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
             ) : (
               <span className="text-sm font-semibold">{label?.charAt(0).toUpperCase()}</span>
             )}
-          </button>
+          </Link>
         );
       })}
     </div>
