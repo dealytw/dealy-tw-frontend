@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CouponModal from "@/components/CouponModal";
@@ -157,10 +158,14 @@ const MerchantSlider = ({ merchants, router }: MerchantSliderProps) => {
             }}
           >
             <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
-              <img
+              <Image
                 src={merchant.logoUrl}
                 alt={merchant.name}
+                width={96}
+                height={96}
                 className="w-full h-full object-cover"
+                sizes="96px"
+                loading={index < 6 ? "eager" : "lazy"}
               />
             </div>
             <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>

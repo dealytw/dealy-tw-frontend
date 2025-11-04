@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import NavigationMenu from "@/components/NavigationMenu";
 
@@ -25,10 +26,14 @@ const Header = () => {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
-            <img 
+            <Image 
               src="/dealytwlogo.svg"
               alt="dealy logo"
+              width={120}
+              height={32}
               className="h-8 w-auto"
+              priority
+              sizes="(max-width: 768px) 100px, 120px"
             />
           </Link>
         </div>

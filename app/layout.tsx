@@ -5,6 +5,9 @@ import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/j
 import FloatingActionContainer from "@/components/FloatingActionContainer";
 import { getDomainConfig as getDomainConfigServer, getMarketLocale, localeToHtmlLang, localeToHreflang } from "@/lib/domain-config";
 import { getHreflangLinks } from "@/seo/meta";
+import { notoSansTC } from "@/lib/fonts";
+import Script from "next/script";
+import CWVTracker from "@/components/CWVTracker";
 
 export const metadata: Metadata = {
   title: "Dealy - 香港最佳優惠碼平台",
@@ -52,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const sameAs = [alternateUrl];
   
   return (
-    <html lang={htmlLang} suppressHydrationWarning>
+    <html lang={htmlLang} suppressHydrationWarning className={notoSansTC.variable}>
       <head>
         {/* Preconnect to CMS for faster API calls */}
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
@@ -118,16 +121,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
           {children}
           <FloatingActionContainer />
+          <CWVTracker />
         </Providers>
         
-        {/* Ad Link verification script */}
-        <script dangerouslySetInnerHTML={{
-          __html: 'var ConverlyCustomData = {channelId: null};'
-        }} />
-        <script 
-          async 
-          defer 
+        {/* Ad Link verification script - Load after interactive */}
+        <Script id="converly-init" strategy="afterInteractive">
+          {`var ConverlyCustomData = {channelId: null};`}
+        </Script>
+        <Script 
           src="https://cdn.affiliates.one/production/adlinks/1c6d7c838b3bde9154ede84d8c4ef4ab8420bf1990f82b63a3af81acecfc3323.js"
+          strategy="afterInteractive"
         />
       </body>
     </html>

@@ -144,6 +144,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-noto-sans-tc), system-ui, -apple-system, sans-serif;
   }
 }
 
