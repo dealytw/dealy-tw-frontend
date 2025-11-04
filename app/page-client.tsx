@@ -390,10 +390,10 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
             
             <div className="flex flex-wrap justify-center gap-8">
               {initialData.categoryBlock.categories.map((category) => (
-                <div 
-                  key={category.id} 
-                  className="text-center group cursor-pointer"
-                  onClick={() => router.push(`/special-offers/${category.slug}`)}
+                <Link
+                  key={category.id}
+                  href={`/special-offers/${category.slug}`}
+                  className="text-center group"
                 >
                   <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                     {category.iconUrl ? (
@@ -407,7 +407,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                     )}
                   </div>
                   <p className="text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
-                </div>
+                </Link>
               ))}
             </div>
             

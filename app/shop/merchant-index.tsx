@@ -1,9 +1,11 @@
 "use client";
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 interface Merchant {
   id: string;
@@ -56,11 +58,13 @@ export default function MerchantIndex({
     }, {} as Record<string, Merchant[]>);
   }, [filteredMerchants]);
 
-  const handleMerchantClick = (merchant: Merchant) => {
-    router.push(`/shop/${merchant.slug}`);
-  };
-
-  const handlePageChange = (newPage: number) => {
+export default function MerchantIndex({ 
+  merchants, 
+  pagination, 
+  initialPage 
+}: MerchantIndexProps) {
+  const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState("ALL");
     router.push(`/shop?page=${newPage}`);
   };
 
@@ -107,17 +111,21 @@ export default function MerchantIndex({
               {/* Merchants Grid for this letter */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
                 {groupedMerchants[letter].map((merchant) => (
-                  <div 
+                  <Link
                     key={merchant.id}
-                    className="text-center cursor-pointer group"
-                    onClick={() => handleMerchantClick(merchant)}
+                    href={`/shop/${merchant.slug}`}
+                    className="text-center group"
                   >
                     {/* Merchant Logo - Rounded */}
                     <div className="w-32 h-32 mx-auto mb-3 rounded-full overflow-hidden bg-white border border-gray-100 flex items-center justify-center group-hover:shadow-lg transition-shadow">
-                      <img 
+                      <Image 
                         src={merchant.logo}
                         alt={merchant.name}
+                        width={128}
+                        height={128}
                         className="w-full h-full object-cover"
+                        sizes="128px"
+                        loading="lazy"
                       />
                     </div>
                     
@@ -125,7 +133,7 @@ export default function MerchantIndex({
                     <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
                       {merchant.name}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

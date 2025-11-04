@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 
 interface DealySidebarProps {
@@ -23,8 +23,6 @@ interface DealySidebarProps {
 }
 
 const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps) => {
-  const router = useRouter();
-
   return (
     <div className="w-80 space-y-6">
       {/* Popular Merchants */}
@@ -36,10 +34,10 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
           <div className="grid grid-cols-2 gap-4">
             {popularMerchants.items && popularMerchants.items.length > 0 ? (
               popularMerchants.items.map((merchant: any) => (
-                <div 
+                <Link 
                   key={merchant.id} 
-                  className="text-center cursor-pointer group"
-                  onClick={() => router.push(`/shop/${merchant.slug}`)}
+                  href={`/shop/${merchant.slug}`}
+                  className="text-center group"
                 >
                   <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-lg group-hover:shadow-xl transition-shadow">
                     <Image 
@@ -55,7 +53,7 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
                   <p className="text-xs text-blue-600 font-medium leading-tight">
                     {merchant.name}
                   </p>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="col-span-2 text-center py-4">
@@ -75,13 +73,13 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
           <div className="flex flex-wrap gap-2">
             {sidebarCategories.categories && sidebarCategories.categories.length > 0 ? (
               sidebarCategories.categories.map((category: any) => (
-                <span 
+                <Link
                   key={category.id}
-                  className="text-xs px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full cursor-pointer hover:bg-blue-50 transition-colors"
-                  onClick={() => router.push(`/category/${category.slug}`)}
+                  href={`/category/${category.slug}`}
+                  className="text-xs px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                 >
                   #{category.name}
-                </span>
+                </Link>
               ))
             ) : (
               <div className="text-center py-4">

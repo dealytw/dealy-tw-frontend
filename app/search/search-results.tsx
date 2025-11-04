@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CouponCard from "@/components/CouponCard";
 import { Search, X, Store, Tag, ArrowLeft } from "lucide-react";
+import Image from "next/image";
 
 type SearchResult = {
   merchants: Array<{
@@ -150,23 +152,28 @@ export default function SearchResults({ searchResults, query }: SearchResultsPro
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
                       {searchResults.merchants.map((merchant) => (
-                        <Card 
+                        <Link
                           key={merchant.id}
-                          className="cursor-pointer hover:shadow-lg transition-shadow"
-                          onClick={() => router.push(`/shop/${merchant.slug}`)}
+                          href={`/shop/${merchant.slug}`}
                         >
-                          <div className="p-6 text-center">
-                            <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden bg-white p-2">
-                              <img
-                                src={merchant.logo}
-                                alt={merchant.name}
-                                className="w-full h-full object-contain"
-                              />
+                          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                            <div className="p-6 text-center">
+                              <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden bg-white p-2">
+                                <Image
+                                  src={merchant.logo}
+                                  alt={merchant.name}
+                                  width={80}
+                                  height={80}
+                                  className="w-full h-full object-contain"
+                                  sizes="80px"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
+                              <p className="text-xs text-gray-600 line-clamp-3">{merchant.description}</p>
                             </div>
-                            <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
-                            <p className="text-xs text-gray-600 line-clamp-3">{merchant.description}</p>
-                          </div>
-                        </Card>
+                          </Card>
+                        </Link>
                       ))}
                     </div>
                   </div>

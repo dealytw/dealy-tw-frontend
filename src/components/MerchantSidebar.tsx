@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 
 // Helper function to extract text from Strapi rich text
@@ -166,10 +166,10 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
         <div className="grid grid-cols-3 gap-3">
           {hotstoreMerchants && hotstoreMerchants.length > 0 ? (
             hotstoreMerchants.map((merchant) => (
-              <div 
-                key={merchant.id} 
-                className="text-center cursor-pointer group"
-                onClick={() => router.push(`/shop/${merchant.slug}`)}
+              <Link
+                key={merchant.id}
+                href={`/shop/${merchant.slug}`}
+                className="text-center group"
               >
                 <div className="w-12 h-12 mx-auto mb-1 border rounded-full overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
                   {merchant.logoUrl ? (
@@ -191,7 +191,7 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
                 <p className="text-[10px] text-gray-600 font-medium leading-tight truncate">
                   {merchant.name}
                 </p>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="col-span-3 text-center py-4">
