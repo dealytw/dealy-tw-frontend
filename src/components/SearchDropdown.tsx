@@ -208,17 +208,43 @@ export default function SearchDropdown({
     // Debounce API call
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        // Use Server Action for better error handling and server-side processing
-        const { searchAction } = await import('@/lib/search-actions');
         const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
         
         console.log('🔍 Searching for:', query.trim(), 'market:', market);
-        const data = await searchAction(query.trim(), market);
-        console.log('📦 Search results:', { 
-          merchants: data.merchants?.length || 0, 
-          coupons: data.coupons?.length || 0,
-          error: data.error 
-        });
+        
+        // Try Server Action first, fallback to API route if needed
+        let data;
+        try {
+          const { searchAction } = await import('@/lib/search-actions');
+          data = await searchAction(query.trim(), market);
+          console.log('📦 Search results (Server Action):', { 
+            merchants: data.merchants?.length || 0, 
+            coupons: data.coupons?.length || 0,
+            error: data.error 
+          });
+        } catch (serverActionError: any) {
+          console.warn('⚠️ Server Action failed, trying API route:', serverActionError);
+          // Fallback to API route
+          const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}&market=${market}`, {
+            signal: abortControllerRef.current?.signal,
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Search failed: ${response.statusText}`);
+          }
+          
+          const apiData = await response.json();
+          data = {
+            merchants: apiData.merchants || [],
+            coupons: apiData.coupons || [],
+            error: apiData.error
+          };
+          console.log('📦 Search results (API Route):', { 
+            merchants: data.merchants?.length || 0, 
+            coupons: data.coupons?.length || 0,
+            error: data.error 
+          });
+        }
 
         // Check if request was aborted
         if (abortControllerRef.current?.signal.aborted) {
