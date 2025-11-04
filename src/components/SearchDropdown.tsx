@@ -163,7 +163,7 @@ export default function SearchDropdown({
         setSuggestions([]);
         setIsLoading(false);
       }
-    }, 300); // 300ms debounce
+    }, 150); // Reduced to 150ms for faster response
 
     return () => {
       if (debounceTimerRef.current) {
