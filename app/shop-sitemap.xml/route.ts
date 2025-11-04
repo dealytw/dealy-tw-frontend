@@ -9,12 +9,15 @@ export async function GET() {
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
 
   // Fetch all merchants dynamically from CMS
+  // Only include published merchants (publishedAt exists)
   let merchantPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
   try {
     const merchantParams = {
       "filters[market][key][$eq]": market,
+      "filters[publishedAt][$notNull]": true, // Only published merchants
       "fields[0]": "slug",
       "fields[1]": "updatedAt",
+      "fields[2]": "publishedAt",
       "pagination[pageSize]": "500",
       "sort[0]": "merchant_name:asc",
     }
@@ -24,12 +27,14 @@ export async function GET() {
       { revalidate: 86400, tag: 'sitemap:merchants' }
     )
 
-    merchantPages = (merchantsData?.data || []).map((merchant: any) => ({
-      url: `${baseUrl}/shop/${merchant.slug}`,
-      lastmod: merchant.updatedAt ? new Date(merchant.updatedAt).toISOString() : currentDate.toISOString(),
-      changefreq: 'daily',
-      priority: '0.8',
-    }))
+    merchantPages = (merchantsData?.data || [])
+      .filter((merchant: any) => merchant.publishedAt) // Double-check published status
+      .map((merchant: any) => ({
+        url: `${baseUrl}/shop/${merchant.slug}`,
+        lastmod: merchant.updatedAt ? new Date(merchant.updatedAt).toISOString() : currentDate.toISOString(),
+        changefreq: 'daily',
+        priority: '0.8',
+      }))
   } catch (error) {
     console.error('Error fetching merchants for sitemap:', error)
   }
