@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -186,7 +185,7 @@ const DealyCouponCard = ({
   };
 
   return (
-    <Card className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100">
+    <article className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground">
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-col md:flex-row">
         {/* Left: Logo and Badge */}
@@ -431,7 +430,7 @@ const DealyCouponCard = ({
           </div>
         </div>
       </div>
-    </Card>
+    </article>
   );
 };
 

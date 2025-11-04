@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -52,7 +51,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
 
   if (loading) {
     return (
-      <Card className="relative overflow-hidden bg-white rounded-lg shadow-sm">
+      <article className="relative overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-4 pb-0">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded mb-2"></div>
@@ -66,7 +65,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
             <div className="h-8 bg-pink-300 rounded w-16"></div>
           </div>
         </div>
-      </Card>
+      </article>
     );
   }
 
@@ -124,7 +123,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
   };
 
   return (
-    <Card className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
       {/* Merchant Logo */}
       <div className="absolute top-3 right-3 w-8 h-8 rounded-full overflow-hidden bg-gray-100">
         {relatedMerchant.logo ? (
@@ -166,7 +165,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
           {getButtonText(coupon.coupon_type)}
         </Button>
       </div>
-    </Card>
+    </article>
   );
 };
 

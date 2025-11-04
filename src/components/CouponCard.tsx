@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
@@ -55,7 +54,7 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
   const timeLeft = calculateTimeLeft(coupon.expires_at);
 
   return (
-    <Card className="overflow-hidden border border-gray-200">
+    <article className="overflow-hidden border border-gray-200 rounded-lg bg-card text-card-foreground shadow-sm">
       <div className="flex flex-col md:flex-row">
         {/* Left: Logo and Badge */}
         <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
@@ -146,7 +145,7 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
           )}
         </div>
       </div>
-    </Card>
+    </article>
   );
 };
 
