@@ -379,9 +379,6 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   }, [coupons, expiredCoupons]);
 
   const handleCouponClick = (coupon: any) => {
-    // Track click (async, don't wait)
-    trackCouponClick(coupon.id);
-    
     // Parallel actions (no delays, no setTimeout)
     // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
     const baseUrl = window.location.href.split('#')[0]; // Remove existing hash

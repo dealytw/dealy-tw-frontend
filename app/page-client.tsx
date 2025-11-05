@@ -264,9 +264,6 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
   };
 
   const handleCouponClick = (coupon: CouponRailItem) => {
-    // Track click (async, don't wait)
-    trackCouponClick();
-    
     // Parallel actions (no delays, no setTimeout)
     if (coupon.merchantSlug) {
       // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
