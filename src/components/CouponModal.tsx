@@ -156,18 +156,25 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
           )}
 
           {/* Offer Details */}
-          <div className="text-sm text-gray-600 leading-relaxed">
-            {coupon.description}
-          </div>
+          {coupon.steps && (
+            <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              <div dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
+            </div>
+          )}
+          {!coupon.steps && coupon.description && (
+            <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              {coupon.description}
+            </div>
+          )}
 
           {/* Warm Tip Section */}
           {coupon.terms && (
             <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
               <div className="flex items-start gap-2">
                 <ShoppingBag className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-gray-700 whitespace-pre-line">
                   <p className="font-medium text-gray-800 mb-1">溫馨提示:</p>
-                  <p>{coupon.terms}</p>
+                  <div dangerouslySetInnerHTML={{ __html: coupon.terms }}></div>
                 </div>
               </div>
             </div>

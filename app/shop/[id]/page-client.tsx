@@ -334,7 +334,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
       expiry: coupon.expires_at || "長期有效",
       usageCount: coupon.display_count || coupon.user_count || 0, // Use display_count (calculated) instead of user_count (actual clicks)
       steps: renderRichText(coupon.description), // Map description to steps with formatting preserved
-      terms: extractTextFromRichText(coupon.editor_tips), // Map editor_tips to terms (⚠️ 溫馨提示)
+      terms: renderRichText(coupon.editor_tips), // Map editor_tips to terms with formatting preserved (⚠️ 溫馨提示)
       affiliateLink: coupon.affiliate_link || '#',
       coupon_type: coupon.coupon_type,
       merchant: {
