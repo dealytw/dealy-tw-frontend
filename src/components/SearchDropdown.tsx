@@ -371,7 +371,14 @@ export default function SearchDropdown({
       case 'Enter':
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-          handleSuggestionClick(suggestions[selectedIndex]);
+          const suggestion = suggestions[selectedIndex];
+          // Navigate using Link's href for proper prefetching
+          if (suggestion.type === 'merchant' && suggestion.slug) {
+            router.push(`/shop/${suggestion.slug}`);
+          } else {
+            router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+          }
+          handleSuggestionClick(suggestion);
         } else {
           handleSearchSubmit(e);
         }
