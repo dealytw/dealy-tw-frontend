@@ -56,25 +56,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Build sameAs array for Organization schema (link to other domain)
   const sameAs = [alternateUrl];
 
-  // Fetch merchants for search - same approach as /shop page
+  // Fetch merchants for search - EXACT same approach as /shop page
+  // Using market relation filter: filters[market][key][$eq] to get all merchants for this market
   let searchMerchants: Array<{ id: string | number; name: string; slug: string; logo: string; website: string }> = [];
   try {
+    // Match shop page exactly - use same fields and populate structure
     const merchantParams = {
-      "filters[market][key][$eq]": marketKey,
+      "filters[market][key][$eq]": marketKey, // Filter by market relation key
       "fields[0]": "id",
       "fields[1]": "merchant_name",
       "fields[2]": "slug",
       "fields[3]": "summary",
-      "fields[4]": "website",
-      "fields[5]": "affiliate_link",
+      "fields[4]": "default_affiliate_link", // Use default_affiliate_link like shop page
       "sort[0]": "merchant_name:asc",
       "pagination[page]": "1",
-      "pagination[pageSize]": "500", // Get more merchants like shop page
-      "populate[logo][fields][0]": "url",
-      "populate[market][fields][0]": "key",
+      "pagination[pageSize]": "500", // Same as shop page
+      "populate[logo][fields][0]": "url", // Populate logo relation
+      "populate[market][fields][0]": "key", // Populate market relation
     };
 
-    console.log(`[Layout] Fetching merchants for search, market: ${marketKey}`);
+    console.log(`[Layout] Fetching merchants for search via market relation, market: ${marketKey}`);
+    console.log(`[Layout] Query params:`, merchantParams);
+    
     const merchantsData = await strapiFetch<{ data: any[] }>(
       `/api/merchants?${qs(merchantParams)}`,
       { revalidate: 3600, tag: `search:all-merchants:${marketKey}` }
@@ -85,7 +88,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       firstMerchant: merchantsData?.data?.[0] ? {
         id: merchantsData.data[0].id,
         merchant_name: merchantsData.data[0].merchant_name,
-        slug: merchantsData.data[0].slug
+        slug: merchantsData.data[0].slug,
+        hasLogo: !!merchantsData.data[0].logo,
+        hasMarket: !!merchantsData.data[0].market
       } : null
     });
 
@@ -94,13 +99,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       name: merchant.merchant_name,
       slug: merchant.slug,
       logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
-      website: merchant.website || merchant.affiliate_link || "",
+      website: merchant.default_affiliate_link || merchant.website || "",
     }));
 
     console.log(`[Layout] Prefetched ${searchMerchants.length} merchants for search`);
     
     if (searchMerchants.length === 0) {
       console.warn(`[Layout] WARNING: No merchants fetched! Check if market '${marketKey}' has merchants or API connection.`);
+    } else {
+      console.log(`[Layout] Sample merchants:`, searchMerchants.slice(0, 3).map(m => ({ name: m.name, slug: m.slug })));
     }
   } catch (error: any) {
     console.error('[Layout] Error fetching merchants for search:', error);
