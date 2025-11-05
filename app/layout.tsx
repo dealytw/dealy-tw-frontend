@@ -186,15 +186,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <CWVTracker />
           </SearchProvider>
         </Providers>
-        
-        {/* Ad Link verification script - Load after interactive */}
-        <Script id="converly-init" strategy="afterInteractive">
-          {`var ConverlyCustomData = {channelId: null};`}
-        </Script>
-        <Script 
-          src="https://cdn.affiliates.one/production/adlinks/1c6d7c838b3bde9154ede84d8c4ef4ab8420bf1990f82b63a3af81acecfc3323.js"
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CouponModal from "@/components/CouponModal";
@@ -477,6 +478,18 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       
       {/* Footer */}
       <Footer />
+      
+      {/* Ad Link verification scripts - Only on homepage, before </body> tag */}
+      {/* Initialize Converly with null channelId to prevent continuous fetching when not enabled */}
+      <Script id="converly-init" strategy="afterInteractive">
+        {`var ConverlyCustomData = {channelId: null};`}
+      </Script>
+      {/* Adlink script - only loads once, won't fetch/post continuously if channelId is null */}
+      <Script 
+        id="adlink-script"
+        src="https://cdn.affiliates.one/production/adlinks/1c6d7c838b3bde9154ede84d8c4ef4ab8420bf1990f82b63a3af81acecfc3323.js"
+        strategy="afterInteractive"
+      />
     </div>
   );
 };
