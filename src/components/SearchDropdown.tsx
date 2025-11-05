@@ -395,18 +395,12 @@ export default function SearchDropdown({
   }, [query, router, onClose]);
 
   const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {
-    if (suggestion.type === 'merchant' && suggestion.slug) {
-      router.push(`/shop/${suggestion.slug}`);
-    } else if (suggestion.type === 'coupon' && suggestion.slug) {
-      router.push(`/shop/${suggestion.slug}`);
-    } else {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
+    // Just close dropdown and clear state - Link will handle navigation with prefetching
     setShowDropdown(false);
     setQuery("");
     setSelectedIndex(-1);
     if (onClose) onClose();
-  }, [query, router, onClose]);
+  }, [onClose]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -484,6 +478,7 @@ export default function SearchDropdown({
                     key={`${suggestion.type}-${suggestion.id}`}
                     href={linkHref}
                     onClick={() => handleSuggestionClick(suggestion)}
+                    prefetch={true}
                     className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
                       suggestion.isSelected ? 'bg-gray-50' : ''
                     }`}
