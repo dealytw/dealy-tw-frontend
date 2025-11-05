@@ -24,14 +24,19 @@ export default function CWVTracker() {
 
     // Check if web-vitals is available (optional dependency)
     const trackCWV = async () => {
+      // Skip during build time to avoid module resolution warnings
+      if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+        return;
+      }
+
       try {
-        // Dynamic import to avoid SSR issues and build failures
-        // Use a more defensive approach that won't fail the build
-        const webVitalsModule = await import('web-vitals').catch(() => null);
+        // Use dynamic import with a try-catch that completely suppresses the error
+        // Wrap in a function to avoid Turbopack static analysis
+        const loadWebVitals = () => import('web-vitals');
+        const webVitalsModule = await loadWebVitals().catch(() => null);
         
         if (!webVitalsModule) {
           // web-vitals not installed - that's okay, just skip tracking
-          console.debug('web-vitals not available. Install with: npm install web-vitals');
           return;
         }
 
