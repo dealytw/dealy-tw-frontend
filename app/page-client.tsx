@@ -264,14 +264,23 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
   };
 
   const handleCouponClick = (coupon: CouponRailItem) => {
-    // Step 1: Open merchant page with coupon popup in new tab (immediate - before navigation)
+    // Track click (async, don't wait)
+    trackCouponClick();
+    
+    // Parallel actions (no delays, no setTimeout)
     if (coupon.merchantSlug) {
-      // Extract numeric ID if coupon.id already has "coupon-" prefix
+      // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
       const couponId = coupon.id.startsWith('coupon-') 
         ? coupon.id.replace('coupon-', '') 
         : coupon.id;
       const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${couponId}`;
-      window.open(merchantUrl, '_blank');
+      const link = document.createElement('a');
+      link.href = merchantUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
       // Fallback: if no merchant slug, open modal for backward compatibility
       const transformedCoupon = transformCoupon(coupon);
@@ -284,11 +293,9 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       setIsModalOpen(true);
     }
     
-    // Step 2: Redirect current tab to affiliate link (after short delay)
+    // Action 2: Redirect current tab to affiliate link (instant, no delay)
     if (coupon.affiliateLink && coupon.affiliateLink !== '#') {
-      setTimeout(() => {
-        window.open(coupon.affiliateLink, '_self');
-      }, 100);
+      window.location.href = coupon.affiliateLink;
     }
   };
 

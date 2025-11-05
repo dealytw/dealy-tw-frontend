@@ -110,15 +110,23 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
 
   const handleButtonClick = () => {
     if (coupon) {
-      // Step 1: Open new tab with related merchant page + modal + auto-scroll (immediate)
+      // Parallel actions (no delays, no setTimeout)
+      // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
       const baseUrl = window.location.href.split('#')[0]; // Remove existing hash
       const relatedMerchantUrl = baseUrl.replace(`/shop/${window.location.pathname.split('/').pop()}`, `/shop/${relatedMerchant.slug}`);
-      window.open(relatedMerchantUrl + `#coupon-${coupon.id}`, '_blank');
+      const merchantUrl = relatedMerchantUrl + `#coupon-${coupon.id}`;
+      const link = document.createElement('a');
+      link.href = merchantUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
-      // Step 2: Redirect current tab to affiliate link (after short delay)
-      setTimeout(() => {
-        window.open(coupon.affiliate_link, '_self');
-      }, 100);
+      // Action 2: Redirect current tab to affiliate link (instant, no delay)
+      if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+        window.location.href = coupon.affiliate_link;
+      }
     }
   };
 

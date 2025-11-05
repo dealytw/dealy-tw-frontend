@@ -379,26 +379,25 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   }, [coupons, expiredCoupons]);
 
   const handleCouponClick = (coupon: any) => {
-    // Transform the coupon for the modal using the same transformation as DealyCouponCard
-    const transformedCoupon = transformCoupon(coupon);
-    if (!transformedCoupon) {
-      console.error('Failed to transform coupon for modal:', coupon);
-      return;
-    }
+    // Track click (async, don't wait)
+    trackCouponClick(coupon.id);
     
-    // Set the modal data
-    setSelectedCoupon(transformedCoupon);
-    setIsModalOpen(true);
-    
-    // Step 1: Open new tab with merchant page + modal + auto-scroll (immediate)
-    // Replace any existing hash with the new coupon hash
+    // Parallel actions (no delays, no setTimeout)
+    // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
     const baseUrl = window.location.href.split('#')[0]; // Remove existing hash
-    window.open(baseUrl + `#coupon-${coupon.id}`, '_blank');
+    const merchantUrl = baseUrl + `#coupon-${coupon.id}`;
+    const link = document.createElement('a');
+    link.href = merchantUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
-    // Step 2: Redirect current tab to affiliate link (after short delay)
-    setTimeout(() => {
-      window.open(coupon.affiliate_link, '_self');
-    }, 100);
+    // Action 2: Redirect current tab to affiliate link (instant, no delay)
+    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+      window.location.href = coupon.affiliate_link;
+    }
   };
 
   return (
@@ -481,6 +480,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                         coupon={transformedCoupon} 
                         onClick={() => handleCouponClick(coupon)}
                         isScrolledTo={scrolledToCouponId === coupon.id}
+                        merchantSlug={merchant.slug}
                       />
                     </div>
                   );

@@ -109,18 +109,22 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
   };
 
   const handleCouponClick = (coupon: FlashDeal) => {
-    const transformedCoupon = transformCoupon(coupon);
-    if (!transformedCoupon) {
-      console.error('Failed to transform coupon:', coupon);
-      return;
+    // Parallel actions (no delays, no setTimeout)
+    if (coupon.merchant?.slug) {
+      // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
+      const merchantUrl = `/shop/${coupon.merchant.slug}#coupon-${coupon.id}`;
+      const link = document.createElement('a');
+      link.href = merchantUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
     
-    setSelectedCoupon(transformedCoupon);
-    setIsModalOpen(true);
-    
-    // Open affiliate link in same tab
-    if (transformedCoupon.affiliateLink && transformedCoupon.affiliateLink !== '#') {
-      window.open(transformedCoupon.affiliateLink, '_self');
+    // Action 2: Redirect current tab to affiliate link (instant, no delay)
+    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+      window.location.href = coupon.affiliate_link;
     }
   };
 
@@ -226,6 +230,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
                   <DealyCouponCard
                     coupon={transformedCoupon}
                     onClick={() => handleCouponClick(coupon)}
+                    merchantSlug={coupon.merchant?.slug}
                   />
                 </div>
               );

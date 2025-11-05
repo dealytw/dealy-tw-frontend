@@ -27,12 +27,14 @@ interface DealyCouponCardProps {
   };
   onClick: () => void;
   isScrolledTo?: boolean; // New prop to indicate if this coupon is scrolled to
+  merchantSlug?: string; // Merchant slug for building merchant page URL
 }
 
 const DealyCouponCard = ({
   coupon,
   onClick,
-  isScrolledTo = false
+  isScrolledTo = false,
+  merchantSlug
 }: DealyCouponCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
