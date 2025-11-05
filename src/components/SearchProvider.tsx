@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { getAllMerchantsForSearch } from "@/lib/search-actions";
 
 interface MerchantSearchData {
   id: string | number;
@@ -33,23 +32,41 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('🚀 Starting merchant prefetch...');
         const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
-        const data = await getAllMerchantsForSearch(market);
         
-        if (data.length === 0) {
+        // Use API route instead of Server Action for better error handling
+        const response = await fetch(`/api/merchants-all?market=${market}`, {
+          cache: 'force-cache', // Use cached data if available
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => response.statusText);
+          throw new Error(`Fetch failed: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        const merchants = data.merchants || [];
+        
+        if (merchants.length === 0) {
           console.warn('⚠️ No merchants fetched! Check API connection.');
         } else {
-          setMerchants(data);
-          console.log(`✅ Prefetched ${data.length} merchants for instant search`);
+          setMerchants(merchants);
+          console.log(`✅ Prefetched ${merchants.length} merchants for instant search`);
           
           // Debug: Log sample merchants
-          console.log('Sample merchants:', data.slice(0, 5).map(m => ({
+          console.log('Sample merchants:', merchants.slice(0, 5).map(m => ({
             name: m.name,
             slug: m.slug,
             website: m.website
           })));
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Failed to prefetch merchants:', error);
+        console.error('Error details:', error.message, error.stack);
       } finally {
         setIsLoading(false);
       }
