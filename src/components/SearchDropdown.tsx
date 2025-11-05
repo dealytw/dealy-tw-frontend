@@ -423,10 +423,16 @@ export default function SearchDropdown({
     inputRef.current?.focus();
   }, []);
 
+  // Check if this is the homepage search (has homepage-search class)
+  const isHomepage = className.includes('homepage-search');
+
   return (
     <div ref={searchRef} className={`relative ${className}`}>
       <form onSubmit={handleSearchSubmit} className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+        {/* Hide search icon on homepage - it's already in the parent container */}
+        {!isHomepage && (
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+        )}
         <input
           ref={inputRef}
           type="text"
@@ -435,7 +441,11 @@ export default function SearchDropdown({
           onKeyDown={handleKeyDown}
           onFocus={() => query.trim() && setShowDropdown(true)}
           placeholder={placeholder}
-          className="pl-10 pr-10 py-2 w-full bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          className={`w-full ${
+            isHomepage 
+              ? 'py-4 px-2 text-lg outline-none bg-transparent' // Homepage: larger, no border/background
+              : 'pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary' // Header: smaller, with border
+          }`}
           aria-label="Search for merchants and coupons"
           aria-expanded={showDropdown}
           aria-controls="search-suggestions"
@@ -446,7 +456,9 @@ export default function SearchDropdown({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className={`absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 ${
+              isHomepage ? 'right-3' : 'right-3'
+            }`}
             aria-label="Clear search"
           >
             <X className="h-4 w-4" />

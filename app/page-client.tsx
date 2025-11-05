@@ -340,13 +340,16 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
             </div>
           </div>
           
-          {/* Search Bar */}
+          {/* Search Bar - Match original design */}
           <div className="max-w-2xl mx-auto relative z-50">
-            <div className="flex bg-white rounded-full shadow-lg items-center">
+            <div className="flex bg-white rounded-full shadow-lg overflow-hidden">
+              <div className="flex items-center pl-6 pr-3">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
               <div className="flex-1 relative">
                 <SearchDropdown 
                   placeholder={initialData.hero?.searchPlaceholder || "搜尋最抵Deal"}
-                  className="w-full"
+                  className="w-full homepage-search"
                 />
               </div>
               <Button 
@@ -480,16 +483,18 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       <Footer />
       
       {/* Ad Link verification scripts - Only on homepage, before </body> tag */}
-      {/* Initialize Converly with null channelId to prevent continuous fetching when not enabled */}
+      {/* DISABLED: Commented out to prevent continuous POST requests when adlink not enabled */}
+      {/* Uncomment when adlink is enabled in CMS */}
+      {/*
       <Script id="converly-init" strategy="afterInteractive">
         {`var ConverlyCustomData = {channelId: null};`}
       </Script>
-      {/* Adlink script - only loads once, won't fetch/post continuously if channelId is null */}
       <Script 
         id="adlink-script"
         src="https://cdn.affiliates.one/production/adlinks/1c6d7c838b3bde9154ede84d8c4ef4ab8420bf1990f82b63a3af81acecfc3323.js"
         strategy="afterInteractive"
       />
+      */}
     </div>
   );
 };
