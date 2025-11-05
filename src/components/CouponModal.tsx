@@ -95,10 +95,10 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
             <Image 
               src={coupon.merchant.logo} 
               alt={coupon.merchant.name}
-              width={180}
-              height={48}
-              className="h-12 w-auto"
-              sizes="180px"
+              width={250}
+              height={250}
+              className="w-[250px] h-[250px] object-contain"
+              sizes="250px"
               loading="lazy"
             />
           </div>
