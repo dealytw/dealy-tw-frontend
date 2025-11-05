@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const searchQuery = query.trim();
 
-    // Search merchants with explicit fields and minimal populate
+    // Search merchants - use same approach as /shop page for consistency
     const merchantParams = {
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
       "fields[3]": "summary",
       "fields[4]": "website",
       "fields[5]": "affiliate_link",
-      "sort": "merchant_name:asc",
+      "sort[0]": "merchant_name:asc",
       "pagination[page]": "1",
-      "pagination[pageSize]": "50",
+      "pagination[pageSize]": "500", // Get more merchants like shop page
       "populate[logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
     };
