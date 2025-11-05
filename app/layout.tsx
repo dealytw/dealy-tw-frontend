@@ -183,7 +183,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
             {children}
             <FloatingActionContainer />
-            <CWVTracker />
+            {/* CWVTracker temporarily disabled - web-vitals not installed */}
+            {/* <CWVTracker /> */}
           </SearchProvider>
         </Providers>
       </body>
