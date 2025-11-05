@@ -157,8 +157,8 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
 
           {/* Offer Details */}
           {coupon.steps && (
-            <div className="text-sm text-gray-600 leading-relaxed [&>p]:mb-3 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
-              <div dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
+            <div className="text-sm text-gray-600 leading-relaxed">
+              <div className="[&>p]:mb-3 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1" dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
             </div>
           )}
           {!coupon.steps && coupon.description && (
@@ -172,9 +172,9 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
             <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
               <div className="flex items-start gap-2">
                 <ShoppingBag className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-gray-700 [&>p]:mb-2 [&>ul]:mb-2 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
+                <div className="text-sm text-gray-700">
                   <p className="font-medium text-gray-800 mb-1">溫馨提示:</p>
-                  <div dangerouslySetInnerHTML={{ __html: coupon.terms }}></div>
+                  <div className="[&>p]:mb-2 [&>ul]:mb-2 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1" dangerouslySetInnerHTML={{ __html: coupon.terms }}></div>
                 </div>
               </div>
             </div>
