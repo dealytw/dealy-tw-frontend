@@ -28,10 +28,11 @@ export default function CWVTracker() {
       if (typeof window === 'undefined') return;
 
       try {
-        // Use completely dynamic string import to avoid Turbopack static analysis
-        // Construct the module name dynamically so Turbopack can't resolve it statically
-        const moduleName = 'web' + '-' + 'vitals';
-        const webVitalsModule = await import(/* @vite-ignore */ moduleName).catch(() => null);
+        // Use Function constructor to create import dynamically at runtime
+        // This completely bypasses Turbopack static analysis
+        const dynamicImport = new Function('moduleName', 'return import(moduleName)');
+        const moduleName = 'web-vitals';
+        const webVitalsModule = await dynamicImport(moduleName).catch(() => null);
         
         if (!webVitalsModule) {
           // web-vitals not installed - that's okay, just skip tracking
