@@ -9,6 +9,7 @@ import { getHreflangLinks } from "@/seo/meta";
 import { notoSansTC } from "@/lib/fonts";
 import Script from "next/script";
 import CWVTracker from "@/components/CWVTracker";
+import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
 
 export const metadata: Metadata = {
   title: "Dealy - 香港最佳優惠碼平台",
@@ -54,6 +55,43 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   
   // Build sameAs array for Organization schema (link to other domain)
   const sameAs = [alternateUrl];
+
+  // Fetch merchants for search - same approach as /shop page
+  let searchMerchants: Array<{ id: string | number; name: string; slug: string; logo: string; website: string }> = [];
+  try {
+    const merchantParams = {
+      "filters[market][key][$eq]": marketKey,
+      "fields[0]": "id",
+      "fields[1]": "merchant_name",
+      "fields[2]": "slug",
+      "fields[3]": "summary",
+      "fields[4]": "website",
+      "fields[5]": "affiliate_link",
+      "sort[0]": "merchant_name:asc",
+      "pagination[page]": "1",
+      "pagination[pageSize]": "500", // Get more merchants like shop page
+      "populate[logo][fields][0]": "url",
+      "populate[market][fields][0]": "key",
+    };
+
+    const merchantsData = await strapiFetch<{ data: any[] }>(
+      `/api/merchants?${qs(merchantParams)}`,
+      { revalidate: 3600, tag: `search:all-merchants:${marketKey}` }
+    );
+
+    searchMerchants = (merchantsData?.data || []).map((merchant: any) => ({
+      id: merchant.id,
+      name: merchant.merchant_name,
+      slug: merchant.slug,
+      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+      website: merchant.website || merchant.affiliate_link || "",
+    }));
+
+    console.log(`[Layout] Prefetched ${searchMerchants.length} merchants for search`);
+  } catch (error) {
+    console.error('[Layout] Error fetching merchants for search:', error);
+    // Continue with empty array - search will still work but won't have instant results
+  }
   
   return (
     <html lang={htmlLang} suppressHydrationWarning className={notoSansTC.variable}>
@@ -81,7 +119,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body suppressHydrationWarning>
         <Providers>
-          <SearchProvider>
+          <SearchProvider initialMerchants={searchMerchants}>
             {/* Site-wide JSON-LD: WebSite + Organization */}
             <script
               type="application/ld+json"
