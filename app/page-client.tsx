@@ -210,6 +210,56 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
     return `${diffHours} 小時 ${diffMinutes} 分 ${diffSeconds} 秒`;
   };
 
+  // Helper function to extract text from rich text (for plain text display)
+  function extractTextFromRichText(richText: any): string {
+    if (!richText) return "";
+    if (typeof richText === "string") return richText;
+    if (Array.isArray(richText)) {
+      return richText.map(item => {
+        if (item.children && Array.isArray(item.children)) {
+          return item.children.map((child: any) => child.text || "").join("");
+        }
+        return item.text || "";
+      }).join(" ");
+    }
+    return "";
+  }
+
+  // Helper function to render rich text with formatting preserved (same as merchant page)
+  function renderRichText(richText: any): string {
+    if (!richText) return "";
+    if (typeof richText === "string") return richText;
+    if (Array.isArray(richText)) {
+      return richText.map(item => {
+        if (item.type === "paragraph") {
+          let paragraphContent = "";
+          if (item.children && Array.isArray(item.children)) {
+            paragraphContent = item.children.map((child: any) => {
+              if (child.bold) return `<strong>${child.text || ""}</strong>`;
+              if (child.italic) return `<em>${child.text || ""}</em>`;
+              return child.text || "";
+            }).join("");
+          } else {
+            paragraphContent = item.text || "";
+          }
+          // Wrap paragraph content in <p> tag for proper line breaks
+          return `<p>${paragraphContent}</p>`;
+        }
+        if (item.type === "list") {
+          const listItems = item.children?.map((child: any) => {
+            if (child.children && Array.isArray(child.children)) {
+              return child.children.map((grandChild: any) => grandChild.text || "").join("");
+            }
+            return child.text || "";
+          }).join("</li><li>") || "";
+          return `<ul><li>${listItems}</li></ul>`;
+        }
+        return item.text || "";
+      }).join(""); // Join without \n since we're using HTML tags now
+    }
+    return "";
+  }
+
   // Transform CMS coupons to DealyCouponCard format (same as merchant page)
   const transformCoupon = (coupon: any) => {
     // Add null safety checks
@@ -247,13 +297,13 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       id: coupon.id,
       code: coupon.code || '',
       title: coupon.title || 'Untitled Coupon',
-      description: coupon.description || '',
+      description: extractTextFromRichText(coupon.description), // Plain text for short description
       discount: value,
       discountValue: discountValue,
       expiry: coupon.expiresAt || "長期有效",
       usageCount: coupon.usageCount || 0,
-      steps: coupon.description || '',
-      terms: coupon.terms || '',
+      steps: renderRichText(coupon.description), // Rich text HTML for detailed description (same as merchant page)
+      terms: renderRichText(coupon.terms), // Rich text HTML for editor tips (same as merchant page)
       affiliateLink: coupon.affiliateLink || '#',
       coupon_type: coupon.couponType,
       merchant: {

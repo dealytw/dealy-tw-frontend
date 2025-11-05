@@ -292,8 +292,8 @@ const DealyCouponCard = ({
           {showDetails && (
             <div className="mt-3 space-y-3">
               {coupon.steps && (
-                <div className="text-sm">
-                  <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
+                <div className="text-sm text-gray-700 leading-relaxed [&>p]:mb-3 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
+                  <div dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
                 </div>
               )}
             </div>
@@ -304,7 +304,9 @@ const DealyCouponCard = ({
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-4">
               <div className="text-sm">
                 <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
-                <div className="text-yellow-700">{coupon.terms}</div>
+                <div className="text-yellow-700 [&>p]:mb-2 [&>ul]:mb-2 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
+                  <div dangerouslySetInnerHTML={{ __html: coupon.terms }}></div>
+                </div>
               </div>
             </div>
           )}
@@ -416,9 +418,9 @@ const DealyCouponCard = ({
             {showDetails && (
               <div className="mt-3 space-y-3">
                 {coupon.steps && (
-                  <div className="text-xs">
-                    <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
-                  </div>
+                  <div className="text-xs text-gray-700 leading-relaxed [&>p]:mb-3 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
+                  <div dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
+                </div>
                 )}
               </div>
             )}
@@ -428,7 +430,9 @@ const DealyCouponCard = ({
               <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mt-3">
                 <div className="text-xs">
                   <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
-                  <div className="text-yellow-700">{coupon.terms}</div>
+                  <div className="text-yellow-700 [&>p]:mb-2 [&>ul]:mb-2 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
+                    <div dangerouslySetInnerHTML={{ __html: coupon.terms }}></div>
+                  </div>
                 </div>
               </div>
             )}

@@ -1,5 +1,5 @@
 // src/lib/homepage-loader.ts
-// Helper function to extract text from Strapi rich text
+// Helper function to extract text from Strapi rich text (for plain text fallback)
 function extractTextFromRichText(richText: any): string {
   if (!richText) return "";
   if (typeof richText === "string") return richText;
@@ -181,8 +181,8 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
             couponType: topCoupon.coupon_type,
             title: topCoupon.coupon_title,
             usageCount: topCoupon.display_count,
-            description: extractTextFromRichText(topCoupon.description),
-            terms: extractTextFromRichText(topCoupon.editor_tips),
+            description: topCoupon.description, // Pass raw rich text object (will be rendered in client component)
+            terms: topCoupon.editor_tips, // Pass raw rich text object (will be rendered in client component)
             code: topCoupon.code,
             affiliateLink: topCoupon.affiliate_link,
             expiresAt: topCoupon.expires_at,
