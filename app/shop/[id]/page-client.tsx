@@ -132,14 +132,18 @@ function renderRichText(richText: any): string {
   if (Array.isArray(richText)) {
     return richText.map(item => {
       if (item.type === "paragraph") {
+        let paragraphContent = "";
         if (item.children && Array.isArray(item.children)) {
-          return item.children.map((child: any) => {
+          paragraphContent = item.children.map((child: any) => {
             if (child.bold) return `<strong>${child.text || ""}</strong>`;
             if (child.italic) return `<em>${child.text || ""}</em>`;
             return child.text || "";
           }).join("");
+        } else {
+          paragraphContent = item.text || "";
         }
-        return item.text || "";
+        // Wrap paragraph content in <p> tag for proper line breaks
+        return `<p>${paragraphContent}</p>`;
       }
       if (item.type === "list") {
         const listItems = item.children?.map((child: any) => {
@@ -147,11 +151,11 @@ function renderRichText(richText: any): string {
             return child.children.map((grandChild: any) => grandChild.text || "").join("");
           }
           return child.text || "";
-        }).join("\n• ") || "";
-        return `• ${listItems}`;
+        }).join("</li><li>") || "";
+        return `<ul><li>${listItems}</li></ul>`;
       }
       return item.text || "";
-    }).join("\n");
+    }).join(""); // Join without \n since we're using HTML tags now
   }
   return "";
 }
