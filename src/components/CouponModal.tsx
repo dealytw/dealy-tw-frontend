@@ -44,7 +44,7 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
       .replace(/<\/p>/gi, "<br>") // Replace closing </p> with <br>
       .replace(/<br><br>/gi, "<br>") // Remove duplicate breaks
       .replace(/^<br>/, "") // Remove leading <br>
-      .replace(/<br>$//, ""); // Remove trailing <br>
+      .replace(/<br>$/, ""); // Remove trailing <br>
   };
 
   const handleVisitStore = () => {
