@@ -343,11 +343,11 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
           
           {/* Search Bar - Match original design */}
           <div className="max-w-2xl mx-auto relative z-50">
-            <div className="flex bg-white rounded-full shadow-lg overflow-hidden">
+            <div className="flex bg-white rounded-full shadow-lg overflow-visible">
               <div className="flex items-center pl-6 pr-3">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
-              <div className="flex-1 relative">
+              <div className="flex-1 relative overflow-visible">
                 <SearchDropdown 
                   placeholder={initialData.hero?.searchPlaceholder || "搜尋最抵Deal"}
                   className="w-full homepage-search"

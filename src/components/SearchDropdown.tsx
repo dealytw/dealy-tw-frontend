@@ -439,7 +439,7 @@ export default function SearchDropdown({
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => query.trim() && setShowDropdown(true)}
+          onFocus={() => setShowDropdown(true)}
           placeholder={placeholder}
           className={`w-full ${
             isHomepage 
