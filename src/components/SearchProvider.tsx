@@ -31,23 +31,37 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     // Falls back to setTimeout if requestIdleCallback is not available
     const prefetchMerchants = async () => {
       try {
+        console.log('🚀 Starting merchant prefetch...');
         const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
         const data = await getAllMerchantsForSearch(market);
-        setMerchants(data);
-        console.log(`✅ Prefetched ${data.length} merchants for instant search`);
+        
+        if (data.length === 0) {
+          console.warn('⚠️ No merchants fetched! Check API connection.');
+        } else {
+          setMerchants(data);
+          console.log(`✅ Prefetched ${data.length} merchants for instant search`);
+          
+          // Debug: Log sample merchants
+          console.log('Sample merchants:', data.slice(0, 5).map(m => ({
+            name: m.name,
+            slug: m.slug,
+            website: m.website
+          })));
+        }
       } catch (error) {
-        console.error('Failed to prefetch merchants:', error);
+        console.error('❌ Failed to prefetch merchants:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     // Defer until browser is idle (after initial render)
+    // Reduced timeout to start prefetch sooner (500ms instead of 1000-2000ms)
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      requestIdleCallback(prefetchMerchants, { timeout: 2000 }); // Wait max 2s
+      requestIdleCallback(prefetchMerchants, { timeout: 500 }); // Wait max 500ms
     } else {
-      // Fallback: delay by 1 second to let page render first
-      setTimeout(prefetchMerchants, 1000);
+      // Fallback: delay by 500ms to let page render first
+      setTimeout(prefetchMerchants, 500);
     }
   }, []);
 

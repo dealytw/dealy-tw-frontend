@@ -44,11 +44,17 @@ function getMatchScore(name: string, website: string | undefined, query: string)
 
 // Filter and score merchants instantly from cache
 function filterMerchantsFromCache(query: string): SearchSuggestion[] {
-  if (!query.trim() || globalMerchantsCache.length === 0) {
+  if (!query.trim()) {
+    return [];
+  }
+
+  if (globalMerchantsCache.length === 0) {
+    console.warn('⚠️ Search cache is empty! Prefetch may not have completed yet.');
     return [];
   }
 
   const q = query.trim().toLowerCase();
+  console.log(`🔍 Filtering ${globalMerchantsCache.length} merchants for query: "${q}"`);
   
   const scored = globalMerchantsCache
     .map((merchant) => {
@@ -56,6 +62,7 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
       const slug = merchant.slug?.toLowerCase() || '';
       const website = merchant.website?.toLowerCase() || '';
       
+      // More flexible matching: check if query appears anywhere in name, slug, or website
       const matches = name.includes(q) || slug.includes(q) || website.includes(q);
       
       if (!matches) return null;
@@ -80,6 +87,11 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
     .slice(0, 5)
     .map(({ score, ...rest }) => rest);
 
+  console.log(`✅ Found ${scored.length} matching merchants`);
+  if (scored.length > 0) {
+    console.log('Matched merchants:', scored.map(s => s.name));
+  }
+  
   return scored;
 }
 
@@ -103,11 +115,21 @@ export default function SearchDropdown({
   const debounceTimerRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Initialize global cache with prefetched merchants from context (non-blocking)
+  // Initialize global cache with prefetched merchants from context
+  // Always sync cache with context to ensure it's up-to-date
   useEffect(() => {
-    if (prefetchedMerchants.length > 0 && globalMerchantsCache.length === 0) {
-      globalMerchantsCache = prefetchedMerchants;
+    if (prefetchedMerchants.length > 0) {
+      globalMerchantsCache = [...prefetchedMerchants]; // Create new array to ensure freshness
       console.log(`✅ Loaded ${globalMerchantsCache.length} merchants into search cache`);
+      
+      // Debug: Log first few merchants to verify data structure
+      if (globalMerchantsCache.length > 0) {
+        console.log('Sample merchants in cache:', globalMerchantsCache.slice(0, 3).map(m => ({
+          name: m.name,
+          slug: m.slug,
+          website: m.website
+        })));
+      }
     }
   }, [prefetchedMerchants]);
 
@@ -154,6 +176,7 @@ export default function SearchDropdown({
     }
 
     // INSTANT SEARCH: Filter from cache immediately (no debounce!)
+    // Always try cache first, regardless of loading state
     const cachedResults = filterMerchantsFromCache(query);
     
     if (cachedResults.length > 0) {
@@ -162,9 +185,18 @@ export default function SearchDropdown({
         setSuggestions(cachedResults);
         setIsLoading(false);
         setShowDropdown(true);
+        setError(null); // Clear any previous errors
       });
       
       // No need to fetch - we have instant results!
+      return;
+    }
+
+    // If cache is empty but merchants are still loading, wait a bit
+    if (merchantsLoading && globalMerchantsCache.length === 0) {
+      console.log('⏳ Waiting for merchants to load...');
+      setIsLoading(true);
+      setShowDropdown(true);
       return;
     }
 
@@ -287,7 +319,7 @@ export default function SearchDropdown({
         abortControllerRef.current.abort();
       }
     };
-  }, [query]);
+  }, [query, prefetchedMerchants, merchantsLoading]); // Re-run when merchants load or query changes
 
   // Handle click outside to close dropdown
   useEffect(() => {
