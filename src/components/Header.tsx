@@ -38,7 +38,7 @@ const Header = () => {
         <div className="flex items-center space-x-3">
           {/* Mobile Search */}
           <div className="md:hidden">
-            <SearchDropdown placeholder="搜尋" className="w-32" />
+            <SearchDropdown placeholder="搜尋超值好康" className="w-32" />
           </div>
           
           <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
