@@ -121,19 +121,20 @@ const DealyCouponCard = ({
     return cleanup;
   }, [coupon.expiry]);
   
-  // Track coupon click
-  const trackCouponClick = async () => {
-    try {
-      await fetch(`/api/coupons/${coupon.id}/track-click`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    } catch (error) {
+  // Track coupon click (non-blocking)
+  const trackCouponClick = () => {
+    // Use fetch with keepalive for non-blocking tracking
+    // keepalive ensures request completes even if page unloads (navigation happens)
+    fetch(`/api/coupons/${coupon.id}/track-click`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: true, // Keep request alive even if page unloads
+      body: JSON.stringify({}),
+    }).catch(() => {
       // Silently fail - don't interrupt user experience
-      console.error('Failed to track click:', error);
-    }
+    });
   };
 
   // Get button text based on coupon_type
@@ -172,16 +173,18 @@ const DealyCouponCard = ({
     }
   };
 
-  const handleButtonClick = async () => {
-    // Track the click
-    await trackCouponClick();
-    // Always trigger the click handler for all coupon types
+  const handleButtonClick = () => {
+    // Fire tracking (non-blocking - don't await)
+    trackCouponClick();
+    
+    // Execute navigation immediately (no delay!)
     onClick();
   };
   
-  const handleTitleClick = async () => {
-    // Track the click
-    await trackCouponClick();
+  const handleTitleClick = () => {
+    // Fire tracking (non-blocking - don't await)
+    trackCouponClick();
+    
     // Trigger the click handler (opens modal)
     onClick();
   };
