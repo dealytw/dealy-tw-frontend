@@ -124,14 +124,29 @@ export default function SearchDropdown({
       
       // Debug: Log first few merchants to verify data structure
       if (globalMerchantsCache.length > 0) {
-        console.log('Sample merchants in cache:', globalMerchantsCache.slice(0, 3).map(m => ({
+        console.log('Sample merchants in cache:', globalMerchantsCache.slice(0, 5).map(m => ({
+          id: m.id,
           name: m.name,
           slug: m.slug,
-          website: m.website
+          website: m.website,
+          hasLogo: !!m.logo
         })));
+        
+        // Check if "kkday" would match anything
+        const testQuery = 'kkday';
+        const testMatches = globalMerchantsCache.filter(m => 
+          m.name?.toLowerCase().includes(testQuery.toLowerCase()) ||
+          m.slug?.toLowerCase().includes(testQuery.toLowerCase()) ||
+          m.website?.toLowerCase().includes(testQuery.toLowerCase())
+        );
+        console.log(`Test search for "kkday": Found ${testMatches.length} matches`, 
+          testMatches.slice(0, 3).map(m => ({ name: m.name, slug: m.slug }))
+        );
       }
+    } else if (!merchantsLoading) {
+      console.warn('⚠️ No merchants loaded and not loading! Check SearchProvider.');
     }
-  }, [prefetchedMerchants]);
+  }, [prefetchedMerchants, merchantsLoading]);
 
   // Memoize processed suggestions for better performance
   const processedSuggestions = useMemo(() => {

@@ -38,15 +38,42 @@ export async function getAllMerchantsForSearch(market: string = 'tw'): Promise<M
       tag: `search:all-merchants:${market}`
     });
     
-    const merchants = (merchantsData?.data || []).map((merchant: any) => ({
-      id: merchant.id,
-      name: merchant.merchant_name,
-      slug: merchant.slug,
-      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
-      website: merchant.website || merchant.affiliate_link || "",
-    }));
+    // Debug: Log raw response structure
+    console.log(`[getAllMerchantsForSearch] Raw API response:`, {
+      dataLength: merchantsData?.data?.length || 0,
+      firstMerchant: merchantsData?.data?.[0] ? {
+        id: merchantsData.data[0].id,
+        merchant_name: merchantsData.data[0].merchant_name,
+        slug: merchantsData.data[0].slug,
+        website: merchantsData.data[0].website,
+        hasLogo: !!merchantsData.data[0].logo
+      } : null
+    });
+    
+    const merchants = (merchantsData?.data || []).map((merchant: any) => {
+      const mapped = {
+        id: merchant.id,
+        name: merchant.merchant_name, // Map merchant_name to name
+        slug: merchant.slug,
+        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+        website: merchant.website || merchant.affiliate_link || "",
+      };
+      
+      // Debug: Log if merchant_name is missing
+      if (!merchant.merchant_name) {
+        console.warn(`⚠️ Merchant ${merchant.id} missing merchant_name:`, merchant);
+      }
+      
+      return mapped;
+    });
 
     console.log(`[getAllMerchantsForSearch] Loaded ${merchants.length} merchants for market ${market}`);
+    
+    // Debug: Log sample merchants with their names
+    if (merchants.length > 0) {
+      console.log('Sample merchant names:', merchants.slice(0, 10).map(m => m.name));
+    }
+    
     return merchants;
   } catch (error: any) {
     console.error('[getAllMerchantsForSearch] Error:', error);
