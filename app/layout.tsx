@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       "fields[1]": "merchant_name",
       "fields[2]": "slug",
       "fields[3]": "summary",
-      "fields[4]": "default_affiliate_link", // Use default_affiliate_link like shop page
+      "fields[4]": "site_url", // Use site_url for merchant website
       "sort[0]": "merchant_name:asc",
       "pagination[page]": "1",
       "pagination[pageSize]": "500", // Same as shop page
@@ -99,7 +99,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       name: merchant.merchant_name,
       slug: merchant.slug,
       logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
-      website: merchant.default_affiliate_link || merchant.website || "",
+      website: merchant.site_url || merchant.website || "",
     }));
 
     console.log(`[Layout] Prefetched ${searchMerchants.length} merchants for search`);
