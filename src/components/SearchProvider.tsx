@@ -31,6 +31,11 @@ export function SearchProvider({ children, initialMerchants = [] }: SearchProvid
 
   // Use initial merchants from server
   useEffect(() => {
+    console.log(`[SearchProvider] Received initialMerchants:`, {
+      length: initialMerchants.length,
+      sample: initialMerchants.slice(0, 3).map(m => ({ id: m.id, name: m.name, slug: m.slug }))
+    });
+    
     if (initialMerchants.length > 0) {
       setMerchants(initialMerchants);
       console.log(`✅ Loaded ${initialMerchants.length} merchants from server for instant search`);
@@ -41,6 +46,8 @@ export function SearchProvider({ children, initialMerchants = [] }: SearchProvid
         slug: m.slug,
         website: m.website
       })));
+    } else {
+      console.warn(`⚠️ [SearchProvider] No merchants received from server! initialMerchants.length = ${initialMerchants.length}`);
     }
   }, [initialMerchants]);
 

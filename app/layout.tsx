@@ -74,10 +74,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       "populate[market][fields][0]": "key",
     };
 
+    console.log(`[Layout] Fetching merchants for search, market: ${marketKey}`);
     const merchantsData = await strapiFetch<{ data: any[] }>(
       `/api/merchants?${qs(merchantParams)}`,
       { revalidate: 3600, tag: `search:all-merchants:${marketKey}` }
     );
+
+    console.log(`[Layout] Received merchant data:`, {
+      dataLength: merchantsData?.data?.length || 0,
+      firstMerchant: merchantsData?.data?.[0] ? {
+        id: merchantsData.data[0].id,
+        merchant_name: merchantsData.data[0].merchant_name,
+        slug: merchantsData.data[0].slug
+      } : null
+    });
 
     searchMerchants = (merchantsData?.data || []).map((merchant: any) => ({
       id: merchant.id,
@@ -88,8 +98,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     }));
 
     console.log(`[Layout] Prefetched ${searchMerchants.length} merchants for search`);
-  } catch (error) {
+    
+    if (searchMerchants.length === 0) {
+      console.warn(`[Layout] WARNING: No merchants fetched! Check if market '${marketKey}' has merchants or API connection.`);
+    }
+  } catch (error: any) {
     console.error('[Layout] Error fetching merchants for search:', error);
+    console.error('[Layout] Error details:', error.message, error.stack);
     // Continue with empty array - search will still work but won't have instant results
   }
   
