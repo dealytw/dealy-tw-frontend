@@ -92,15 +92,17 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
         <div className="p-6 space-y-6">
           {/* Merchant Logo */}
           <div className="flex justify-center">
-            <Image 
-              src={coupon.merchant.logo} 
-              alt={coupon.merchant.name}
-              width={150}
-              height={150}
-              className="max-w-[150px] max-h-[150px] w-auto h-auto object-contain"
-              sizes="150px"
-              loading="lazy"
-            />
+            <div className="w-[150px] h-[150px] flex items-center justify-center">
+              <Image 
+                src={coupon.merchant.logo} 
+                alt={coupon.merchant.name}
+                width={150}
+                height={150}
+                className="max-w-full max-h-full w-auto h-auto object-contain"
+                sizes="150px"
+                loading="lazy"
+              />
+            </div>
           </div>
           
           {/* Main Offer Title */}
