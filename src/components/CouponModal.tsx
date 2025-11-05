@@ -34,19 +34,6 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
 
   if (!coupon) return null;
 
-  // Convert HTML with <p> tags to use <br> tags for proper line breaks
-  const convertParagraphsToBreaks = (html: string): string => {
-    if (!html) return "";
-    // Convert closing </p> tags to <br> tags, and remove opening <p> tags
-    // This ensures each paragraph gets a line break
-    return html
-      .replace(/<p>/gi, "") // Remove opening <p> tags
-      .replace(/<\/p>/gi, "<br>") // Replace closing </p> with <br>
-      .replace(/<br><br>/gi, "<br>") // Remove duplicate breaks
-      .replace(/^<br>/, "") // Remove leading <br>
-      .replace(/<br>$/, ""); // Remove trailing <br>
-  };
-
   const handleVisitStore = () => {
     // Open affiliate link in same tab (as requested)
     window.open(coupon.affiliateLink, '_self');
@@ -180,16 +167,15 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
             </div>
           )}
 
-          {/* Warm Tip Section */}
-          {coupon.terms && (
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
-              <div className="flex items-start gap-2">
-                <ShoppingBag className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-gray-700 [&>ul]:mb-2 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
-                  <p className="font-medium text-gray-800 mb-1">溫馨提示:</p>
-                  <div dangerouslySetInnerHTML={{ __html: convertParagraphsToBreaks(coupon.terms) }}></div>
-                </div>
-              </div>
+          {/* Offer Details */}
+          {coupon.steps && (
+            <div className="text-sm text-gray-600 leading-relaxed [&>p]:mb-3 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>li]:mb-1">
+              <div dangerouslySetInnerHTML={{ __html: coupon.steps }}></div>
+            </div>
+          )}
+          {!coupon.steps && coupon.description && (
+            <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              {coupon.description}
             </div>
           )}
 
