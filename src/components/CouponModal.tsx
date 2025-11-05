@@ -97,7 +97,7 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
               alt={coupon.merchant.name}
               width={150}
               height={150}
-              className="w-[150px] h-[150px] object-contain"
+              className="max-w-[150px] max-h-[150px] w-auto h-auto object-contain"
               sizes="150px"
               loading="lazy"
             />
