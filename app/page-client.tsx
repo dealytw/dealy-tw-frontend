@@ -349,7 +349,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               </div>
               <div className="flex-1 relative overflow-visible">
                 <SearchDropdown 
-                  placeholder={initialData.hero?.searchPlaceholder || "搜尋最抵Deal"}
+                  placeholder={initialData.hero?.searchPlaceholder || "搜尋超值好康"}
                   className="w-full homepage-search"
                 />
               </div>

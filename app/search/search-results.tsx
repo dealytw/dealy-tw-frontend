@@ -100,7 +100,7 @@ export default function SearchResults({ searchResults, query }: SearchResultsPro
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜尋最抵Deal"
+              placeholder="搜尋超值好康"
               className="flex-1 py-4 px-2 text-lg outline-none"
             />
             {searchQuery && (

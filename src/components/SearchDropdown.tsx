@@ -96,7 +96,7 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
 }
 
 export default function SearchDropdown({ 
-  placeholder = "搜尋最抵Deal",
+  placeholder = "搜尋超值好康",
   className = "",
   onClose
 }: SearchDropdownProps) {

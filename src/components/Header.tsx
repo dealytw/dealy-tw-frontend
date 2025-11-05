@@ -31,7 +31,7 @@ const Header = () => {
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</Link>
-          <SearchDropdown placeholder="搜尋最抵Deal" className="w-64" />
+          <SearchDropdown placeholder="搜尋超值好康" className="w-64" />
         </nav>
 
         {/* Right Actions */}
