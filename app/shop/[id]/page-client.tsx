@@ -293,6 +293,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const [activeFilter, setActiveFilter] = useState("全部");
   const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
   const [expiredCouponDetails, setExpiredCouponDetails] = useState<Record<string, boolean>>({});
+  const [showAllActiveCoupons, setShowAllActiveCoupons] = useState(false);
   const filters = ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
 
   // Helper function to get button text based on coupon type
@@ -469,14 +470,20 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
             <div className="space-y-8">
               {/* Active Coupons */}
               <div className="space-y-0">
-                {coupons.map(coupon => {
+                {coupons.map((coupon, index) => {
                   const transformedCoupon = transformCoupon(coupon);
                   if (!transformedCoupon) {
                     console.error('Skipping invalid coupon:', coupon);
                     return null;
                   }
+                  // Hide coupons after the 10th if showAllActiveCoupons is false
+                  const shouldHide = !showAllActiveCoupons && index >= 10;
                   return (
-                    <div key={coupon.id} id={`coupon-${coupon.id}`}>
+                    <div 
+                      key={coupon.id} 
+                      id={`coupon-${coupon.id}`}
+                      className={shouldHide ? 'hidden' : ''}
+                    >
                       <DealyCouponCard 
                         coupon={transformedCoupon} 
                         onClick={() => handleCouponClick(coupon)}
@@ -486,6 +493,18 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     </div>
                   );
                 }).filter(Boolean)}
+                
+                {/* Show More Button - Only show if there are more than 10 coupons */}
+                {coupons.length > 10 && !showAllActiveCoupons && (
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      onClick={() => setShowAllActiveCoupons(true)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2"
+                    >
+                      顯示更多
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Expired Coupons Section */}
