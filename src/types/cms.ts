@@ -326,6 +326,7 @@ export type TransformedShop = {
   }>; // Component field with link_title and url
   location_filtering?: boolean;
   creditcard_filtering?: boolean;
+  page_title_h1?: string | null;
 };
 
 export type TransformedCoupon = {

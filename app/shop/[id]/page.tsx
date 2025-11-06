@@ -122,6 +122,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[0]": "location_filtering",
         "fields[1]": "creditcard_filtering",
         "fields[2]": "summary",
+        "fields[3]": "page_title_h1",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -296,6 +297,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       relatedMerchants: relatedMerchants,
       location_filtering: merchantData.location_filtering ?? false,
       creditcard_filtering: merchantData.creditcard_filtering ?? false,
+      page_title_h1: merchantData.page_title_h1 || null,
     };
 
     // Process hotstore merchants for popular merchants section
