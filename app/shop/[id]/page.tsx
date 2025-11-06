@@ -119,6 +119,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
         "filters[slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
+        "fields[0]": "location_filtering",
+        "fields[1]": "creditcard_filtering",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -290,7 +292,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       createdAt: merchantData.createdAt,
       updatedAt: merchantData.updatedAt,
       publishedAt: merchantData.publishedAt,
-      relatedMerchants: relatedMerchants
+      relatedMerchants: relatedMerchants,
+      location_filtering: merchantData.location_filtering ?? false,
+      creditcard_filtering: merchantData.creditcard_filtering ?? false,
     };
 
     // Process hotstore merchants for popular merchants section

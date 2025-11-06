@@ -324,6 +324,8 @@ export type TransformedShop = {
     link_title: string;
     url: string;
   }>; // Component field with link_title and url
+  location_filtering?: boolean;
+  creditcard_filtering?: boolean;
 };
 
 export type TransformedCoupon = {

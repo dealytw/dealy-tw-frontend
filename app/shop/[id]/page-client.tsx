@@ -294,7 +294,18 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
   const [expiredCouponDetails, setExpiredCouponDetails] = useState<Record<string, boolean>>({});
   const [showAllActiveCoupons, setShowAllActiveCoupons] = useState(false);
-  const filters = ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
+  
+  // Determine which filters to show based on merchant settings
+  // When location_filtering and creditcard_filtering are false (default), show simple filters
+  const useSimpleFilters = !merchant.location_filtering && !merchant.creditcard_filtering;
+  const filters = useSimpleFilters 
+    ? ["全部", "折扣代碼", "優惠券", "相關店鋪"]
+    : ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
+
+  // Reset showAllActiveCoupons when filter changes
+  useEffect(() => {
+    setShowAllActiveCoupons(false);
+  }, [activeFilter]);
 
   // Helper function to get button text based on coupon type
   const getButtonText = (couponType?: string) => {
@@ -458,7 +469,18 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     key={filter} 
                     variant={activeFilter === filter ? "default" : "outline"} 
                     className={`cursor-pointer px-3 py-1 text-sm ${activeFilter === filter ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`} 
-                    onClick={() => setActiveFilter(filter)}
+                    onClick={() => {
+                      setActiveFilter(filter);
+                      // If clicking "相關店鋪", scroll to related merchants section
+                      if (filter === "相關店鋪") {
+                        setTimeout(() => {
+                          const relatedSection = document.getElementById('related-merchants-section');
+                          if (relatedSection) {
+                            relatedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 100);
+                      }
+                    }}
                   >
                     {filter}
                   </Badge>
@@ -470,32 +492,71 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
             <div className="space-y-8">
               {/* Active Coupons */}
               <div className="space-y-0">
-                {coupons.map((coupon, index) => {
-                  const transformedCoupon = transformCoupon(coupon);
-                  if (!transformedCoupon) {
-                    console.error('Skipping invalid coupon:', coupon);
-                    return null;
-                  }
-                  // Hide coupons after the 10th if showAllActiveCoupons is false
-                  const shouldHide = !showAllActiveCoupons && index >= 10;
-                  return (
-                    <div 
-                      key={coupon.id} 
-                      id={`coupon-${coupon.id}`}
-                      className={shouldHide ? 'hidden' : ''}
-                    >
-                      <DealyCouponCard 
-                        coupon={transformedCoupon} 
-                        onClick={() => handleCouponClick(coupon)}
-                        isScrolledTo={scrolledToCouponId === coupon.id}
-                        merchantSlug={merchant.slug}
-                      />
-                    </div>
-                  );
-                }).filter(Boolean)}
+                {coupons
+                  .filter((coupon) => {
+                    // Apply filtering based on activeFilter
+                    if (useSimpleFilters) {
+                      switch (activeFilter) {
+                        case "全部":
+                          return true; // Show all coupons
+                        case "折扣代碼":
+                          return coupon.coupon_type === "promo_code";
+                        case "優惠券":
+                          return coupon.coupon_type !== "promo_code";
+                        case "相關店鋪":
+                          return false; // This will be handled separately, don't show coupons here
+                        default:
+                          return true;
+                      }
+                    } else {
+                      // Legacy filtering logic (when location_filtering or creditcard_filtering is true)
+                      // For now, just show all when using legacy filters
+                      return true;
+                    }
+                  })
+                  .map((coupon, index) => {
+                    const transformedCoupon = transformCoupon(coupon);
+                    if (!transformedCoupon) {
+                      console.error('Skipping invalid coupon:', coupon);
+                      return null;
+                    }
+                    // Hide coupons after the 10th if showAllActiveCoupons is false
+                    const shouldHide = !showAllActiveCoupons && index >= 10;
+                    return (
+                      <div 
+                        key={coupon.id} 
+                        id={`coupon-${coupon.id}`}
+                        className={shouldHide ? 'hidden' : ''}
+                      >
+                        <DealyCouponCard 
+                          coupon={transformedCoupon} 
+                          onClick={() => handleCouponClick(coupon)}
+                          isScrolledTo={scrolledToCouponId === coupon.id}
+                          merchantSlug={merchant.slug}
+                        />
+                      </div>
+                    );
+                  }).filter(Boolean)}
                 
-                {/* Show More Button - Only show if there are more than 10 coupons */}
-                {coupons.length > 10 && !showAllActiveCoupons && (
+                {/* Show More Button - Only show if there are more than 10 filtered coupons */}
+                {coupons.filter((coupon) => {
+                  if (useSimpleFilters) {
+                    switch (activeFilter) {
+                      case "全部":
+                        return true;
+                      case "折扣代碼":
+                        return coupon.coupon_type === "promo_code";
+                      case "優惠券":
+                        return coupon.coupon_type !== "promo_code";
+                      case "相關店鋪":
+                        return false;
+                      default:
+                        return true;
+                    }
+                  } else {
+                    return true;
+                  }
+                }).length > 10 && !showAllActiveCoupons && activeFilter !== "相關店鋪" && (
                   <div className="flex justify-center mt-4">
                     <Button
                       onClick={() => setShowAllActiveCoupons(true)}
@@ -586,7 +647,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               </div>
 
               {/* Related Merchants Section */}
-              <Card className="shadow-md">
+              <Card id="related-merchants-section" className="shadow-md">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-gray-800">同類商戶折扣優惠</CardTitle>
                 </CardHeader>
