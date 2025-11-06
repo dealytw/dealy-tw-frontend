@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -291,6 +292,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
   const [expiredCouponDetails, setExpiredCouponDetails] = useState<Record<string, boolean>>({});
   const [showAllActiveCoupons, setShowAllActiveCoupons] = useState(false);
@@ -300,12 +302,38 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const useSimpleFilters = !merchant.location_filtering && !merchant.creditcard_filtering;
   const filters = useSimpleFilters 
     ? ["全部", "折扣代碼", "優惠券", "相關店鋪"]
+    : merchant.location_filtering && !merchant.creditcard_filtering
+    ? ["全部", "精選地區", "信用卡優惠"]
+    : !merchant.location_filtering && merchant.creditcard_filtering
+    ? ["全部", "精選地區", "信用卡優惠"]
+    : merchant.location_filtering && merchant.creditcard_filtering
+    ? ["全部", "精選地區", "信用卡優惠"]
     : ["全部", "最新優惠", "日本", "韓國", "本地", "內地", "信用卡"];
+
+  // Region filter keywords
+  const regionKeywords: Record<string, string[]> = {
+    "台灣": ["台灣"],
+    "日本": ["日本"],
+    "韓國": ["韓國"],
+    "中港澳": ["中國", "內地", "香港", "澳門"],
+    "東南亞": ["泰國", "越南", "馬來西亞", "新加坡"],
+  };
+
+  // Helper function to check if coupon title matches region
+  const matchesRegion = (couponTitle: string, region: string): boolean => {
+    if (region === "其他") {
+      // Check if title doesn't match any of the defined regions
+      const allKeywords = Object.values(regionKeywords).flat();
+      return !allKeywords.some(keyword => couponTitle.includes(keyword));
+    }
+    const keywords = regionKeywords[region] || [];
+    return keywords.some(keyword => couponTitle.includes(keyword));
+  };
 
   // Reset showAllActiveCoupons when filter changes
   useEffect(() => {
     setShowAllActiveCoupons(false);
-  }, [activeFilter]);
+  }, [activeFilter, selectedRegion]);
 
   // Helper function to get button text based on coupon type
   const getButtonText = (couponType?: string) => {
@@ -463,28 +491,70 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 {merchant.name}優惠碼總整理（每日更新）｜Promo code／Discount code
               </h2>
               
-              <div className="flex flex-wrap gap-2 mb-6">
-                {filters.map(filter => (
-                  <Badge 
-                    key={filter} 
-                    variant={activeFilter === filter ? "default" : "outline"} 
-                    className={`cursor-pointer px-3 py-1 text-sm ${activeFilter === filter ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`} 
-                    onClick={() => {
-                      setActiveFilter(filter);
-                      // If clicking "相關店鋪", scroll to related merchants section
-                      if (filter === "相關店鋪") {
-                        setTimeout(() => {
-                          const relatedSection = document.getElementById('related-merchants-section');
-                          if (relatedSection) {
-                            relatedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
-                        }, 100);
-                      }
-                    }}
-                  >
-                    {filter}
-                  </Badge>
-                ))}
+              <div className="flex flex-wrap gap-2 mb-6 items-center">
+                {filters.map(filter => {
+                  // Handle "精選地區" with popover
+                  if (filter === "精選地區") {
+                    return (
+                      <Popover key={filter}>
+                        <PopoverTrigger asChild>
+                          <Badge 
+                            variant={activeFilter === filter && selectedRegion ? "default" : "outline"} 
+                            className={`cursor-pointer px-3 py-1 text-sm flex items-center gap-1 ${activeFilter === filter && selectedRegion ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                          >
+                            {filter}
+                            {selectedRegion && `: ${selectedRegion}`}
+                            <ChevronDown className="h-3 w-3" />
+                          </Badge>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2" align="start">
+                          <div className="flex flex-col gap-1">
+                            {["台灣", "日本", "韓國", "中港澳", "東南亞", "其他"].map((region) => (
+                              <button
+                                key={region}
+                                onClick={() => {
+                                  setActiveFilter("精選地區");
+                                  setSelectedRegion(region);
+                                }}
+                                className={`px-3 py-1.5 text-sm rounded-md text-left transition-colors ${
+                                  selectedRegion === region
+                                    ? "bg-blue-500 text-white"
+                                    : "hover:bg-gray-100 text-gray-700"
+                                }`}
+                              >
+                                {region}
+                              </button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  }
+                  
+                  // Regular filter buttons
+                  return (
+                    <Badge 
+                      key={filter} 
+                      variant={activeFilter === filter ? "default" : "outline"} 
+                      className={`cursor-pointer px-3 py-1 text-sm ${activeFilter === filter ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`} 
+                      onClick={() => {
+                        setActiveFilter(filter);
+                        setSelectedRegion(null); // Reset region when switching to other filters
+                        // If clicking "相關店鋪", scroll to related merchants section
+                        if (filter === "相關店鋪") {
+                          setTimeout(() => {
+                            const relatedSection = document.getElementById('related-merchants-section');
+                            if (relatedSection) {
+                              relatedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                          }, 100);
+                        }
+                      }}
+                    >
+                      {filter}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
 
@@ -509,9 +579,19 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           return true;
                       }
                     } else {
-                      // Legacy filtering logic (when location_filtering or creditcard_filtering is true)
-                      // For now, just show all when using legacy filters
-                      return true;
+                      // Advanced filtering logic (when location_filtering or creditcard_filtering is true)
+                      switch (activeFilter) {
+                        case "全部":
+                          return true; // Show all coupons
+                        case "精選地區":
+                          if (!selectedRegion) return true; // If no region selected, show all
+                          return matchesRegion(coupon.coupon_title || "", selectedRegion);
+                        case "信用卡優惠":
+                          // Wait for next implementation
+                          return true;
+                        default:
+                          return true;
+                      }
                     }
                   })
                   .map((coupon, index) => {
@@ -554,7 +634,17 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                         return true;
                     }
                   } else {
-                    return true;
+                    switch (activeFilter) {
+                      case "全部":
+                        return true;
+                      case "精選地區":
+                        if (!selectedRegion) return true;
+                        return matchesRegion(coupon.coupon_title || "", selectedRegion);
+                      case "信用卡優惠":
+                        return true;
+                      default:
+                        return true;
+                    }
                   }
                 }).length > 10 && !showAllActiveCoupons && activeFilter !== "相關店鋪" && (
                   <div className="flex justify-center mt-4">
