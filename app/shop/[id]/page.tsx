@@ -121,6 +121,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "filters[market][key][$eq]": marketKey,
         "fields[0]": "location_filtering",
         "fields[1]": "creditcard_filtering",
+        "fields[2]": "summary",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
