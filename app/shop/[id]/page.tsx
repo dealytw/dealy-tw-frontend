@@ -388,12 +388,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Ensure slug is available - use id param as fallback if slug is missing
     const merchantSlug = merchant.slug || id;
     const merchantUrl = `${siteUrl}/shop/${merchantSlug}`;
+    const merchantId = `${merchantUrl}#merchant`;
     const breadcrumbId = `${merchantUrl}#breadcrumb`;
     
     // Use rewritten logo for schema (already rewritten above)
     const schemaLogo = merchant.logo || undefined;
     
-    // Build all schema objects with @id (all use same merchantUrl, no # suffix except breadcrumb)
+    // Build all schema objects with @id (using # suffix for proper referencing)
     const website = websiteJsonLd({
       siteName: 'Dealy.TW 最新優惠平台',
       siteUrl: siteUrl,
@@ -405,7 +406,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       url: merchantUrl,
       logo: schemaLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
-      id: merchantUrl, // Use same slug, no #merchant suffix
+      id: merchantId, // Use #merchant for proper referencing
     });
     
     const breadcrumb = breadcrumbJsonLd([
@@ -433,7 +434,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         question: f?.q || f?.question || '', 
         answer: f?.a || f?.answer || '' 
       })).filter((x: any) => x.question && x.answer),
-      merchantUrl // Use same slug, no #faq suffix
+      merchantUrl // FAQPage uses merchantUrl (no #faq in reference format)
     );
     
     const pageImage = schemaLogo;
@@ -447,7 +448,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       locale: marketLocale,
       siteId: `${siteUrl}#website`,
       breadcrumbId: breadcrumbId,
-      merchantId: merchantUrl, // Use same slug, no #merchant suffix
+      merchantId: merchantId, // Use #merchant for proper referencing in about field
     });
     
     // Combine all schemas into @graph array

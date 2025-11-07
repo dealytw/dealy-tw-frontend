@@ -107,7 +107,7 @@ export function offersItemListJsonLd(coupons: Array<{
     itemListElement: items,
   };
   if (listId) {
-    list['@id'] = listId; // Use same slug, no #coupons suffix
+    list['@id'] = `${listId}#coupons`; // Use #coupons for proper referencing
   }
   return list;
 }
