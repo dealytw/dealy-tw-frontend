@@ -527,11 +527,11 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           <div 
                             className={`flex items-center gap-2 overflow-x-auto transition-all duration-300 ease-in-out ${
                               isRegionExpanded 
-                                ? 'max-w-full opacity-100' 
+                                ? 'max-w-[600px] md:max-w-[800px] opacity-100' 
                                 : 'max-w-0 opacity-0 overflow-hidden'
                             }`}
                             style={{
-                              transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out',
+                              transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out',
                             }}
                           >
                             {["台灣", "日本", "韓國", "中港澳", "東南亞", "其他"].map((region) => (
