@@ -483,10 +483,10 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 mb-2">
                   <h1 className="text-lg md:text-3xl font-bold text-gray-900">
-                    {merchant.h1Title || merchant.page_title_h1 || `${merchant.name}優惠碼${getTaiwanDate().getFullYear()}｜${getTaiwanDate().getMonth() + 1}月最新折扣與信用卡優惠`}
+                    {merchant.h1Title || merchant.page_title_h1 || '錯誤：無法載入標題'}
                   </h1>
                   <p className="text-xs text-gray-600 sm:mb-1">
-                    最近更新： {merchant.lastUpdatedDate || getTaiwanDate().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/')} （每日更新）
+                    最近更新： {merchant.lastUpdatedDate || '錯誤：無法載入日期'} （每日更新）
                   </p>
                 </div>
               </div>
