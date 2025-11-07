@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
@@ -389,10 +389,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       { name: '商家', url: `${siteUrl}/shop` },
       { name: merchant.name, url: merchantUrl },
     ], merchantUrl);
+    // Rewrite image URLs for schema (use custom domain)
+    const rewrittenLogo = merchant.logo ? rewriteImageUrl(merchant.logo, siteUrl) : undefined;
+    
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
       url: merchantUrl,
-      logo: merchant.logo || undefined,
+      logo: rewrittenLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
     });
     const offersList = offersItemListJsonLd(
@@ -407,7 +410,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     );
     const faq = faqPageJsonLd((merchant.faqs || []).map((f: any) => ({ question: f?.q || f?.question || '', answer: f?.a || f?.answer || '' })).filter((x: any) => x.question && x.answer));
     const howto = howToJsonLd(`如何使用${merchant.name}優惠碼`, (merchant.how_to || []).map((s: any) => s?.text || s).filter(Boolean));
-    const pageImage = merchant.logo || undefined;
+    const pageImage = rewrittenLogo;
     const webPage = webPageJsonLd({
       name: `${merchant.name} 優惠碼頁面`,
       url: merchantUrl,

@@ -51,3 +51,55 @@ export function absolutizeMedia(u?: string | null) {
   const base = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_URL || "";
   return u.startsWith("http") ? u : `${base}${u}`;
 }
+
+/**
+ * Rewrites Strapi CDN image URLs to custom domain URLs
+ * Example: https://ingenious-charity-13f9502d24.media.strapiapp.com/tripcom_5eff0330bd.webp
+ *       -> https://dealy.tw/upload/tripcom.webp
+ * 
+ * @param url - The original Strapi CDN URL or relative URL
+ * @param domain - Optional custom domain (defaults to NEXT_PUBLIC_SITE_URL or https://dealy.tw)
+ * @returns Clean custom domain URL
+ */
+export function rewriteImageUrl(url: string | null | undefined, domain?: string): string {
+  if (!url) return "";
+  
+  // If already a custom domain URL, return as-is
+  if (url.includes('/upload/')) {
+    return url;
+  }
+  
+  try {
+    // Handle relative URLs (e.g., /uploads/tripcom_5eff0330bd.webp)
+    let pathname: string;
+    if (url.startsWith('http')) {
+      const urlObj = new URL(url);
+      pathname = urlObj.pathname; // e.g., /tripcom_5eff0330bd.webp or /uploads/tripcom_5eff0330bd.webp
+    } else {
+      pathname = url; // Already a pathname
+    }
+    
+    // Remove /uploads/ prefix if present
+    if (pathname.startsWith('/uploads/')) {
+      pathname = pathname.replace('/uploads/', '/');
+    }
+    
+    // Remove hash suffix (e.g., _5eff0330bd) from filename
+    // Pattern: _[alphanumeric] before file extension
+    // Example: /tripcom_5eff0330bd.webp -> /tripcom.webp
+    const cleanFilename = pathname.replace(/_[\w]+(\.[^.]+)$/, '$1');
+    
+    // Get domain from parameter, environment, or default
+    const targetDomain = domain || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw';
+    
+    // Ensure targetDomain doesn't have trailing slash
+    const cleanDomain = targetDomain.replace(/\/$/, '');
+    
+    // Build clean URL: https://dealy.tw/upload/tripcom.webp
+    return `${cleanDomain}/upload${cleanFilename}`;
+  } catch (error) {
+    // If URL parsing fails, return original URL
+    console.warn('[rewriteImageUrl] Failed to parse URL:', url, error);
+    return url;
+  }
+}
