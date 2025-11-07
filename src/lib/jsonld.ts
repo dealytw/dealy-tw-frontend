@@ -65,17 +65,21 @@ export function breadcrumbJsonLd(items: Array<{ name: string; url: UrlString }>,
   const lastItem = items[items.length - 1];
   const breadcrumbUrl = breadcrumbId || lastItem?.url || '';
   
+  // Return full structure with @context for standalone script tag (matching HK format)
   return {
-    '@type': 'BreadcrumbList',
-    '@id': `${breadcrumbUrl}#breadcrumb`,
-    itemListElement: items.map((it, idx) => ({
-      '@type': 'ListItem',
-      position: String(idx + 1),
-      item: {
-        '@id': it.url,
-        name: it.name,
-      },
-    })),
+    '@context': 'https://schema.org',
+    '@graph': [{
+      '@type': 'BreadcrumbList',
+      '@id': `${breadcrumbUrl}#breadcrumb`,
+      itemListElement: items.map((it, idx) => ({
+        '@type': 'ListItem',
+        position: String(idx + 1),
+        item: {
+          '@id': it.url,
+          name: it.name,
+        },
+      })),
+    }],
   };
 }
 

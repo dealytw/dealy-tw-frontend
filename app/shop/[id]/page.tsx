@@ -436,7 +436,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         question: f?.q || f?.question || '', 
         answer: f?.a || f?.answer || '' 
       })).filter((x: any) => x.question && x.answer),
-      merchantUrl // FAQPage uses merchantUrl (no #faq in reference format)
+      `${merchantUrl}#faq` // Use #faq suffix to match HK format
     );
     
     const pageImage = schemaLogo;
@@ -453,10 +453,19 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       merchantId: merchantId, // Use #merchant for proper referencing in about field
     });
     
-    // Combine all schemas into @graph array
+    // Store schema (separate script tag, not in @graph - matching HK format)
+    const store = storeJsonLd({
+      name: merchant.name,
+      url: merchantUrl,
+      image: pageImage || undefined,
+      ratingValue: "5",
+      reviewCount: "24",
+    });
+    
+    // Combine schemas into @graph array (matching HK format exactly)
+    // Note: Store and BreadcrumbList are separate script tags, not in @graph
     const graphItems: any[] = [
       merchantOrg,
-      breadcrumb,
       website,
       webPage,
     ];
@@ -486,8 +495,21 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
       />
-      {/* JSON-LD script - Single @graph structure matching HK site format */}
+      {/* JSON-LD scripts - Matching HK site format exactly */}
       {/* eslint-disable @next/next/no-sync-scripts */}
+      {/* Script 1: BreadcrumbList - separate script tag (matching HK format) */}
+      <script 
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb, null, 0) }}
+      />
+      {/* Script 2: Store - separate script tag (matching HK format) */}
+      {store && (
+        <script 
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(store, null, 0) }}
+        />
+      )}
+      {/* Script 3: @graph structure - Organization, FAQPage, ItemList, WebSite, WebPage */}
       <script 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph, null, 0) }}
