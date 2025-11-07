@@ -287,12 +287,16 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Format last updated date for server-side
     const lastUpdatedDate = taiwanDate.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
 
+    // Rewrite logo URL to custom domain (for both client component and schema)
+    const originalLogoUrl = merchantData.logo?.url ? absolutizeMedia(merchantData.logo.url) : null;
+    const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
+
     // Transform merchant data to match frontend structure
     const merchant = {
       id: merchantData.id,
       name: merchantData.merchant_name,
       slug: merchantData.slug,
-      logo: merchantData.logo?.url ? absolutizeMedia(merchantData.logo.url) : null,
+      logo: rewrittenLogoUrl,
       description: merchantData.summary || "",
       store_description: merchantData.store_description || "",
       faqs: merchantData.faqs || [],
@@ -389,13 +393,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       { name: '商家', url: `${siteUrl}/shop` },
       { name: merchant.name, url: merchantUrl },
     ], merchantUrl);
-    // Rewrite image URLs for schema (use custom domain)
-    const rewrittenLogo = merchant.logo ? rewriteImageUrl(merchant.logo, siteUrl) : undefined;
+    // Use rewritten logo for schema (already rewritten above)
+    const schemaLogo = merchant.logo || undefined;
     
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
       url: merchantUrl,
-      logo: rewrittenLogo,
+      logo: schemaLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
     });
     const offersList = offersItemListJsonLd(
@@ -410,7 +414,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     );
     const faq = faqPageJsonLd((merchant.faqs || []).map((f: any) => ({ question: f?.q || f?.question || '', answer: f?.a || f?.answer || '' })).filter((x: any) => x.question && x.answer));
     const howto = howToJsonLd(`如何使用${merchant.name}優惠碼`, (merchant.how_to || []).map((s: any) => s?.text || s).filter(Boolean));
-    const pageImage = rewrittenLogo;
+    const pageImage = schemaLogo;
     const webPage = webPageJsonLd({
       name: `${merchant.name} 優惠碼頁面`,
       url: merchantUrl,

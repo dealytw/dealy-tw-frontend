@@ -33,7 +33,17 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  // Optional: enable typed routes, etc.
+  // Rewrite proxy for /upload/* to Strapi CDN
+  // This allows clean URLs like https://dealy.tw/upload/tripcom.webp
+  // The API route /api/upload/[filename] will handle hash mapping
+  async rewrites() {
+    return [
+      {
+        source: '/upload/:path*',
+        destination: '/api/upload/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

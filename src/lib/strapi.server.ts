@@ -84,16 +84,33 @@ export function rewriteImageUrl(url: string | null | undefined, domain?: string)
       pathname = pathname.replace('/uploads/', '/');
     }
     
-    // Remove hash suffix (e.g., _5eff0330bd) from filename
-    // Pattern: _[alphanumeric] before file extension
-    // Example: /tripcom_5eff0330bd.webp -> /tripcom.webp
-    const cleanFilename = pathname.replace(/_[\w]+(\.[^.]+)$/, '$1');
-    
     // Get domain from parameter, environment, or default
     const targetDomain = domain || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw';
     
     // Ensure targetDomain doesn't have trailing slash
     const cleanDomain = targetDomain.replace(/\/$/, '');
+    
+    // Remove hash suffix (e.g., _5eff0330bd) from filename
+    // Pattern: _[alphanumeric] before file extension
+    // Example: /tripcom_5eff0330bd.webp -> /tripcom.webp
+    // Strategy: Find the last underscore before the file extension, remove hash between underscore and extension
+    // This handles cases like: /tripcom_5eff0330bd.webp or /path/to/file_abc123.jpg
+    const lastUnderscoreIndex = pathname.lastIndexOf('_');
+    const lastDotIndex = pathname.lastIndexOf('.');
+    
+    // Only remove hash if underscore exists before the file extension
+    if (lastUnderscoreIndex > 0 && lastDotIndex > lastUnderscoreIndex) {
+      // Check if the part between underscore and dot is alphanumeric (likely a hash)
+      const hashPart = pathname.substring(lastUnderscoreIndex + 1, lastDotIndex);
+      if (/^[a-zA-Z0-9]+$/.test(hashPart)) {
+        // Remove the hash part: /tripcom_5eff0330bd.webp -> /tripcom.webp
+        const cleanFilename = pathname.substring(0, lastUnderscoreIndex) + pathname.substring(lastDotIndex);
+        return `${cleanDomain}/upload${cleanFilename}`;
+      }
+    }
+    
+    // If no hash found, use pathname as-is
+    const cleanFilename = pathname;
     
     // Build clean URL: https://dealy.tw/upload/tripcom.webp
     return `${cleanDomain}/upload${cleanFilename}`;
