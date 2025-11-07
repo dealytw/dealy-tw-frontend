@@ -388,13 +388,12 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Ensure slug is available - use id param as fallback if slug is missing
     const merchantSlug = merchant.slug || id;
     const merchantUrl = `${siteUrl}/shop/${merchantSlug}`;
-    const merchantId = `${merchantUrl}#merchant`;
     const breadcrumbId = `${merchantUrl}#breadcrumb`;
     
     // Use rewritten logo for schema (already rewritten above)
     const schemaLogo = merchant.logo || undefined;
     
-    // Build all schema objects with @id
+    // Build all schema objects with @id (all use same merchantUrl, no # suffix except breadcrumb)
     const website = websiteJsonLd({
       siteName: 'Dealy.TW 最新優惠平台',
       siteUrl: siteUrl,
@@ -406,7 +405,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       url: merchantUrl,
       logo: schemaLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
-      id: merchantId,
+      id: merchantUrl, // Use same slug, no #merchant suffix
     });
     
     const breadcrumb = breadcrumbJsonLd([
@@ -415,15 +414,16 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       { name: merchant.name, url: merchantUrl },
     ], merchantUrl);
     
+    // Use coupon data already fetched (activeCoupons already has description from transformedCoupons)
     const offersList = offersItemListJsonLd(
       activeCoupons.map((c: any, index: number) => ({
         value: c.value,
-        title: c.coupon_title,
+        title: c.coupon_title, // Use coupon_title as name (from top, already sorted)
         code: c.code,
         status: c.coupon_status,
         expires_at: c.expires_at,
         url: `${merchantUrl}#coupon-active-${index + 1}`,
-        description: c.description || c.editor_tips || undefined,
+        description: c.description || undefined, // Use description from coupon card (already in activeCoupons)
       })),
       merchantUrl
     );
@@ -433,7 +433,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         question: f?.q || f?.question || '', 
         answer: f?.a || f?.answer || '' 
       })).filter((x: any) => x.question && x.answer),
-      merchantUrl
+      merchantUrl // Use same slug, no #faq suffix
     );
     
     const pageImage = schemaLogo;
@@ -447,7 +447,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       locale: marketLocale,
       siteId: `${siteUrl}#website`,
       breadcrumbId: breadcrumbId,
-      merchantId: merchantId,
+      merchantId: merchantUrl, // Use same slug, no #merchant suffix
     });
     
     // Combine all schemas into @graph array

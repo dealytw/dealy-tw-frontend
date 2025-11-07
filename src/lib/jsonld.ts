@@ -93,9 +93,9 @@ export function offersItemListJsonLd(coupons: Array<{
     position: i + 1,
     item: {
       '@type': 'WebPage',
-      name: c.value || c.title || '優惠',
+      name: c.title || c.value || '優惠', // Use coupon_title as name (from top)
       url: c.url || `${listId}#coupon-active-${i + 1}`,
-      description: c.description || (c.title || '').slice(0, 160),
+      description: c.description || undefined, // Use description from coupon card
       ...(c.expires_at && { expires: c.expires_at.split('T')[0] }), // Format: YYYY-MM-DD
     },
   }));
@@ -107,7 +107,7 @@ export function offersItemListJsonLd(coupons: Array<{
     itemListElement: items,
   };
   if (listId) {
-    list['@id'] = `${listId}#coupons`;
+    list['@id'] = listId; // Use same slug, no #coupons suffix
   }
   return list;
 }
@@ -123,7 +123,7 @@ export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>,
     })),
   };
   if (faqId) {
-    faq['@id'] = `${faqId}#faq`;
+    faq['@id'] = faqId; // Use same slug, no #faq suffix
   }
   return faq;
 }
