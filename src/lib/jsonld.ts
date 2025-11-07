@@ -54,16 +54,24 @@ export function organizationJsonLd(opts: { name: string; url: UrlString; logo?: 
   };
 }
 
-export function breadcrumbJsonLd(items: Array<{ name: string; url: UrlString }>) {
+export function breadcrumbJsonLd(items: Array<{ name: string; url: UrlString }>, breadcrumbId?: UrlString) {
+  const lastItem = items[items.length - 1];
+  const breadcrumbUrl = breadcrumbId || lastItem?.url || '';
+  
   return {
     '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((it, idx) => ({
-      '@type': 'ListItem',
-      position: idx + 1,
-      name: it.name,
-      item: it.url,
-    })),
+    '@graph': [{
+      '@type': 'BreadcrumbList',
+      '@id': `${breadcrumbUrl}#breadcrumb`,
+      itemListElement: items.map((it, idx) => ({
+        '@type': 'ListItem',
+        position: String(idx + 1),
+        item: {
+          '@id': it.url,
+          name: it.name,
+        },
+      })),
+    }],
   };
 }
 

@@ -120,10 +120,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "filters[slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
         "fields[0]": "merchant_name",
-        "fields[1]": "location_filtering",
-        "fields[2]": "creditcard_filtering",
-        "fields[3]": "summary",
-        "fields[4]": "page_title_h1",
+        "fields[1]": "slug",
+        "fields[2]": "location_filtering",
+        "fields[3]": "creditcard_filtering",
+        "fields[4]": "summary",
+        "fields[5]": "page_title_h1",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -380,12 +381,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
     // Build JSON-LD blocks
-    const merchantUrl = `${siteUrl}/shop/${merchant.slug}`;
+    // Ensure slug is available - use id param as fallback if slug is missing
+    const merchantSlug = merchant.slug || id;
+    const merchantUrl = `${siteUrl}/shop/${merchantSlug}`;
     const breadcrumb = breadcrumbJsonLd([
       { name: '首頁', url: `${siteUrl}/` },
       { name: '商家', url: `${siteUrl}/shop` },
       { name: merchant.name, url: merchantUrl },
-    ]);
+    ], merchantUrl);
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
       url: merchantUrl,
