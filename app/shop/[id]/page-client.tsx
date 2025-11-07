@@ -330,6 +330,16 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
     return keywords.some(keyword => couponTitle.includes(keyword));
   };
 
+  // Helper function to check if coupon is a credit card offer
+  const isCreditCardCoupon = (couponTitle: string): boolean => {
+    const creditCardKeywords = [
+      "信用卡", "VISA", "Mastercard", "萬事達", "Visa", "MASTERCARD",
+      "信用卡優惠", "信用卡折扣", "信用卡回饋", "刷卡", "信用卡專屬",
+      "VISA卡", "Mastercard卡", "萬事達卡", "Visa卡"
+    ];
+    return creditCardKeywords.some(keyword => couponTitle.includes(keyword));
+  };
+
   // Reset showAllActiveCoupons when filter changes
   useEffect(() => {
     setShowAllActiveCoupons(false);
@@ -549,6 +559,15 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                             }
                           }, 100);
                         }
+                        // If clicking "信用卡優惠", scroll to credit card coupons section
+                        if (filter === "信用卡優惠") {
+                          setTimeout(() => {
+                            const creditCardSection = document.getElementById('credit-card-coupons-section');
+                            if (creditCardSection) {
+                              creditCardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                          }, 100);
+                        }
                       }}
                     >
                       {filter}
@@ -657,6 +676,37 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   </div>
                 )}
               </div>
+
+              {/* Credit Card Coupons Section - Only show when creditcard_filtering is true */}
+              {merchant.creditcard_filtering && (
+                <div id="credit-card-coupons-section" className="space-y-0">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">
+                    {merchant.name}信用卡優惠一覽
+                  </h2>
+                  {coupons
+                    .filter((coupon) => isCreditCardCoupon(coupon.coupon_title || ""))
+                    .map((coupon, index) => {
+                      const transformedCoupon = transformCoupon(coupon);
+                      if (!transformedCoupon) {
+                        console.error('Skipping invalid credit card coupon:', coupon);
+                        return null;
+                      }
+                      return (
+                        <div 
+                          key={coupon.id} 
+                          id={`credit-card-coupon-${coupon.id}`}
+                        >
+                          <DealyCouponCard 
+                            coupon={transformedCoupon} 
+                            onClick={() => handleCouponClick(coupon)}
+                            isScrolledTo={scrolledToCouponId === coupon.id}
+                            merchantSlug={merchant.slug}
+                          />
+                        </div>
+                      );
+                    }).filter(Boolean)}
+                </div>
+              )}
 
               {/* Expired Coupons Section */}
               <div className="relative">
