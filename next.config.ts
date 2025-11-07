@@ -25,8 +25,8 @@ const nextConfig: NextConfig = {
       // Generic HTTPS pattern for any domain
       { protocol: "https", hostname: "**" },
     ],
-    // Enable WebP/AVIF format conversion
-    formats: ['image/avif', 'image/webp'],
+    // Only generate/serve WebP from the optimizer for Google Search Engine compatibility
+    formats: ['image/webp'],
     // Optimize image loading
     minimumCacheTTL: 60,
     // CDN caching through Next.js Image Optimization API
