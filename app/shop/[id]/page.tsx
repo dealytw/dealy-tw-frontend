@@ -3,7 +3,7 @@ import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.
 import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
-import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd } from '@/lib/jsonld';
+import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
 // ISR Configuration - Critical for SEO
@@ -384,58 +384,93 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       .filter((coupon: any) => coupon.coupon_status === 'expired')
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
-    // Build JSON-LD blocks
+    // Build JSON-LD blocks using @graph structure (matching HK site format)
     // Ensure slug is available - use id param as fallback if slug is missing
     const merchantSlug = merchant.slug || id;
     const merchantUrl = `${siteUrl}/shop/${merchantSlug}`;
-    const breadcrumb = breadcrumbJsonLd([
-      { name: '首頁', url: `${siteUrl}/` },
-      { name: '商家', url: `${siteUrl}/shop` },
-      { name: merchant.name, url: merchantUrl },
-    ], merchantUrl);
+    const merchantId = `${merchantUrl}#merchant`;
+    const breadcrumbId = `${merchantUrl}#breadcrumb`;
+    
     // Use rewritten logo for schema (already rewritten above)
     const schemaLogo = merchant.logo || undefined;
+    
+    // Build all schema objects with @id
+    const website = websiteJsonLd({
+      siteName: 'Dealy.TW 最新優惠平台',
+      siteUrl: siteUrl,
+      locale: marketLocale,
+    });
     
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
       url: merchantUrl,
       logo: schemaLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
+      id: merchantId,
     });
+    
+    const breadcrumb = breadcrumbJsonLd([
+      { name: '首頁', url: `${siteUrl}/` },
+      { name: '商家', url: `${siteUrl}/shop` },
+      { name: merchant.name, url: merchantUrl },
+    ], merchantUrl);
+    
     const offersList = offersItemListJsonLd(
-      activeCoupons.map((c: any) => ({
+      activeCoupons.map((c: any, index: number) => ({
         value: c.value,
         title: c.coupon_title,
         code: c.code,
         status: c.coupon_status,
         expires_at: c.expires_at,
-        url: merchantUrl,
-      }))
+        url: `${merchantUrl}#coupon-active-${index + 1}`,
+        description: c.description || c.editor_tips || undefined,
+      })),
+      merchantUrl
     );
-    const faq = faqPageJsonLd((merchant.faqs || []).map((f: any) => ({ question: f?.q || f?.question || '', answer: f?.a || f?.answer || '' })).filter((x: any) => x.question && x.answer));
-    const howto = howToJsonLd(`如何使用${merchant.name}優惠碼`, (merchant.how_to || []).map((s: any) => s?.text || s).filter(Boolean));
+    
+    const faq = faqPageJsonLd(
+      (merchant.faqs || []).map((f: any) => ({ 
+        question: f?.q || f?.question || '', 
+        answer: f?.a || f?.answer || '' 
+      })).filter((x: any) => x.question && x.answer),
+      merchantUrl
+    );
+    
     const pageImage = schemaLogo;
     const webPage = webPageJsonLd({
-      name: `${merchant.name} 優惠碼頁面`,
+      name: merchant.name,
       url: merchantUrl,
       description: merchant.seoDescription || merchant.description || undefined,
       image: pageImage || undefined,
       dateModified: merchant.updatedAt,
+      datePublished: merchant.createdAt,
       locale: marketLocale,
+      siteId: `${siteUrl}#website`,
+      breadcrumbId: breadcrumbId,
+      merchantId: merchantId,
     });
-    const imageObj = pageImage ? imageObjectJsonLd({ url: pageImage }) : undefined;
-    const aggregate = aggregateOfferJsonLd({
-      url: merchantUrl,
-      offers: activeCoupons.map((c: any) => ({ validThrough: c.expires_at, status: c.coupon_status })),
-    });
-    // Store schema with Taiwan address
-    const store = storeJsonLd({
-      name: merchant.name,
-      url: merchantUrl,
-      image: pageImage || undefined,
-      ratingValue: "5",
-      reviewCount: "24",
-    });
+    
+    // Combine all schemas into @graph array
+    const graphItems: any[] = [
+      merchantOrg,
+      breadcrumb,
+      website,
+      webPage,
+    ];
+    
+    // Add optional schemas
+    if (offersList && offersList.itemListElement?.length > 0) {
+      graphItems.push(offersList);
+    }
+    if (faq) {
+      graphItems.push(faq);
+    }
+    
+    // Create final @graph structure
+    const schemaGraph = {
+      '@context': 'https://schema.org',
+      '@graph': graphItems,
+    };
 
     // Pass the data to the original client component
   return (
@@ -448,17 +483,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
       />
-      {/* JSON-LD scripts */}
+      {/* JSON-LD script - Single @graph structure matching HK site format */}
       {/* eslint-disable @next/next/no-sync-scripts */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(merchantOrg) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(store) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offersList) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aggregate) }} />
-      {imageObj && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imageObj) }} />}
-      {faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />}
-      {howto && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howto) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }} />
       </>
     );
   } catch (error) {

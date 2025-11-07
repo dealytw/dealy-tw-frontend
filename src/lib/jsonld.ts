@@ -26,8 +26,8 @@ export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; sear
   }
   
   const obj: any = {
-    '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${siteUrl}#website`,
     name: siteName,
     url: siteUrl,
     inLanguage,
@@ -42,16 +42,23 @@ export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; sear
   return obj;
 }
 
-export function organizationJsonLd(opts: { name: string; url: UrlString; logo?: UrlString; sameAs?: UrlString[] }) {
-  const { name, url, logo, sameAs } = opts;
-  return {
-    '@context': 'https://schema.org',
+export function organizationJsonLd(opts: { name: string; url: UrlString; logo?: UrlString; sameAs?: UrlString[]; id?: UrlString }) {
+  const { name, url, logo, sameAs, id } = opts;
+  const org: any = {
     '@type': 'Organization',
     name,
     url,
-    logo,
-    sameAs: sameAs && sameAs.length ? sameAs : undefined,
   };
+  if (id) {
+    org['@id'] = id;
+  }
+  if (logo) {
+    org.logo = logo;
+  }
+  if (sameAs && sameAs.length) {
+    org.sameAs = sameAs;
+  }
+  return org;
 }
 
 export function breadcrumbJsonLd(items: Array<{ name: string; url: UrlString }>, breadcrumbId?: UrlString) {
@@ -59,19 +66,16 @@ export function breadcrumbJsonLd(items: Array<{ name: string; url: UrlString }>,
   const breadcrumbUrl = breadcrumbId || lastItem?.url || '';
   
   return {
-    '@context': 'https://schema.org',
-    '@graph': [{
-      '@type': 'BreadcrumbList',
-      '@id': `${breadcrumbUrl}#breadcrumb`,
-      itemListElement: items.map((it, idx) => ({
-        '@type': 'ListItem',
-        position: String(idx + 1),
-        item: {
-          '@id': it.url,
-          name: it.name,
-        },
-      })),
-    }],
+    '@type': 'BreadcrumbList',
+    '@id': `${breadcrumbUrl}#breadcrumb`,
+    itemListElement: items.map((it, idx) => ({
+      '@type': 'ListItem',
+      position: String(idx + 1),
+      item: {
+        '@id': it.url,
+        name: it.name,
+      },
+    })),
   };
 }
 
@@ -82,32 +86,35 @@ export function offersItemListJsonLd(coupons: Array<{
   status?: 'active' | 'expired';
   expires_at?: string | null;
   url: UrlString;
-}>) {
+  description?: string;
+}>, listId?: UrlString) {
   const items = coupons.map((c, i) => ({
     '@type': 'ListItem',
     position: i + 1,
     item: {
-      '@type': 'Offer',
+      '@type': 'WebPage',
       name: c.value || c.title || '優惠',
-      description: (c.title || '').slice(0, 160),
-      availability: c.status === 'expired' ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
-      validThrough: toTaipeiIso(c.expires_at),
-      url: c.url,
-      sku: c.code || undefined,
-      priceCurrency: undefined,
+      url: c.url || `${listId}#coupon-active-${i + 1}`,
+      description: c.description || (c.title || '').slice(0, 160),
+      ...(c.expires_at && { expires: c.expires_at.split('T')[0] }), // Format: YYYY-MM-DD
     },
   }));
-  return {
-    '@context': 'https://schema.org',
+  const list: any = {
     '@type': 'ItemList',
+    name: '優惠一覽',
+    itemListOrder: 'ItemListOrderDescending',
+    numberOfItems: items.length,
     itemListElement: items,
   };
+  if (listId) {
+    list['@id'] = `${listId}#coupons`;
+  }
+  return list;
 }
 
-export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>) {
+export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>, faqId?: UrlString) {
   if (!faqs?.length) return undefined;
-  return {
-    '@context': 'https://schema.org',
+  const faq: any = {
     '@type': 'FAQPage',
     mainEntity: faqs.map((f) => ({
       '@type': 'Question',
@@ -115,6 +122,10 @@ export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>)
       acceptedAnswer: { '@type': 'Answer', text: f.answer },
     })),
   };
+  if (faqId) {
+    faq['@id'] = `${faqId}#faq`;
+  }
+  return faq;
 }
 
 export function howToJsonLd(title: string, steps: string[]) {
@@ -140,8 +151,8 @@ export function imageObjectJsonLd(opts: { url: UrlString; width?: number; height
   };
 }
 
-export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; locale?: string }) {
-  const { name, url, description, image, dateModified, locale } = opts;
+export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; locale?: string; siteId?: UrlString; breadcrumbId?: UrlString; merchantId?: UrlString }) {
+  const { name, url, description, image, dateModified, locale, siteId, breadcrumbId, merchantId } = opts;
   
   // Convert Market.defaultLocale to schema.org format
   let inLanguage = 'zh-TW'; // Default fallback
@@ -153,16 +164,50 @@ export function webPageJsonLd(opts: { name: string; url: UrlString; description?
     inLanguage = locale;
   }
   
-  return {
-    '@context': 'https://schema.org',
+  const page: any = {
     '@type': 'WebPage',
+    '@id': url,
     name,
     url,
-    description,
-    primaryImageOfPage: image ? { '@type': 'ImageObject', contentUrl: image, url: image } : undefined,
-    dateModified: dateModified ? toTaipeiIso(dateModified) : undefined,
     inLanguage,
   };
+  
+  if (description) {
+    page.description = description;
+  }
+  
+  if (image) {
+    page.primaryImageOfPage = { '@type': 'ImageObject', contentUrl: image, url: image };
+  }
+  
+  if (dateModified) {
+    const modified = toTaipeiIso(dateModified);
+    if (modified) {
+      page.dateModified = modified;
+    }
+  }
+  
+  // Add datePublished if available (using createdAt)
+  if (opts.datePublished) {
+    const published = toTaipeiIso(opts.datePublished);
+    if (published) {
+      page.datePublished = published;
+    }
+  }
+  
+  if (siteId) {
+    page.isPartOf = { '@id': siteId };
+  }
+  
+  if (breadcrumbId) {
+    page.breadcrumb = { '@id': breadcrumbId };
+  }
+  
+  if (merchantId) {
+    page.about = { '@id': merchantId };
+  }
+  
+  return page;
 }
 
 export function aggregateOfferJsonLd(opts: { url: UrlString; offers: Array<{ price?: number; validThrough?: string | null; status?: 'active' | 'expired' }> }) {
