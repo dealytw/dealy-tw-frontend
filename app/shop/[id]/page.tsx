@@ -125,6 +125,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[3]": "creditcard_filtering",
         "fields[4]": "summary",
         "fields[5]": "page_title_h1",
+        "fields[6]": "site_url",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -303,6 +304,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       how_to: merchantData.how_to || [],
       useful_links: merchantData.useful_links || [],
       website: merchantData.website || "",
+      site_url: merchantData.site_url || "",
       affiliateLink: merchantData.affiliate_link || "",
       pageLayout: merchantData.page_layout || "coupon",
       isFeatured: merchantData.is_featured || false,
@@ -403,7 +405,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
-      url: merchantUrl,
+      url: merchant.site_url || merchant.website || merchantUrl, // Use site_url from merchant collection
       logo: schemaLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
       id: merchantId, // Use #merchant for proper referencing
