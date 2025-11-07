@@ -501,8 +501,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 {merchant.name}優惠碼總整理（每日更新）｜Promo code／Discount code
               </h2>
               
-              <div className="mb-6">
-                <div className="flex items-center gap-2 flex-wrap overflow-x-auto pb-2">
+              <div className="mb-6 overflow-x-auto scrollbar-hide -mx-4 px-4">
+                <div className="flex items-center gap-2 flex-nowrap min-w-max">
                   {filters.map(filter => {
                     // Handle "精選地區" with expandable inline region selector
                     if (filter === "精選地區") {
@@ -510,7 +510,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                         <div key={filter} className="flex items-center gap-2 flex-shrink-0">
                           <Badge 
                             variant={activeFilter === filter && selectedRegion ? "default" : "outline"} 
-                            className={`cursor-pointer px-3 py-1 text-sm flex items-center gap-1 transition-all ${activeFilter === filter && selectedRegion ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                            className={`cursor-pointer px-3 py-1 text-sm flex items-center gap-1 transition-all flex-shrink-0 ${activeFilter === filter && selectedRegion ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
                             onClick={() => {
                               setIsRegionExpanded(!isRegionExpanded);
                               if (!isRegionExpanded) {
@@ -523,15 +523,17 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                             <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isRegionExpanded ? 'rotate-180' : ''}`} />
                           </Badge>
                           
-                          {/* Expandable region list - slides to the right */}
+                          {/* Expandable region list - slides to the right, can overflow viewport */}
                           <div 
-                            className={`flex items-center gap-2 overflow-x-auto transition-all duration-300 ease-in-out ${
+                            className={`flex items-center gap-2 overflow-x-auto scrollbar-hide transition-all duration-300 ease-in-out ${
                               isRegionExpanded 
-                                ? 'max-w-[600px] md:max-w-[800px] opacity-100' 
+                                ? 'opacity-100' 
                                 : 'max-w-0 opacity-0 overflow-hidden'
                             }`}
                             style={{
                               transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out',
+                              maxWidth: isRegionExpanded ? 'none' : '0',
+                              minWidth: isRegionExpanded ? 'auto' : '0',
                             }}
                           >
                             {["台灣", "日本", "韓國", "中港澳", "東南亞", "其他"].map((region) => (
@@ -562,7 +564,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                       <Badge 
                         key={filter} 
                         variant={activeFilter === filter ? "default" : "outline"} 
-                        className={`cursor-pointer px-3 py-1 text-sm flex-shrink-0 ${activeFilter === filter ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`} 
+                        className={`cursor-pointer px-3 py-1 text-sm flex-shrink-0 whitespace-nowrap ${activeFilter === filter ? "bg-blue text-white border-blue" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`} 
                         onClick={() => {
                           setActiveFilter(filter);
                           setSelectedRegion(null); // Reset region when switching to other filters
