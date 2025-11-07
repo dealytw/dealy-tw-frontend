@@ -194,4 +194,39 @@ export function siteNavigationJsonLd(items: Array<{ name: string; url: UrlString
   };
 }
 
+export function storeJsonLd(opts: { 
+  name: string; 
+  url: UrlString; 
+  image?: UrlString;
+  ratingValue?: string;
+  reviewCount?: string;
+}) {
+  const { name, url, image, ratingValue, reviewCount } = opts;
+  
+  const store: any = {
+    '@context': 'https://schema.org',
+    '@type': 'Store',
+    name,
+    url,
+    image,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Taiwan',
+      addressRegion: 'Taiwan',
+      addressCountry: 'TW',
+    },
+  };
+  
+  // Add aggregateRating only if rating data is provided
+  if (ratingValue && reviewCount) {
+    store.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue,
+      reviewCount,
+    };
+  }
+  
+  return store;
+}
+
 

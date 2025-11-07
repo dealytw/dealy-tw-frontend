@@ -3,7 +3,7 @@ import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
-import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd } from '@/lib/jsonld';
+import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
 // ISR Configuration - Critical for SEO
@@ -421,6 +421,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       url: merchantUrl,
       offers: activeCoupons.map((c: any) => ({ validThrough: c.expires_at, status: c.coupon_status })),
     });
+    // Store schema with Taiwan address
+    const store = storeJsonLd({
+      name: merchant.name,
+      url: merchantUrl,
+      image: pageImage || undefined,
+      // ratingValue and reviewCount can be added later if available in CMS
+    });
 
     // Pass the data to the original client component
   return (
@@ -438,6 +445,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(merchantOrg) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(store) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offersList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aggregate) }} />
       {imageObj && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imageObj) }} />}
