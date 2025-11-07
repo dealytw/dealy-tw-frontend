@@ -501,8 +501,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 {merchant.name}優惠碼總整理（每日更新）｜Promo code／Discount code
               </h2>
               
-              <div className="mb-6 overflow-x-auto scrollbar-hide -mx-4 px-4">
-                <div className="flex items-center gap-2 flex-nowrap min-w-max">
+              <div className="mb-6 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2 flex-nowrap">
                   {filters.map(filter => {
                     // Handle "精選地區" with expandable inline region selector
                     if (filter === "精選地區") {
