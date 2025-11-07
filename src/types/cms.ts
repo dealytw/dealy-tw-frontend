@@ -327,6 +327,8 @@ export type TransformedShop = {
   location_filtering?: boolean;
   creditcard_filtering?: boolean;
   page_title_h1?: string | null;
+  h1Title?: string; // Pre-generated H1 title from server
+  lastUpdatedDate?: string; // Pre-formatted date from server
 };
 
 export type TransformedCoupon = {

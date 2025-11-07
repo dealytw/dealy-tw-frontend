@@ -271,6 +271,21 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const domainConfig = getDomainConfigServer();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
+    // Get Taiwan time (UTC+8) for server-side date generation
+    const getTaiwanDate = () => {
+      return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+    };
+    
+    // Generate H1 title on server-side
+    const taiwanDate = getTaiwanDate();
+    const currentYear = taiwanDate.getFullYear();
+    const currentMonth = taiwanDate.getMonth() + 1;
+    const generatedH1 = `${merchantData.merchant_name}優惠碼${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
+    const h1Title = merchantData.page_title_h1 || generatedH1;
+    
+    // Format last updated date for server-side
+    const lastUpdatedDate = taiwanDate.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
+
     // Transform merchant data to match frontend structure
     const merchant = {
       id: merchantData.id,
@@ -299,6 +314,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       location_filtering: merchantData.location_filtering ?? false,
       creditcard_filtering: merchantData.creditcard_filtering ?? false,
       page_title_h1: merchantData.page_title_h1 || null,
+      h1Title: h1Title, // Pre-generated H1 title from server
+      lastUpdatedDate: lastUpdatedDate, // Pre-formatted date from server
     };
 
     // Process hotstore merchants for popular merchants section
