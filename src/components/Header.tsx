@@ -12,52 +12,83 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100">
-      <div className="container flex h-16 items-center justify-between px-4">
-        {/* Logo */}
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center">
-            <Image 
-              src="/dealytwlogo.svg"
-              alt="dealy logo"
-              width={120}
-              height={32}
-              className="h-8 w-auto"
-              priority
-              sizes="(max-width: 768px) 100px, 120px"
-            />
-          </Link>
+      <div className="container h-16 px-4">
+        {/* Desktop Layout */}
+        <div className="hidden md:flex h-full items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center">
+              <Image 
+                src="/dealytwlogo.svg"
+                alt="dealy logo"
+                width={120}
+                height={32}
+                className="h-8 w-auto"
+                priority
+                sizes="(max-width: 768px) 100px, 120px"
+              />
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex items-center space-x-6">
+            <Link href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</Link>
+            <SearchDropdown placeholder="搜尋超值好康" className="w-64" />
+          </nav>
+
+          {/* Right Actions */}
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" className="text-sm">
+              最新快訊訊息
+            </Button>
+            <Link href="/submit-coupons">
+              <Button variant="ghost" size="sm" className="text-sm">
+                提交優惠券
+              </Button>
+            </Link>
+            {/* Hamburger Menu Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/shop" className="text-sm text-gray-700 hover:text-primary transition-colors">全部商店</Link>
-          <SearchDropdown placeholder="搜尋超值好康" className="w-64" />
-        </nav>
-
-        {/* Right Actions */}
-        <div className="flex items-center space-x-3">
-          {/* Mobile Search */}
-          <div className="md:hidden">
-            <SearchDropdown placeholder="搜尋超值好康" className="w-32" />
+        {/* Mobile Layout - Grid with centered search */}
+        <div className="md:hidden grid grid-cols-3 h-full items-center gap-2">
+          {/* Logo - Left */}
+          <div className="flex items-center justify-start">
+            <Link href="/" className="flex items-center">
+              <Image 
+                src="/dealytwlogo.svg"
+                alt="dealy logo"
+                width={100}
+                height={32}
+                className="h-8 w-auto"
+                priority
+                sizes="100px"
+              />
+            </Link>
           </div>
-          
-          <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
-            最新快訊訊息
-          </Button>
-          <Link href="/submit-coupons">
-            <Button variant="ghost" size="sm" className="hidden md:flex text-sm">
-              提交優惠券
+
+          {/* Search Bar - Center */}
+          <div className="flex items-center justify-center">
+            <SearchDropdown placeholder="搜尋超值好康" className="w-full max-w-[200px]" />
+          </div>
+
+          {/* Menu Button - Right */}
+          <div className="flex items-center justify-end">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
             </Button>
-          </Link>
-          {/* Hamburger Menu Button - Visible on all screens */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setMenuOpen(true)}
-            className="flex"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          </div>
         </div>
       </div>
       
