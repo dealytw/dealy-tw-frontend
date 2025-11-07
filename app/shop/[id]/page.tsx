@@ -488,7 +488,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       />
       {/* JSON-LD script - Single @graph structure matching HK site format */}
       {/* eslint-disable @next/next/no-sync-scripts */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }} />
+      <script 
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph, null, 0) }}
+      />
       </>
     );
   } catch (error) {
