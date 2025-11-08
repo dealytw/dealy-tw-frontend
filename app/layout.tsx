@@ -123,7 +123,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         
         {/* Hreflang tags for cross-domain SEO */}
         {hreflangLinks.map((link) => (
-          <link key={link.hreflang} rel="alternate" hreflang={link.hreflang} href={link.href} />
+          <link key={link.hreflang} rel="alternate" hrefLang={link.hreflang} href={link.href} />
         ))}
         
         {/* Explicit favicon links for best SEO and browser compatibility */}
