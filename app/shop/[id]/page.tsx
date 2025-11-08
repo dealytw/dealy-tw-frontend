@@ -6,6 +6,141 @@ import Merchant from './page-client';
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
+/**
+ * Parse FAQs from rich text (HTML format)
+ * Extracts H3 headings as questions and following text as answers
+ */
+function parseFAQsFromRichText(richText: any): Array<{ question: string; answer: string }> {
+  if (!richText) return [];
+  
+  // If richText is already an array of parsed FAQs, return as-is
+  if (Array.isArray(richText) && richText.length > 0 && typeof richText[0] === 'object' && ('question' in richText[0] || 'q' in richText[0])) {
+    return richText.map((f: any) => ({
+      question: f?.question || f?.q || '',
+      answer: f?.answer || f?.a || ''
+    })).filter((f: any) => f.question && f.answer);
+  }
+  
+  // If richText is Strapi blocks format (JSON array)
+  if (Array.isArray(richText)) {
+    const faqs: Array<{ question: string; answer: string }> = [];
+    let currentQuestion = '';
+    let currentAnswer = '';
+    
+    for (const block of richText) {
+      // Check if it's a heading block with level 3 (H3)
+      if (block.type === 'heading' && block.level === 3) {
+        // Save previous FAQ if exists
+        if (currentQuestion && currentAnswer) {
+          faqs.push({
+            question: currentQuestion.trim(),
+            answer: currentAnswer.trim()
+          });
+        }
+        // Extract text from heading children
+        currentQuestion = extractTextFromBlock(block);
+        currentAnswer = '';
+      } else if (currentQuestion) {
+        // Accumulate text as answer
+        const text = extractTextFromBlock(block);
+        if (text) {
+          if (currentAnswer) {
+            currentAnswer += ' ' + text;
+          } else {
+            currentAnswer = text;
+          }
+        }
+      }
+    }
+    
+    // Don't forget the last FAQ
+    if (currentQuestion && currentAnswer) {
+      faqs.push({
+        question: currentQuestion.trim(),
+        answer: currentAnswer.trim()
+      });
+    }
+    
+    return faqs;
+  }
+  
+  // If richText is HTML string, parse it
+  if (typeof richText === 'string') {
+    return parseFAQsFromHTML(richText);
+  }
+  
+  return [];
+}
+
+/**
+ * Extract text content from a Strapi block
+ */
+function extractTextFromBlock(block: any): string {
+  if (!block || !block.children) return '';
+  
+  return block.children
+    .map((child: any) => {
+      if (child.text) return child.text;
+      if (child.type === 'text') return child.text || '';
+      if (child.children) return extractTextFromBlock(child);
+      return '';
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Parse FAQs from HTML string
+ * Extracts H3 headings as questions and following text as answers
+ */
+function parseFAQsFromHTML(html: string): Array<{ question: string; answer: string }> {
+  if (!html || typeof html !== 'string') return [];
+  
+  const faqs: Array<{ question: string; answer: string }> = [];
+  
+  // Match H3 tags and their following content
+  // Pattern: <h3>question</h3> followed by text until next <h3> or end
+  const h3Pattern = /<h3[^>]*>(.*?)<\/h3>/gi;
+  const matches = Array.from(html.matchAll(h3Pattern));
+  
+  if (matches.length === 0) return [];
+  
+  for (let i = 0; i < matches.length; i++) {
+    const match = matches[i];
+    const questionStart = match.index!;
+    const questionEnd = questionStart + match[0].length;
+    const question = stripHTMLTags(match[1]).trim();
+    
+    // Find the answer (text after H3 until next H3 or end)
+    const nextMatch = matches[i + 1];
+    const answerEnd = nextMatch ? nextMatch.index! : html.length;
+    const answerHTML = html.substring(questionEnd, answerEnd);
+    const answer = stripHTMLTags(answerHTML).trim();
+    
+    if (question && answer) {
+      faqs.push({ question, answer });
+    }
+  }
+  
+  return faqs;
+}
+
+/**
+ * Strip HTML tags from a string, preserving text content
+ */
+function stripHTMLTags(html: string): string {
+  if (!html) return '';
+  
+  // Remove HTML tags but preserve text content
+  // Replace <br>, <p>, etc. with spaces
+  return html
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<\/?[^>]+>/g, '') // Remove all HTML tags
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+}
+
 // ISR Configuration - Critical for SEO
 export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
 export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
@@ -126,6 +261,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[4]": "summary",
         "fields[5]": "page_title_h1",
         "fields[6]": "site_url",
+        "fields[7]": "faqs",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -300,7 +436,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       logo: rewrittenLogoUrl,
       description: merchantData.summary || "",
       store_description: merchantData.store_description || "",
-      faqs: merchantData.faqs || [],
+      faqs: parseFAQsFromRichText(merchantData.faqs),
       how_to: merchantData.how_to || [],
       useful_links: merchantData.useful_links || [],
       website: merchantData.website || "",
