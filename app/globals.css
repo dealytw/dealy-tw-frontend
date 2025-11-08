@@ -144,7 +144,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-noto-sans-tc), system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   }
 }
 

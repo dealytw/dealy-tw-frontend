@@ -6,7 +6,6 @@ import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/j
 import FloatingActionContainer from "@/components/FloatingActionContainer";
 import { getDomainConfig as getDomainConfigServer, getMarketLocale, localeToHtmlLang, localeToHreflang } from "@/lib/domain-config";
 import { getHreflangLinks } from "@/seo/meta";
-import { notoSansTC } from "@/lib/fonts";
 import Script from "next/script";
 import CWVTracker from "@/components/CWVTracker";
 import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
@@ -116,15 +115,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
   
   return (
-    <html lang={htmlLang} suppressHydrationWarning className={notoSansTC.variable}>
+    <html lang={htmlLang} suppressHydrationWarning>
       <head>
         {/* Preconnect to CMS for faster API calls */}
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
         <link rel="dns-prefetch" href="//cms.dealy.tw" />
-        
-        {/* Preconnect to external domains for faster loading */}
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         
         {/* Hreflang tags for cross-domain SEO */}
         {hreflangLinks.map((link) => (
