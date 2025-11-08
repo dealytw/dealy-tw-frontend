@@ -836,19 +836,51 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {merchant.faqs && merchant.faqs.length > 0 ? (
-                    parseFAQs(merchant.faqs).map((faq, index) => (
-                      <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                        <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
-                          <span className="text-pink-500 mt-1">?</span>
-                          {faq.question}
-                        </h4>
-                        <p 
-                          className="text-sm text-gray-600 ml-6" 
-                          dangerouslySetInnerHTML={{ __html: faq.answer }}
-                        />
-                      </div>
-                    ))
+                  {merchant.faqs && Array.isArray(merchant.faqs) && merchant.faqs.length > 0 ? (
+                    merchant.faqs.map((faq: any, index: number) => {
+                      // Handle both parsed format {question, answer} and raw blocks format
+                      const question = faq?.question || faq?.q || '';
+                      const answer = faq?.answer || faq?.a || '';
+                      
+                      // If it's still in blocks format, parse it
+                      if (!question && !answer && faq.type) {
+                        const parsed = parseFAQs([faq]);
+                        if (parsed.length > 0) {
+                          const parsedFaq = parsed[0];
+                          return (
+                            <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                              <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
+                                <span className="text-pink-500 mt-1">?</span>
+                                {parsedFaq.question}
+                              </h4>
+                              <p 
+                                className="text-sm text-gray-600 ml-6" 
+                                dangerouslySetInnerHTML={{ __html: parsedFaq.answer }}
+                              />
+                            </div>
+                          );
+                        }
+                        return null;
+                      }
+                      
+                      // Use parsed format directly
+                      if (question && answer) {
+                        return (
+                          <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                            <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
+                              <span className="text-pink-500 mt-1">?</span>
+                              {question}
+                            </h4>
+                            <p 
+                              className="text-sm text-gray-600 ml-6" 
+                              dangerouslySetInnerHTML={{ __html: answer }}
+                            />
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    }).filter(Boolean)
                   ) : (
                     <div className="text-center text-gray-500 py-8">
                       暫無常見問題

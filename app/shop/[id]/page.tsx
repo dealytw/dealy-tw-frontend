@@ -428,6 +428,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const originalLogoUrl = merchantData.logo?.url ? absolutizeMedia(merchantData.logo.url) : null;
     const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
 
+    // Parse FAQs from rich text (server-side)
+    const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
+    console.log('[MerchantPage] FAQ Debug:', {
+      rawFAQs: merchantData.faqs ? (Array.isArray(merchantData.faqs) ? `Array(${merchantData.faqs.length})` : typeof merchantData.faqs) : 'null/undefined',
+      parsedFAQsCount: parsedFAQs.length,
+      parsedFAQs: parsedFAQs.slice(0, 2), // Log first 2 for debugging
+    });
+
     // Transform merchant data to match frontend structure
     const merchant = {
       id: merchantData.id,
@@ -436,7 +444,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       logo: rewrittenLogoUrl,
       description: merchantData.summary || "",
       store_description: merchantData.store_description || "",
-      faqs: parseFAQsFromRichText(merchantData.faqs),
+      faqs: parsedFAQs,
       how_to: merchantData.how_to || [],
       useful_links: merchantData.useful_links || [],
       website: merchantData.website || "",
