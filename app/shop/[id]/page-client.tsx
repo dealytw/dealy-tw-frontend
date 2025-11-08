@@ -909,21 +909,54 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               <Card className="shadow-md">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-pink-600 flex items-center gap-2">
-                    💗 如何於{merchant.name}使用優惠碼
+                    如何於{merchant.name}使用優惠碼
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {merchant.how_to && merchant.how_to.length > 0 ? (
-                    parseHowTo(merchant.how_to).map((section, index) => (
-                      <div key={index} className="space-y-3">
-                        <h4 className="font-semibold text-gray-800 text-lg">
-                          {index + 1}. {section.title}
-                        </h4>
-                        <div className="text-sm text-gray-600 space-y-2 whitespace-pre-line">
-                          {section.content}
-                        </div>
-                      </div>
-                    ))
+                  {merchant.how_to && Array.isArray(merchant.how_to) && merchant.how_to.length > 0 ? (
+                    merchant.how_to.map((item: any, index: number) => {
+                      // Handle both parsed format {step, descriptions} and raw blocks format
+                      const step = item?.step || item?.title || '';
+                      const descriptions = Array.isArray(item?.descriptions) ? item.descriptions : 
+                                          (item?.content ? [item.content] : []);
+                      
+                      // If it's still in blocks format, parse it
+                      if (!step && !descriptions.length && item.type) {
+                        const parsed = parseHowTo([item]);
+                        if (parsed.length > 0) {
+                          const parsedItem = parsed[0];
+                          return (
+                            <div key={index} className="space-y-3">
+                              <h4 className="font-semibold text-gray-800 text-lg">
+                                {index + 1}. {parsedItem.title}
+                              </h4>
+                              <div className="text-sm text-gray-600 space-y-2 whitespace-pre-line">
+                                {parsedItem.content}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }
+                      
+                      // Use parsed format directly
+                      if (step && descriptions.length > 0) {
+                        return (
+                          <div key={index} className="space-y-3">
+                            <h4 className="font-semibold text-gray-800 text-lg">
+                              {index + 1}. {step}
+                            </h4>
+                            <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
+                              {descriptions.map((desc: string, descIndex: number) => (
+                                <li key={descIndex}>{desc}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    }).filter(Boolean)
                   ) : (
                     <div className="space-y-3">
                       <p className="font-medium">1) 先在本頁按「顯示優惠碼」/「獲取折扣」</p>

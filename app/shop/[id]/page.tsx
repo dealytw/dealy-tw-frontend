@@ -141,6 +141,182 @@ function stripHTMLTags(html: string): string {
     .trim();
 }
 
+/**
+ * Parse How-To guide from rich text
+ * Extracts bold text as steps and bulleted list items as descriptions
+ */
+function parseHowToFromRichText(richText: any): Array<{ step: string; descriptions: string[] }> {
+  if (!richText) return [];
+  
+  // If richText is already an array of parsed how-to items, return as-is
+  if (Array.isArray(richText) && richText.length > 0 && typeof richText[0] === 'object' && ('step' in richText[0] || 'title' in richText[0])) {
+    return richText.map((item: any) => ({
+      step: item?.step || item?.title || '',
+      descriptions: Array.isArray(item?.descriptions) ? item.descriptions : 
+                   (item?.content ? [item.content] : [])
+    })).filter((item: any) => item.step);
+  }
+  
+  // If richText is Strapi blocks format (JSON array)
+  if (Array.isArray(richText)) {
+    const howToSteps: Array<{ step: string; descriptions: string[] }> = [];
+    let currentStep = '';
+    let currentDescriptions: string[] = [];
+    
+    for (const block of richText) {
+      // Check if it's a paragraph with bold text (step)
+      if (block.type === 'paragraph') {
+        const hasBold = block.children?.some((child: any) => child.bold);
+        
+        if (hasBold) {
+          // Save previous step if exists
+          if (currentStep && currentDescriptions.length > 0) {
+            howToSteps.push({
+              step: currentStep.trim(),
+              descriptions: currentDescriptions
+            });
+          }
+          // Extract bold text as step title
+          currentStep = extractBoldTextFromBlock(block);
+          currentDescriptions = [];
+        } else if (currentStep) {
+          // Regular paragraph text - add to descriptions
+          const text = extractTextFromBlock(block);
+          if (text) {
+            currentDescriptions.push(text);
+          }
+        }
+      } else if (block.type === 'list' && currentStep) {
+        // Handle bulleted list items as descriptions
+        const listItems = extractListItemsFromBlock(block);
+        currentDescriptions.push(...listItems);
+      } else if (block.type === 'heading' && block.level === 3 && currentStep) {
+        // H3 might be a step separator - save current and start new
+        if (currentStep && currentDescriptions.length > 0) {
+          howToSteps.push({
+            step: currentStep.trim(),
+            descriptions: currentDescriptions
+          });
+        }
+        currentStep = extractTextFromBlock(block);
+        currentDescriptions = [];
+      }
+    }
+    
+    // Don't forget the last step
+    if (currentStep && currentDescriptions.length > 0) {
+      howToSteps.push({
+        step: currentStep.trim(),
+        descriptions: currentDescriptions
+      });
+    }
+    
+    return howToSteps;
+  }
+  
+  // If richText is HTML string, parse it
+  if (typeof richText === 'string') {
+    return parseHowToFromHTML(richText);
+  }
+  
+  return [];
+}
+
+/**
+ * Extract bold text from a block (for step titles)
+ */
+function extractBoldTextFromBlock(block: any): string {
+  if (!block || !block.children) return '';
+  
+  return block.children
+    .filter((child: any) => child.bold)
+    .map((child: any) => child.text || '')
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+}
+
+/**
+ * Extract list items from a list block
+ */
+function extractListItemsFromBlock(block: any): string[] {
+  if (!block || !block.children) return [];
+  
+  const items: string[] = [];
+  
+  for (const listItem of block.children) {
+    if (listItem.children) {
+      const text = listItem.children
+        .map((child: any) => {
+          if (child.text) return child.text;
+          if (child.children) {
+            return child.children.map((c: any) => c.text || '').join('');
+          }
+          return '';
+        })
+        .filter(Boolean)
+        .join(' ');
+      
+      if (text) {
+        items.push(text.trim());
+      }
+    }
+  }
+  
+  return items;
+}
+
+/**
+ * Parse How-To from HTML string
+ */
+function parseHowToFromHTML(html: string): Array<{ step: string; descriptions: string[] }> {
+  if (!html || typeof html !== 'string') return [];
+  
+  const steps: Array<{ step: string; descriptions: string[] }> = [];
+  
+  // Match ordered list items (<ol><li>) or paragraphs with bold text
+  // Pattern: <li> or <p> containing <strong> or <b> followed by <ul> or <p> with text
+  const liPattern = /<li[^>]*>(.*?)<\/li>/gis;
+  const matches = Array.from(html.matchAll(liPattern));
+  
+  for (const match of matches) {
+    const liContent = match[1];
+    
+    // Extract bold text (step)
+    const boldMatch = liContent.match(/<(?:strong|b)[^>]*>(.*?)<\/(?:strong|b)>/i);
+    const step = boldMatch ? stripHTMLTags(boldMatch[1]).trim() : '';
+    
+    if (!step) continue;
+    
+    // Extract descriptions (bullet points or text after bold)
+    const descriptions: string[] = [];
+    
+    // Look for nested <ul> or text after bold
+    const afterBold = liContent.replace(/<(?:strong|b)[^>]*>.*?<\/(?:strong|b)>/i, '');
+    const ulMatch = afterBold.match(/<ul[^>]*>(.*?)<\/ul>/is);
+    
+    if (ulMatch) {
+      // Extract list items from nested ul
+      const nestedLiPattern = /<li[^>]*>(.*?)<\/li>/gis;
+      const nestedMatches = Array.from(ulMatch[1].matchAll(nestedLiPattern));
+      nestedMatches.forEach(nestedMatch => {
+        const text = stripHTMLTags(nestedMatch[1]).trim();
+        if (text) descriptions.push(text);
+      });
+    } else {
+      // Extract text after bold as description
+      const text = stripHTMLTags(afterBold).trim();
+      if (text) descriptions.push(text);
+    }
+    
+    if (step && descriptions.length > 0) {
+      steps.push({ step, descriptions });
+    }
+  }
+  
+  return steps;
+}
+
 // ISR Configuration - Critical for SEO
 export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
 export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
@@ -262,6 +438,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[5]": "page_title_h1",
         "fields[6]": "site_url",
         "fields[7]": "faqs",
+        "fields[8]": "how_to",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -445,7 +622,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       description: merchantData.summary || "",
       store_description: merchantData.store_description || "",
       faqs: parsedFAQs,
-      how_to: merchantData.how_to || [],
+      how_to: parseHowToFromRichText(merchantData.how_to),
       useful_links: merchantData.useful_links || [],
       website: merchantData.website || "",
       site_url: merchantData.site_url || "",
