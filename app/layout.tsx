@@ -26,12 +26,11 @@ export const metadata: Metadata = {
     title: "Dealy - 香港最佳優惠碼平台",
     description: "發現最新最優惠的折扣碼，為你的購物節省更多。精選知名商店優惠碼，100% 免費使用。",
     type: "website",
-    images: ["https://lovable.dev/opengraph-image-p98pqg.png"],
+    images: ["/favicon.svg"],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@lovable_dev",
-    images: ["https://lovable.dev/opengraph-image-p98pqg.png"],
+    images: ["/favicon.svg"],
   },
 };
 
