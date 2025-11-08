@@ -132,14 +132,48 @@ export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>,
   return faq;
 }
 
-export function howToJsonLd(title: string, steps: string[]) {
+export function howToJsonLd(opts: { 
+  name: string; 
+  url: UrlString;
+  steps: Array<{ step: string; descriptions?: string[] }>;
+  description?: string;
+  image?: UrlString;
+  totalTime?: string;
+}) {
+  const { name, url, steps, description, image, totalTime } = opts;
   if (!steps?.length) return undefined;
-  return {
+  
+  const howTo: any = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
-    name: title,
-    step: steps.map((s) => ({ '@type': 'HowToStep', text: s })),
+    name,
+    step: steps.map((s, index) => {
+      const stepId = `step-${index + 1}`;
+      const stepUrl = `${url}#${stepId}`;
+      return {
+        '@type': 'HowToStep',
+        url: stepUrl,
+        text: s.step, // Use step title only, descriptions not needed in schema
+      };
+    }),
   };
+  
+  if (description) {
+    howTo.description = description;
+  }
+  
+  if (image) {
+    howTo.image = {
+      '@type': 'ImageObject',
+      url: image,
+    };
+  }
+  
+  if (totalTime) {
+    howTo.totalTime = totalTime;
+  }
+  
+  return howTo;
 }
 
 export function imageObjectJsonLd(opts: { url: UrlString; width?: number; height?: number; caption?: string }) {

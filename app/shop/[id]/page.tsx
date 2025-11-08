@@ -760,6 +760,20 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       `${merchantUrl}#faq` // Use #faq suffix to match HK format
     );
     
+    // Generate HowTo schema from parsed how_to data
+    const howTo = merchant.how_to && merchant.how_to.length > 0
+      ? howToJsonLd({
+          name: `如何於${merchant.name}使用優惠碼`,
+          url: merchantUrl,
+          steps: merchant.how_to.map((item: any) => ({
+            step: item.step || item.title || '',
+            descriptions: item.descriptions || [],
+          })),
+          description: `了解如何在${merchant.name}使用優惠碼，享受購物折扣。`,
+          image: schemaLogo,
+        })
+      : undefined;
+    
     const pageImage = schemaLogo;
     const webPage = webPageJsonLd({
       name: merchant.name,
@@ -835,6 +849,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph, null, 0) }}
       />
+      {/* Script 4: HowTo - separate script tag (matching reference format) */}
+      {howTo && (
+        <script 
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo, null, 0) }}
+        />
+      )}
       </>
     );
   } catch (error) {
