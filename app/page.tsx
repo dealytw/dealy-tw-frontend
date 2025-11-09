@@ -3,18 +3,50 @@ import { getHomePageData } from "@/lib/homepage-loader";
 import { HOME_REVALIDATE, HOME_TAG } from "@/lib/constants";
 import { pageMeta } from "@/seo/meta";
 import HomePageClient from "./page-client";
+import type { Metadata } from "next";
 
 // Enable ISR for this page
 export const revalidate = 3600; // Revalidate every hour
 export const dynamic = 'auto'; // Allow ISR revalidation
 
 // Generate metadata for SEO
-export async function generateMetadata() {
-  return pageMeta({
+export async function generateMetadata(): Promise<Metadata> {
+  const MARKET = process.env.NEXT_PUBLIC_MARKET_KEY || "tw";
+  
+  // Fetch homepage data to get hero background image for preload
+  let heroBgUrl: string | undefined;
+  try {
+    const homepageData = await getHomePageData(MARKET);
+    heroBgUrl = homepageData.hero?.bgUrl;
+  } catch (error) {
+    console.error('Error fetching homepage data for metadata:', error);
+  }
+  
+  const baseMetadata = pageMeta({
     title: 'Dealy.TW 台灣每日最新優惠折扣平台',
     description: '全台最新優惠情報｜每日更新！ ✨',
     path: '/',
   });
+  
+  // Add preload link for hero background image if available
+  if (heroBgUrl) {
+    return {
+      ...baseMetadata,
+      other: {
+        ...baseMetadata.other,
+        'link-preload-hero-bg': (
+          <link
+            rel="preload"
+            as="image"
+            href={heroBgUrl}
+            fetchPriority="high"
+          />
+        ),
+      },
+    };
+  }
+  
+  return baseMetadata;
 }
 
 export default async function HomePage() {

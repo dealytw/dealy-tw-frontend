@@ -9,6 +9,7 @@ import { getHreflangLinks } from "@/seo/meta";
 import Script from "next/script";
 import CWVTracker from "@/components/CWVTracker";
 import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+import { getHomePageData } from "@/lib/homepage-loader";
 
 export const metadata: Metadata = {
   title: "Dealy - 香港最佳優惠碼平台",
@@ -53,6 +54,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   
   // Build sameAs array for Organization schema (link to other domain)
   const sameAs = [alternateUrl];
+  
+  // Fetch hero background image URL for homepage preload
+  // Note: This will be added to all pages, but only affects homepage LCP
+  // The browser will only preload if the image is actually used on the page
+  let heroBgUrl: string | undefined;
+  try {
+    const homepageData = await getHomePageData(marketKey);
+    heroBgUrl = homepageData.hero?.bgUrl;
+  } catch (error) {
+    // Silently fail - homepage will handle its own data fetching
+    // This is just for preload optimization
+  }
 
   // Fetch merchants for search - EXACT same approach as /shop page
   // Using market relation filter: filters[market][key][$eq] to get all merchants for this market
@@ -132,6 +145,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="apple-touch-icon" href="/favicon.svg" />
         {/* Fallback for older browsers */}
         <link rel="alternate icon" href="/favicon.svg" />
+        
+        {/* Preload hero background image for homepage LCP optimization */}
+        {heroBgUrl && (
+          <link
+            rel="preload"
+            as="image"
+            href={heroBgUrl}
+            fetchPriority="high"
+          />
+        )}
       </head>
       <body suppressHydrationWarning>
         <Providers>
