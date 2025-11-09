@@ -128,18 +128,18 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           slug: merchant.slug,
           logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
           description: merchant.summary || "",
-          topCouponTitle: topCoupon?.coupon_title || merchant.summary || "",
+          topCouponTitle: topCoupon?.coupon_title || "",
         });
       } catch (error) {
         console.error(`Error fetching coupon for merchant ${merchant.id}:`, error);
-        // Fallback to description if coupon fetch fails
+        // No fallback - only show first coupon title, no summary
         popularMerchants.push({
           id: merchant.id,
           name: merchant.merchant_name,
           slug: merchant.slug,
           logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
           description: merchant.summary || "",
-          topCouponTitle: merchant.summary || "",
+          topCouponTitle: "",
         });
       }
     }
