@@ -76,7 +76,7 @@ const Header = () => {
 
           {/* Search Bar - Center */}
           <div className="flex items-center justify-center">
-            <SearchDropdown placeholder="搜尋超值好康" className="w-full max-w-[200px]" />
+            <SearchDropdown placeholder="搜尋超值好康" className="w-full max-w-[280px]" />
           </div>
 
           {/* Menu Button - Right */}
