@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const { coupons = [], paths = [], tags = [], purge = false } =
+  const { coupons = [], merchants = [], specialOffers = [], paths = [], tags = [], purge = false } =
     await req.json().catch(() => ({}));
 
   // From coupons → derive tags/paths so admin doesn't need to compute
@@ -58,6 +58,23 @@ export async function POST(req: NextRequest) {
   const derivedTags: string[] = [];
   const derivedPaths: string[] = [];
 
+  // Handle merchants individually
+  for (const m of merchants as Array<{slug: string}>) {
+    if (m.slug) {
+      derivedTags.push(`merchant:${m.slug}`);
+      derivedPaths.push(`/shop/${m.slug}`);
+    }
+  }
+
+  // Handle special offers individually
+  for (const so of specialOffers as Array<{slug: string}>) {
+    if (so.slug) {
+      derivedTags.push(`special-offer:${so.slug}`);
+      derivedPaths.push(`/special-offers/${so.slug}`);
+    }
+  }
+
+  // Handle coupons → derive tags/paths
   for (const c of coupons as Array<{merchantSlug: string, categorySlugs: string[], path?: string}>) {
     if (c.merchantSlug) derivedTags.push(`merchant:${c.merchantSlug}`);
     if (Array.isArray(c.categorySlugs)) {
