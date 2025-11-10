@@ -73,25 +73,25 @@ export default async function SpecialOfferPage({
       "fields[4]": "seo_title",
       "fields[5]": "seo_description",
       "populate[logo][fields][0]": "url",
-      "populate[featured_merchant][fields][0]": "id",
-      "populate[featured_merchant][fields][1]": "merchant_name",
-      "populate[featured_merchant][fields][2]": "slug",
-      "populate[featured_merchant][populate][logo][fields][0]": "url",
-      "populate[coupon][fields][0]": "id",
-      "populate[coupon][fields][1]": "coupon_title",
-      "populate[coupon][fields][2]": "description",
-      "populate[coupon][fields][3]": "value",
-      "populate[coupon][fields][4]": "code",
-      "populate[coupon][fields][5]": "coupon_type",
-      "populate[coupon][fields][6]": "expires_at",
-      "populate[coupon][fields][7]": "user_count",
-      "populate[coupon][fields][8]": "display_count",
-      "populate[coupon][fields][9]": "affiliate_link",
-      "populate[coupon][fields][10]": "editor_tips",
-      "populate[coupon][populate][merchant][fields][0]": "id",
-      "populate[coupon][populate][merchant][fields][1]": "merchant_name",
-      "populate[coupon][populate][merchant][fields][2]": "slug",
-      "populate[coupon][populate][merchant][populate][logo][fields][0]": "url",
+      "populate[featured_merchants][fields][0]": "id",
+      "populate[featured_merchants][fields][1]": "merchant_name",
+      "populate[featured_merchants][fields][2]": "slug",
+      "populate[featured_merchants][populate][logo][fields][0]": "url",
+      "populate[coupons][fields][0]": "id",
+      "populate[coupons][fields][1]": "coupon_title",
+      "populate[coupons][fields][2]": "description",
+      "populate[coupons][fields][3]": "value",
+      "populate[coupons][fields][4]": "code",
+      "populate[coupons][fields][5]": "coupon_type",
+      "populate[coupons][fields][6]": "expires_at",
+      "populate[coupons][fields][7]": "user_count",
+      "populate[coupons][fields][8]": "display_count",
+      "populate[coupons][fields][9]": "affiliate_link",
+      "populate[coupons][fields][10]": "editor_tips",
+      "populate[coupons][populate][merchant][fields][0]": "id",
+      "populate[coupons][populate][merchant][fields][1]": "merchant_name",
+      "populate[coupons][populate][merchant][fields][2]": "slug",
+      "populate[coupons][populate][merchant][populate][logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
     })}`, { 
       revalidate: 3600, 
@@ -121,12 +121,16 @@ export default async function SpecialOfferPage({
       id: specialOffer.id,
       title: specialOffer.title,
       slug: specialOffer.slug,
+      featured_merchants_count: Array.isArray(specialOffer.featured_merchants) ? specialOffer.featured_merchants.length : 0,
+      coupons_count: Array.isArray(specialOffer.coupons) ? specialOffer.coupons.length : 0,
     });
 
     // Transform featured merchants data
-    // Schema shows featured_merchant is manyToOne (singular), but handle both formats
+    // Schema: featured_merchants is oneToMany (plural) - multiple merchants per special offer
+    // Keep fallback for old singular format for backward compatibility
     let featuredMerchants: any[] = [];
     if (specialOffer.featured_merchant) {
+      // Fallback for old schema format
       const merchant = specialOffer.featured_merchant;
       featuredMerchants = [{
         id: merchant.id,
@@ -136,6 +140,7 @@ export default async function SpecialOfferPage({
         link: `/shop/${merchant.slug}`,
       }];
     } else if (Array.isArray(specialOffer.featured_merchants)) {
+      // Current schema format: oneToMany relation
       featuredMerchants = specialOffer.featured_merchants.map((merchant: any) => ({
         id: merchant.id,
         name: merchant.merchant_name,
@@ -146,11 +151,14 @@ export default async function SpecialOfferPage({
     }
 
     // Transform coupons data
-    // Schema shows coupon is manyToOne (singular), but handle both formats
+    // Schema: coupons is oneToMany (plural) - multiple coupons per special offer
+    // Keep fallback for old singular format for backward compatibility
     let couponData: any[] = [];
     if (specialOffer.coupon) {
+      // Fallback for old schema format
       couponData = [specialOffer.coupon];
     } else if (Array.isArray(specialOffer.coupons)) {
+      // Current schema format: oneToMany relation
       couponData = specialOffer.coupons;
     }
 
