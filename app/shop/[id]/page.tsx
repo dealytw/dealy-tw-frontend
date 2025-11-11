@@ -584,6 +584,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const merchantData = merchantRes.data[0];
     const allCoupons = couponsRes.data || [];
     
+    // Debug: Log special_offers data from CMS
+    console.log('[MerchantPage] special_offers from CMS:', {
+      raw: merchantData.special_offers,
+      isArray: Array.isArray(merchantData.special_offers),
+      length: Array.isArray(merchantData.special_offers) ? merchantData.special_offers.length : 'not array',
+      firstItem: Array.isArray(merchantData.special_offers) && merchantData.special_offers.length > 0 ? merchantData.special_offers[0] : null,
+    });
+    
     // Get market locale from merchant data or fetch separately
     const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
     const domainConfig = getDomainConfigServer();
@@ -660,6 +668,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         } else if (merchantData.special_offers?.data) {
           specialOffersFromCMS = merchantData.special_offers.data;
         }
+        
+        console.log('[MerchantPage] Extracted special_offers:', {
+          count: specialOffersFromCMS.length,
+          items: specialOffersFromCMS.map((so: any) => ({ id: so.id, title: so.title, slug: so.slug })),
+        });
         
         // Transform to the format needed by client component
         return specialOffersFromCMS.map((so: any) => ({

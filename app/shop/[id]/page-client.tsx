@@ -294,6 +294,12 @@ interface MerchantProps {
 }
 
 const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
+  // Debug: Log special offers received from server
+  console.log('[MerchantClient] specialOffers received:', {
+    count: specialOffers.length,
+    items: specialOffers,
+  });
+  
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
@@ -922,7 +928,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                         </Link>
                       ))
                     ) : (
-                      <div className="text-sm text-gray-500">暫無相關購物分類</div>
+                      <div className="text-sm text-gray-500">相關購物攻略</div>
                     )}
                   </div>
                 </CardContent>
