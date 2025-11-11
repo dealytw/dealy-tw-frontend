@@ -647,6 +647,27 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       page_title_h1: merchantData.page_title_h1 || null,
       h1Title: h1Title, // Pre-generated H1 title from server
       lastUpdatedDate: lastUpdatedDate, // Pre-formatted date from server
+      special_offers: (() => {
+        // Handle different formats for manyToMany relation (same as related_merchants)
+        let specialOffersFromCMS = [];
+        if (Array.isArray(merchantData.special_offers)) {
+          // Check if it's nested format
+          if (merchantData.special_offers[0]?.data) {
+            specialOffersFromCMS = merchantData.special_offers.map((item: any) => item.data || item);
+          } else {
+            specialOffersFromCMS = merchantData.special_offers;
+          }
+        } else if (merchantData.special_offers?.data) {
+          specialOffersFromCMS = merchantData.special_offers.data;
+        }
+        
+        // Transform to the format needed by client component
+        return specialOffersFromCMS.map((so: any) => ({
+          id: so.id,
+          title: so.title,
+          slug: so.slug,
+        }));
+      })(),
     };
 
     // Process hotstore merchants for popular merchants section
