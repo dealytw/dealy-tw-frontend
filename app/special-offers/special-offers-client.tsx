@@ -110,6 +110,22 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
   };
 
   const handleCouponClick = (coupon: FlashDeal) => {
+    // Track coupon click for GTM/GA4
+    if (typeof window !== 'undefined') {
+      const { trackCouponClick } = require('@/lib/analytics');
+      trackCouponClick({
+        couponId: coupon.id.toString(),
+        couponTitle: coupon.coupon_title,
+        couponCode: coupon.code,
+        merchantName: coupon.merchant?.merchant_name || coupon.merchant?.name || '',
+        merchantSlug: coupon.merchant?.slug,
+        affiliateLink: coupon.affiliate_link || '#',
+        couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+        clickSource: 'button',
+        pageLocation: window.location.pathname,
+      });
+    }
+    
     // Parallel actions (no delays, no setTimeout)
     if (coupon.merchant?.slug) {
       // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)

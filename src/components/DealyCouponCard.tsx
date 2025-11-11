@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { trackCouponClick as trackCouponClickAnalytics } from "@/lib/analytics";
 
 interface DealyCouponCardProps {
   coupon: {
@@ -174,7 +175,20 @@ const DealyCouponCard = ({
   };
 
   const handleButtonClick = () => {
-    // Fire tracking (non-blocking - don't await)
+    // Fire GTM/GA4 tracking (non-blocking - don't await)
+    trackCouponClickAnalytics({
+      couponId: coupon.id,
+      couponTitle: coupon.title,
+      couponCode: coupon.code,
+      merchantName: coupon.merchant.name,
+      merchantSlug: merchantSlug,
+      affiliateLink: coupon.affiliateLink,
+      couponType: couponType as 'promo_code' | 'coupon' | 'discount',
+      clickSource: 'button',
+      pageLocation: typeof window !== 'undefined' ? window.location.pathname : '',
+    });
+    
+    // Fire backend tracking (non-blocking - don't await)
     trackCouponClick();
     
     // Execute navigation immediately (no delay!)
@@ -182,7 +196,20 @@ const DealyCouponCard = ({
   };
   
   const handleTitleClick = () => {
-    // Fire tracking (non-blocking - don't await)
+    // Fire GTM/GA4 tracking (non-blocking - don't await)
+    trackCouponClickAnalytics({
+      couponId: coupon.id,
+      couponTitle: coupon.title,
+      couponCode: coupon.code,
+      merchantName: coupon.merchant.name,
+      merchantSlug: merchantSlug,
+      affiliateLink: coupon.affiliateLink,
+      couponType: couponType as 'promo_code' | 'coupon' | 'discount',
+      clickSource: 'title',
+      pageLocation: typeof window !== 'undefined' ? window.location.pathname : '',
+    });
+    
+    // Fire backend tracking (non-blocking - don't await)
     trackCouponClick();
     
     // Trigger the click handler (opens modal)

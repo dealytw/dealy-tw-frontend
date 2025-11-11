@@ -314,6 +314,24 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
   };
 
   const handleCouponClick = (coupon: CouponRailItem) => {
+    // Track coupon click for GTM/GA4
+    if (typeof window !== 'undefined') {
+      const { trackCouponClick } = require('@/lib/analytics');
+      trackCouponClick({
+        couponId: coupon.id.startsWith('coupon-') 
+          ? coupon.id.replace('coupon-', '') 
+          : coupon.id,
+        couponTitle: coupon.title,
+        couponCode: coupon.code,
+        merchantName: coupon.merchantName,
+        merchantSlug: coupon.merchantSlug,
+        affiliateLink: coupon.affiliateLink || '#',
+        couponType: (coupon.couponType || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+        clickSource: 'button',
+        pageLocation: window.location.pathname,
+      });
+    }
+    
     // Parallel actions (no delays, no setTimeout)
     if (coupon.merchantSlug) {
       // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)

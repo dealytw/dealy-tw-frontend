@@ -110,6 +110,22 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
 
   const handleButtonClick = () => {
     if (coupon) {
+      // Track coupon click for GTM/GA4
+      if (typeof window !== 'undefined') {
+        const { trackCouponClick } = require('@/lib/analytics');
+        trackCouponClick({
+          couponId: coupon.id.toString(),
+          couponTitle: coupon.title,
+          couponCode: coupon.code,
+          merchantName: relatedMerchant.name,
+          merchantSlug: relatedMerchant.slug,
+          affiliateLink: coupon.affiliate_link || '#',
+          couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+          clickSource: 'button',
+          pageLocation: window.location.pathname,
+        });
+      }
+      
       // Parallel actions (no delays, no setTimeout)
       // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
       const baseUrl = window.location.href.split('#')[0]; // Remove existing hash
