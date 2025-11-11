@@ -89,12 +89,14 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
           )}
           <h3 className="text-xl font-bold text-blue-600 mb-4">{merchant.name}</h3>
           
-          <Button 
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3"
-            onClick={() => window.open(merchant.affiliateLink || merchant.website, '_blank')}
+          <a
+            href={merchant.affiliateLink || merchant.website || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 text-center rounded-md transition-colors"
           >
             前往查看 {merchant.website || merchant.affiliateLink}
-          </Button>
+          </a>
         </div>
 
         {/* Daily Verification Badge */}

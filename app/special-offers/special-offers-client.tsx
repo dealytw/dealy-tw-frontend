@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DealyCouponCard from "@/components/DealyCouponCard";
@@ -164,10 +165,10 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
             
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
               {featuredMerchants.map((merchant) => (
-                <div 
+                <Link
                   key={merchant.id}
+                  href={merchant.link}
                   className="flex flex-col items-center p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow cursor-pointer group"
-                  onClick={() => window.open(merchant.link, '_self')}
                 >
                   <div className="w-24 h-24 mb-3 flex items-center justify-center bg-white rounded-lg p-2">
                     <img 
@@ -179,7 +180,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
                   <h3 className="font-semibold text-sm text-foreground mb-1 text-center">
                     {merchant.name}
                   </h3>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
