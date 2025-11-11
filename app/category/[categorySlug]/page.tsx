@@ -150,8 +150,11 @@ export default async function CategoryPage({
       discount: coupon.value || "",
       expiry: coupon.expires_at || "長期有效",
       usageCount: coupon.user_count || 0,
+      affiliate_link: coupon.affiliate_link || '#',
+      coupon_type: coupon.coupon_type || 'promo_code',
       merchant: {
         name: coupon.merchant?.merchant_name || 'Unknown Merchant',
+        slug: coupon.merchant?.slug || '',
         logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/60/60",
       },
     }));

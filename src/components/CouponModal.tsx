@@ -35,6 +35,22 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
   if (!coupon) return null;
 
   const handleVisitStore = () => {
+    // Track coupon click for GTM/GA4 (from modal)
+    if (typeof window !== 'undefined') {
+      const { trackCouponClick } = require('@/lib/analytics');
+      trackCouponClick({
+        couponId: coupon.id,
+        couponTitle: coupon.title,
+        couponCode: coupon.code,
+        merchantName: coupon.merchant.name,
+        merchantSlug: '', // Modal doesn't have merchant slug context
+        affiliateLink: coupon.affiliateLink,
+        couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+        clickSource: 'button', // Modal button click
+        pageLocation: window.location.pathname,
+      });
+    }
+    
     // Open affiliate link in same tab (as requested)
     window.open(coupon.affiliateLink, '_self');
   };

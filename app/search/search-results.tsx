@@ -64,6 +64,22 @@ export default function SearchResults({ searchResults, query }: SearchResultsPro
   };
 
   const handleCouponClick = (coupon: any) => {
+    // Track coupon click for GTM/GA4
+    if (typeof window !== 'undefined') {
+      const { trackCouponClick } = require('@/lib/analytics');
+      trackCouponClick({
+        couponId: coupon.id.toString(),
+        couponTitle: coupon.title,
+        couponCode: coupon.code,
+        merchantName: coupon.merchant.name,
+        merchantSlug: coupon.merchant.slug,
+        affiliateLink: coupon.affiliate_link || '#',
+        couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+        clickSource: 'button',
+        pageLocation: window.location.pathname,
+      });
+    }
+    
     // Open affiliate link in same tab
     window.open(coupon.affiliate_link, '_self');
     

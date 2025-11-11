@@ -22,9 +22,12 @@ interface Coupon {
   discount: string;
   expiry: string;
   usageCount: number;
+  affiliate_link?: string;
+  coupon_type?: string;
   merchant: {
     name: string;
     logo: string;
+    slug?: string;
   };
 }
 
@@ -56,8 +59,33 @@ export default function CategoryView({
   const router = useRouter();
 
   const handleCouponClick = (coupon: Coupon) => {
-    console.log('Coupon clicked:', coupon);
-    // TODO: Implement coupon click logic (affiliate link + modal)
+    // Track coupon click for GTM/GA4
+    if (typeof window !== 'undefined') {
+      const { trackCouponClick } = require('@/lib/analytics');
+      trackCouponClick({
+        couponId: coupon.id,
+        couponTitle: coupon.title,
+        couponCode: coupon.code,
+        merchantName: coupon.merchant.name,
+        merchantSlug: coupon.merchant.slug || '',
+        affiliateLink: coupon.affiliate_link || '#',
+        couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+        clickSource: 'button',
+        pageLocation: window.location.pathname,
+      });
+    }
+    
+    // Open affiliate link in same tab
+    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+      window.open(coupon.affiliate_link, '_self');
+    }
+    
+    // Open merchant page in new tab if merchant slug is available
+    if (coupon.merchant.slug) {
+      setTimeout(() => {
+        window.open(`/shop/${coupon.merchant.slug}#coupon-${coupon.id}`, '_blank');
+      }, 100);
+    }
   };
 
   return (
@@ -122,8 +150,22 @@ export default function CategoryView({
                 {coupons.map((coupon) => (
                   <CouponCard
                     key={coupon.id}
-                    coupon={coupon}
-                    onClick={() => handleCouponClick(coupon)}
+                    coupon={{
+                      id: coupon.id,
+                      coupon_title: coupon.title,
+                      coupon_type: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'auto_discount',
+                      value: coupon.discount,
+                      code: coupon.code,
+                      expires_at: coupon.expiry,
+                      user_count: coupon.usageCount,
+                      description: coupon.description,
+                      affiliate_link: coupon.affiliate_link || '#',
+                      merchant: {
+                        name: coupon.merchant.name,
+                        logo: coupon.merchant.logo,
+                      },
+                    }}
+                    onGetCode={() => handleCouponClick(coupon)}
                   />
                 ))}
               </div>
