@@ -446,6 +446,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[related_merchants][fields][1]": "merchant_name",
         "populate[related_merchants][fields][2]": "slug",
         "populate[related_merchants][populate][logo][fields][0]": "url",
+        "populate[special_offers][fields][0]": "id",
+        "populate[special_offers][fields][1]": "title",
+        "populate[special_offers][fields][2]": "slug",
         "populate[market][fields][0]": "key",
         "populate[market][fields][1]": "defaultLocale",
       })}`, { 
@@ -829,6 +832,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         relatedMerchants={relatedMerchants}
         hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
+        specialOffers={merchant.special_offers || []}
       />
       {/* JSON-LD scripts - Matching HK site format exactly */}
       {/* eslint-disable @next/next/no-sync-scripts */}

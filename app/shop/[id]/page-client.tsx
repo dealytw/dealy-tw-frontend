@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -285,9 +286,14 @@ interface MerchantProps {
     logoUrl: string | null;
   }>;
   market: string;
+  specialOffers?: Array<{
+    id: number;
+    title: string;
+    slug: string;
+  }>;
 }
 
-const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstoreMerchants = [], market }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
@@ -897,18 +903,27 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 </CardContent>
               </Card>
 
-              {/* Related Blog Categories */}
+              {/* Related Shopping Categories and Guides */}
               <Card className="shadow-md">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-gray-800">相關購物分類及攻略</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {["最新快閃優惠", "旅遊優惠大集合", "優惠碼使用教學", "信用卡優惠大全", "會員攻略"].map((category, index) => (
-                      <Badge key={index} variant="outline" className="cursor-pointer px-3 py-1 text-sm border-gray-300 hover:bg-gray-50">
-                        {category}
-                      </Badge>
-                    ))}
+                    {specialOffers && specialOffers.length > 0 ? (
+                      specialOffers.map((specialOffer) => (
+                        <Link
+                          key={specialOffer.id}
+                          href={`/special-offers/${specialOffer.slug}`}
+                        >
+                          <Badge variant="outline" className="cursor-pointer px-3 py-1 text-sm border-gray-300 hover:bg-gray-50 transition-colors">
+                            {specialOffer.title}
+                          </Badge>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500">暫無相關購物分類</div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
