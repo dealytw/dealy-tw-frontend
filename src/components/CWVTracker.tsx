@@ -1,92 +1,100 @@
 "use client";
 
 import { useEffect } from 'react';
+import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
 
-// Extend Window interface for gtag
+// Extend Window interface for gtag and dataLayer
 declare global {
   interface Window {
+    dataLayer: any[];
     gtag?: (...args: any[]) => void;
   }
 }
 
 /**
  * Core Web Vitals (CWV) Tracker
- * Tracks LCP, CLS, and INP and sends to analytics
- * SLOs: LCP < 2.5s p75, CLS < 0.1, INP < 200ms
+ * Tracks LCP, CLS, and INP and sends to GA4/GTM
  * 
- * Note: web-vitals package is optional. Install with: npm install web-vitals
- * This component will gracefully skip tracking if web-vitals is not installed.
+ * SLOs (Service Level Objectives):
+ * - LCP (Largest Contentful Paint): < 2.5s p75
+ * - CLS (Cumulative Layout Shift): < 0.1
+ * - INP (Interaction to Next Paint): < 200ms
+ * 
+ * GA4 Event Format:
+ * - Event Name: 'web_vitals'
+ * - Parameters: metric_name, value, rating, delta, id, page_location
  */
 export default function CWVTracker() {
   useEffect(() => {
     // Only run in browser
     if (typeof window === 'undefined') return;
 
-    // Check if web-vitals is available (optional dependency)
-    const trackCWV = async () => {
-      // Only run in browser (client-side)
-      if (typeof window === 'undefined') return;
+    // Initialize dataLayer if it doesn't exist
+    if (!window.dataLayer) {
+      window.dataLayer = [];
+    }
 
-      try {
-        // Use Function constructor to create import dynamically at runtime
-        // This completely bypasses Turbopack static analysis
-        const dynamicImport = new Function('moduleName', 'return import(moduleName)');
-        const moduleName = 'web-vitals';
-        const webVitalsModule = await dynamicImport(moduleName).catch(() => null);
-        
-        if (!webVitalsModule) {
-          // web-vitals not installed - that's okay, just skip tracking
-          return;
-        }
+    /**
+     * Send Web Vitals metric to GA4/GTM
+     */
+    const sendToGA4 = (metric: Metric) => {
+      const { name, value, rating, delta, id } = metric;
+      
+      // Determine rating label
+      const ratingLabel = rating === 'good' ? 'good' : rating === 'needs-improvement' ? 'needs-improvement' : 'poor';
+      
+      // Prepare event data for dataLayer (GTM)
+      const eventData = {
+        event: 'web_vitals',
+        metric_name: name, // 'LCP', 'CLS', 'INP'
+        value: Math.round(name === 'CLS' ? value * 1000 : value), // CLS in thousandths, others in milliseconds
+        rating: ratingLabel, // 'good', 'needs-improvement', 'poor'
+        delta: Math.round(delta), // The delta value
+        metric_id: id, // Unique ID for deduplication
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+        timestamp: new Date().toISOString(),
+      };
 
-        const { onCLS, onINP, onLCP } = webVitalsModule;
-        
-        // Track Largest Contentful Paint (LCP)
-        onLCP((metric) => {
-          console.log('LCP:', metric);
-          // Send to analytics (replace with your analytics service)
-          if (typeof window.gtag !== 'undefined') {
-            window.gtag('event', 'web_vitals', {
-              event_category: 'Web Vitals',
-              event_label: 'LCP',
-              value: Math.round(metric.value),
-              non_interaction: true,
-            });
-          }
+      // Push to dataLayer (GTM)
+      if (window.dataLayer) {
+        window.dataLayer.push(eventData);
+      }
+
+      // Send to GA4 via gtag (if available)
+      if (window.gtag) {
+        window.gtag('event', name, {
+          event_category: 'Web Vitals',
+          event_label: ratingLabel,
+          value: Math.round(name === 'CLS' ? value * 1000 : value),
+          metric_rating: ratingLabel,
+          metric_delta: Math.round(delta),
+          metric_id: id,
+          non_interaction: true,
         });
+      }
 
-        // Track Cumulative Layout Shift (CLS)
-        onCLS((metric) => {
-          console.log('CLS:', metric);
-          if (typeof window.gtag !== 'undefined') {
-            window.gtag('event', 'web_vitals', {
-              event_category: 'Web Vitals',
-              event_label: 'CLS',
-              value: Math.round(metric.value * 1000) / 1000, // Keep 3 decimal places
-              non_interaction: true,
-            });
-          }
+      // Log for debugging (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[CWV] ${name}:`, {
+          value: name === 'CLS' ? value.toFixed(3) : `${Math.round(value)}ms`,
+          rating: ratingLabel,
+          delta: `${Math.round(delta)}ms`,
         });
-
-        // Track Interaction to Next Paint (INP)
-        onINP((metric) => {
-          console.log('INP:', metric);
-          if (typeof window.gtag !== 'undefined') {
-            window.gtag('event', 'web_vitals', {
-              event_category: 'Web Vitals',
-              event_label: 'INP',
-              value: Math.round(metric.value),
-              non_interaction: true,
-            });
-          }
-        });
-      } catch (error) {
-        // web-vitals not installed or failed to load - that's okay
-        console.debug('web-vitals not available. Install with: npm install web-vitals');
       }
     };
 
-    trackCWV();
+    // Track Largest Contentful Paint (LCP)
+    // Measures loading performance - should be < 2.5s
+    onLCP(sendToGA4);
+
+    // Track Cumulative Layout Shift (CLS)
+    // Measures visual stability - should be < 0.1
+    onCLS(sendToGA4);
+
+    // Track Interaction to Next Paint (INP)
+    // Measures interactivity - should be < 200ms
+    onINP(sendToGA4);
   }, []);
 
   return null; // This component doesn't render anything
