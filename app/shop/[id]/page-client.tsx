@@ -915,9 +915,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   <CardTitle className="text-xl font-bold text-gray-800">相關購物分類及攻略</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {specialOffers && specialOffers.length > 0 ? (
-                      specialOffers.map((specialOffer) => (
+                  {specialOffers && specialOffers.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {specialOffers.map((specialOffer) => (
                         <Link
                           key={specialOffer.id}
                           href={`/special-offers/${specialOffer.slug}`}
@@ -926,11 +926,13 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                             {specialOffer.title}
                           </Badge>
                         </Link>
-                      ))
-                    ) : (
-                      <div className="text-sm text-gray-500">相關購物攻略</div>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 py-8">
+                      <p>暫無相關購物攻略</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
