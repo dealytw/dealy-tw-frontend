@@ -13,7 +13,7 @@ function extractTextFromRichText(richText: any): string {
   }
   return "";
 }
-import { absolutizeMedia } from "./strapi.server";
+import { absolutizeMedia, rewriteImageUrl } from "./strapi.server";
 import { getHomePageByMarket } from "./homepage";
 import { getTopCouponForMerchant } from "./coupon-queries";
 
@@ -103,7 +103,8 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   if (!rel) {
     console.log('Warning: hero.background is missing, using empty bgUrl');
   }
-  const heroBgUrl = absolutizeMedia(rel);
+  // Rewrite hero background image URL to use custom domain
+  const heroBgUrl = rel ? rewriteImageUrl(rel) : "";
 
   const hero = {
     bgUrl: heroBgUrl,
@@ -126,7 +127,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           id: merchant.id,
           name: merchant.merchant_name,
           slug: merchant.slug,
-          logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+          logoUrl: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
           description: merchant.summary || "",
           topCouponTitle: topCoupon?.coupon_title || "",
         });
@@ -137,7 +138,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           id: merchant.id,
           name: merchant.merchant_name,
           slug: merchant.slug,
-          logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+          logoUrl: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
           description: merchant.summary || "",
           topCouponTitle: "",
         });
@@ -158,7 +159,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     id: specialOffer.id,
     name: specialOffer.title,
     slug: specialOffer.slug,
-    iconUrl: specialOffer.logo?.url ? absolutizeMedia(specialOffer.logo.url) : "",
+    iconUrl: specialOffer.logo?.url ? rewriteImageUrl(specialOffer.logo.url) : "",
   })) || [];
 
   // Process coupon rail merchants with real coupon data
@@ -174,7 +175,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
             id: `coupon-${topCoupon.id}`,
             merchantId: merchant.id.toString(),
             merchantSlug: topCoupon.merchant.slug,
-            logo: topCoupon.merchant.logo,
+            logo: topCoupon.merchant.logo ? rewriteImageUrl(topCoupon.merchant.logo) : "",
             discount: topCoupon.value,
             type: topCoupon.coupon_type === "promo_code" ? "優惠碼" : 
                   topCoupon.coupon_type === "coupon" ? "優惠券" : "自動折扣",
@@ -192,7 +193,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           couponItems.push({
             id: `merchant-${merchant.id}`,
             merchantId: merchant.id.toString(),
-            logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+            logo: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
             discount: "10% OFF",
             type: "優惠券",
             couponType: "coupon" as const,
@@ -211,7 +212,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
         couponItems.push({
           id: `merchant-${merchant.id}`,
           merchantId: merchant.id.toString(),
-          logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+          logo: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
           discount: "10% OFF",
           type: "優惠券",
           couponType: "coupon" as const,

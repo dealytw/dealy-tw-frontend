@@ -368,13 +368,22 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       <Header />
       
       {/* CMS: hero.background - with fallback */}
-      <section className="py-16 px-4" style={{
-        backgroundImage: initialData.hero?.bgUrl ? `url(${initialData.hero.bgUrl})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}>
-        <div className="container mx-auto text-center">
+      <section className="py-16 px-4 relative">
+        {/* Background Image using Next.js Image with fill */}
+        {initialData.hero?.bgUrl && (
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={initialData.hero.bgUrl}
+              alt=""
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+              quality={90}
+            />
+          </div>
+        )}
+        <div className="container mx-auto text-center relative z-10">
           {/* CMS: hero.title */}
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             {initialData.hero?.title || "Dealy.TW 台灣每日最新優惠折扣平台"}
@@ -462,10 +471,14 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                 >
                   <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                     {category.iconUrl ? (
-                      <img
+                      <Image
                         src={category.iconUrl}
                         alt={category.name}
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover"
+                        sizes="96px"
+                        loading="lazy"
                       />
                     ) : (
                       <span className="text-gray-400 text-xs">{category.name}</span>
