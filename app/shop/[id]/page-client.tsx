@@ -294,12 +294,6 @@ interface MerchantProps {
 }
 
 const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
-  // Debug: Log special offers received from server
-  console.log('[MerchantClient] specialOffers received:', {
-    count: specialOffers.length,
-    items: specialOffers,
-  });
-  
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");

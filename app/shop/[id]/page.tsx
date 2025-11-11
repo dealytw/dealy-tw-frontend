@@ -359,8 +359,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       const couponsRes = await getMerchantCouponsForSEO(merchant.documentId, market, 300);
       const coupons = couponsRes?.data || [];
       
-      console.log(`[SEO] Merchant ${merchant.merchant_name} - Fetched ${coupons.length} active coupons`);
-      
       // Generate highlights and first coupon
       const highlights = getFirstCouponHighlights(coupons, name);
       const firstCoupon = getFirstValidCoupon(coupons);
@@ -415,13 +413,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
   const { market } = await searchParams;
   
   const marketKey = (market as string) || process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
-
-  console.log('MerchantPage: Fetching data for', { id, marketKey });
-  console.log('Environment check:', {
-    STRAPI_URL: process.env.STRAPI_URL,
-    NEXT_PUBLIC_STRAPI_URL: process.env.NEXT_PUBLIC_STRAPI_URL,
-    STRAPI_TOKEN: process.env.STRAPI_TOKEN ? 'exists' : 'missing'
-  });
 
   try {
     // Use server-only Strapi fetch with ISR
@@ -499,10 +490,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Extract related merchants from the merchant data already fetched
     let relatedMerchants: any[] = [];
     try {
-      console.log('Extracting related merchants from merchant data');
-      
       const merchant = merchantRes.data?.[0];
-      console.log('Merchant related_merchants:', JSON.stringify(merchant?.related_merchants, null, 2));
       
       // Handle all possible formats for manyToMany relation:
       // 1. Direct array: [{ id, ... }]
@@ -519,8 +507,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       } else if (merchant?.related_merchants?.data) {
         relatedFromCMS = merchant.related_merchants.data;
       }
-      
-      console.log('Related merchants from CMS:', relatedFromCMS.length, relatedFromCMS);
       
       if (relatedFromCMS.length > 0) {
         // Fetch priority 1 coupon for each related merchant
@@ -570,8 +556,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         
         relatedMerchants = relatedMerchantsWithCoupons;
       }
-      
-      console.log('Related merchants fetched:', relatedMerchants.length, relatedMerchants);
       } catch (error) {
       console.warn('Failed to fetch related merchants, continuing without them:', error);
       relatedMerchants = [];
@@ -583,14 +567,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
     const merchantData = merchantRes.data[0];
     const allCoupons = couponsRes.data || [];
-    
-    // Debug: Log special_offers data from CMS
-    console.log('[MerchantPage] special_offers from CMS:', {
-      raw: merchantData.special_offers,
-      isArray: Array.isArray(merchantData.special_offers),
-      length: Array.isArray(merchantData.special_offers) ? merchantData.special_offers.length : 'not array',
-      firstItem: Array.isArray(merchantData.special_offers) && merchantData.special_offers.length > 0 ? merchantData.special_offers[0] : null,
-    });
     
     // Get market locale from merchant data or fetch separately
     const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
@@ -618,11 +594,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
-    console.log('[MerchantPage] FAQ Debug:', {
-      rawFAQs: merchantData.faqs ? (Array.isArray(merchantData.faqs) ? `Array(${merchantData.faqs.length})` : typeof merchantData.faqs) : 'null/undefined',
-      parsedFAQsCount: parsedFAQs.length,
-      parsedFAQs: parsedFAQs.slice(0, 2), // Log first 2 for debugging
-    });
 
     // Transform merchant data to match frontend structure
     const merchant = {
@@ -668,11 +639,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         } else if (merchantData.special_offers?.data) {
           specialOffersFromCMS = merchantData.special_offers.data;
         }
-        
-        console.log('[MerchantPage] Extracted special_offers:', {
-          count: specialOffersFromCMS.length,
-          items: specialOffersFromCMS.map((so: any) => ({ id: so.id, title: so.title, slug: so.slug })),
-        });
         
         // Transform to the format needed by client component
         return specialOffersFromCMS.map((so: any) => ({

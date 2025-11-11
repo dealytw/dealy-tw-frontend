@@ -189,7 +189,7 @@ export function imageObjectJsonLd(opts: { url: UrlString; width?: number; height
   };
 }
 
-export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; locale?: string; siteId?: UrlString; breadcrumbId?: UrlString; merchantId?: UrlString }) {
+export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; datePublished?: string; locale?: string; siteId?: UrlString; breadcrumbId?: UrlString; merchantId?: UrlString }) {
   const { name, url, description, image, dateModified, locale, siteId, breadcrumbId, merchantId } = opts;
   
   // Convert Market.defaultLocale to schema.org format
