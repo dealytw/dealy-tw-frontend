@@ -169,7 +169,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
                   className="flex flex-col items-center p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow cursor-pointer group"
                   onClick={() => window.open(merchant.link, '_self')}
                 >
-                  <div className="w-16 h-16 mb-3 flex items-center justify-center bg-white rounded-lg p-2">
+                  <div className="w-24 h-24 mb-3 flex items-center justify-center bg-white rounded-lg p-2">
                     <img 
                       src={merchant.logo}
                       alt={merchant.name}
