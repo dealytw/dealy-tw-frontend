@@ -230,8 +230,8 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
 
   return {
     seo: { 
-      title: a.title ?? hero.title ?? "Dealy.TW 台灣每日最新優惠折扣平台", 
-      description: hero.description ?? "全台最新優惠情報｜每日更新！ ✨" 
+      title: a.seo_title ?? a.title ?? hero.title ?? "Dealy.TW 台灣每日最新優惠折扣平台", 
+      description: a.seo_description ?? hero.description ?? "全台最新優惠情報｜每日更新！ ✨" 
     },
     hero: {
       bgUrl: hero.bgUrl,

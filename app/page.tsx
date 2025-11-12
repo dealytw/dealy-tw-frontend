@@ -10,11 +10,26 @@ export const dynamic = 'auto'; // Allow ISR revalidation
 
 // Generate metadata for SEO
 export async function generateMetadata() {
-  return pageMeta({
-    title: 'Dealy.TW 台灣每日最新優惠折扣平台',
-    description: '全台最新優惠情報｜每日更新！ ✨',
-    path: '/',
-  });
+  const MARKET = process.env.NEXT_PUBLIC_MARKET_KEY || "tw";
+  
+  try {
+    // Fetch homepage data to get SEO fields
+    const homepageData = await getHomePageData(MARKET);
+    
+    return pageMeta({
+      title: homepageData.seo.title,
+      description: homepageData.seo.description,
+      path: '/',
+    });
+  } catch (error) {
+    console.error('Error fetching homepage metadata:', error);
+    // Fallback metadata
+    return pageMeta({
+      title: 'Dealy.TW 台灣每日最新優惠折扣平台',
+      description: '全台最新優惠情報｜每日更新！ ✨',
+      path: '/',
+    });
+  }
 }
 
 export default async function HomePage() {
