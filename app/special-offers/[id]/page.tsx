@@ -54,13 +54,6 @@ export default async function SpecialOfferPage({
   params: Promise<{ id: string }> 
 }) {
   const { id: slug } = await params;
-  
-  console.log('[SpecialOfferPage] Fetching data for', { slug });
-  console.log('Environment check:', {
-    STRAPI_URL: process.env.STRAPI_URL,
-    NEXT_PUBLIC_STRAPI_URL: process.env.NEXT_PUBLIC_STRAPI_URL,
-    STRAPI_TOKEN: process.env.STRAPI_TOKEN ? 'exists' : 'missing'
-  });
 
   try {
     // Use explicit populate structure like merchant page - don't use "populate=deep"
@@ -108,7 +101,6 @@ export default async function SpecialOfferPage({
           { revalidate: 60, tag: 'special-offers:debug' }
         );
         const allSlugs = (allSpecialOffersRes.data || []).map((so: any) => ({ slug: so.slug, title: so.title }));
-        console.log('[SpecialOfferPage] Available slugs in CMS:', allSlugs);
       } catch (debugError) {
         console.error('[SpecialOfferPage] Error fetching all slugs:', debugError);
       }
@@ -117,13 +109,6 @@ export default async function SpecialOfferPage({
     }
 
     const specialOffer = specialOfferRes.data[0];
-    console.log('[SpecialOfferPage] Found special offer:', {
-      id: specialOffer.id,
-      title: specialOffer.title,
-      slug: specialOffer.slug,
-      featured_merchants_count: Array.isArray(specialOffer.featured_merchants) ? specialOffer.featured_merchants.length : 0,
-      coupons_count: Array.isArray(specialOffer.coupons) ? specialOffer.coupons.length : 0,
-    });
 
     // Transform featured merchants data
     // Schema: featured_merchants is oneToMany (plural) - multiple merchants per special offer
