@@ -87,7 +87,7 @@ export default function CategoryView({
                         alt={merchant.name}
                         width={96}
                         height={96}
-                        className="max-w-full max-h-full object-contain"
+                        className="w-full h-full object-cover"
                         sizes="96px"
                         loading="lazy"
                       />
