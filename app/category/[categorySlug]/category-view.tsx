@@ -11,6 +11,7 @@ interface Merchant {
   slug: string;
   logo: string;
   description: string;
+  firstCouponTitle?: string | null;
 }
 
 interface Coupon {
@@ -93,7 +94,9 @@ export default function CategoryView({
                     </div>
                   </div>
                   <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
-                  <p className="text-xs text-gray-600 leading-tight px-2">{merchant.description}</p>
+                  {merchant.firstCouponTitle && (
+                    <p className="text-xs text-gray-600 leading-tight px-2">{merchant.firstCouponTitle}</p>
+                  )}
                 </Link>
               ))}
             </div>

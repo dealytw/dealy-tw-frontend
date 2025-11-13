@@ -173,6 +173,7 @@ export default async function CategoryPage({
             slug: merchant.page_slug,
             logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
             description: merchant.summary || "",
+            firstCouponTitle: firstCoupon?.coupon_title || null,
             firstCoupon: firstCoupon ? {
               id: firstCoupon.id.toString(),
               title: firstCoupon.coupon_title,
@@ -192,6 +193,7 @@ export default async function CategoryPage({
             slug: merchant.page_slug,
             logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
             description: merchant.summary || "",
+            firstCouponTitle: null,
             firstCoupon: null
           };
         }
