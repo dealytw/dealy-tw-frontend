@@ -15,12 +15,10 @@ export async function generateMetadata({
   params: Promise<{ categorySlug: string }> 
 }) {
   const { categorySlug } = await params;
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
   try {
-    // Fetch category SEO data from Strapi by page_slug (page_slug is unique)
-    // Category only has: market, name, slug, merchants, page_slug (no seo fields)
-    const categoryData = await strapiFetch<{ data: any[] }>(
+    // Fetch category data for SEO - use page_slug (unique identifier)
+    const categoryRes = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[page_slug][$eq]": categorySlug,
         "fields[0]": "name",
@@ -29,7 +27,7 @@ export async function generateMetadata({
       { revalidate: 3600, tag: `category:${categorySlug}` }
     );
     
-    const category = categoryData?.data?.[0];
+    const category = categoryRes?.data?.[0];
     
     if (category) {
       const title = `${category.name} 優惠與折扣`;
@@ -42,23 +40,13 @@ export async function generateMetadata({
       });
     }
   } catch (error) {
-    console.error('Error fetching category SEO data:', error);
+    console.error('[CategoryPage] Error fetching category SEO data:', error);
   }
   
   // Fallback metadata
-  const categoryMap: { [key: string]: string } = {
-    'travel': '旅遊',
-    'food': '美食', 
-    'shopping': '購物',
-    'entertainment': '娛樂',
-    'lifestyle': '生活'
-  };
-  
-  const categoryName = categoryMap[categorySlug] || categorySlug;
-  
   return pageMeta({
-    title: `${categoryName} 優惠與折扣`,
-    description: `精選 ${categoryName} 最新優惠與折扣合集。`,
+    title: `${categorySlug} 優惠與折扣`,
+    description: `精選 ${categorySlug} 最新優惠與折扣合集。`,
     path: `/category/${categorySlug}`,
   });
 }
@@ -70,12 +58,11 @@ export default async function CategoryPage({
 }) {
   const { categorySlug } = await params;
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const marketKey = market.toLowerCase();
 
   try {
-    // Use server-only Strapi fetch with ISR - copy exact pattern from merchant page
-    // Category only has: market, name, slug, merchants, page_slug (no summary field)
-    // Merchants have: summary field
-    const queryParams = {
+    // Fetch category by page_slug - use explicit fields like merchant page
+    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs({
       "filters[page_slug][$eq]": categorySlug,
       "fields[0]": "id",
       "fields[1]": "name",
@@ -86,53 +73,19 @@ export default async function CategoryPage({
       "populate[merchants][fields][3]": "summary",
       "populate[merchants][populate][logo][fields][0]": "url",
       "populate[merchants][populate][market][fields][0]": "key",
-    };
-    
-    console.log(`[CategoryPage] Fetching category with page_slug: ${categorySlug}`);
-    console.log(`[CategoryPage] Query params:`, queryParams);
-    
-    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs(queryParams)}`, { 
+    })}`, { 
       revalidate: 3600, 
       tag: `category:${categorySlug}` 
     });
-
-    console.log(`[CategoryPage] API Response:`, {
-      hasData: !!categoryRes?.data,
-      dataLength: categoryRes?.data?.length || 0,
-      data: categoryRes?.data,
-    });
-
+    
     if (!categoryRes.data || categoryRes.data.length === 0) {
-      console.error(`[CategoryPage] Category data fetch failed for slug: ${categorySlug}`);
-      
-      // Debug: fetch all categories to see what's available
-      try {
-        const allCategoriesRes = await strapiFetch<{ data: any[] }>(
-          `/api/categories?${qs({ 
-            "fields[0]": "page_slug", 
-            "fields[1]": "name", 
-            "pagination[pageSize]": "100" 
-          })}`,
-          { revalidate: 60, tag: 'categories:debug' }
-        );
-        const allSlugs = (allCategoriesRes.data || []).map((cat: any) => ({ 
-          page_slug: cat.page_slug, 
-          name: cat.name 
-        }));
-        console.error(`[CategoryPage] Available categories:`, allSlugs);
-      } catch (debugError) {
-        console.error('[CategoryPage] Error fetching all categories:', debugError);
-      }
-      
       notFound();
     }
 
     const categoryData = categoryRes.data[0];
-    
-    console.log(`[CategoryPage] Category found: ${categoryData.name} (${categoryData.page_slug})`);
 
-    // Extract merchants from category relation and filter by market
-    // Handle all possible formats for manyToMany relation (same as merchant page):
+    // Extract merchants from category relation
+    // Handle all possible formats for oneToMany relation (same pattern as merchant page):
     // 1. Direct array: [{ id, ... }]
     // 2. With data wrapper: { data: [{ id, ... }] }
     // 3. Nested: [{ data: { id, ... } }]
@@ -148,25 +101,21 @@ export default async function CategoryPage({
       merchantsFromCMS = categoryData.merchants.data;
     }
     
-    console.log(`[CategoryPage] Extracted ${merchantsFromCMS.length} merchants before market filter`);
-    
-    // Filter merchants by market
+    // Filter merchants by market (only show merchants for current market)
     merchantsFromCMS = merchantsFromCMS.filter((merchant: any) => {
       if (!merchant) return false;
       const merchantMarket = merchant.market?.key || merchant.market;
-      return merchantMarket?.toLowerCase() === market.toLowerCase();
+      return merchantMarket?.toLowerCase() === marketKey;
     });
-    
-    console.log(`[CategoryPage] Found ${merchantsFromCMS.length} merchants for category ${categorySlug} in market ${market}`);
 
-    // Transform merchants and fetch first (priority 1) coupon for each
+    // Transform merchants and fetch first (priority 1) active coupon for each
     const merchantsWithCoupons = await Promise.all(
       merchantsFromCMS.map(async (merchant: any) => {
         try {
-          // Fetch priority 1 coupon for this merchant
+          // Fetch priority 1 active coupon for this merchant in the current market
           const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
             "filters[merchant][id][$eq]": merchant.id.toString(),
-            "filters[market][key][$eq]": market,
+            "filters[market][key][$eq]": marketKey,
             "filters[coupon_status][$eq]": "active",
             "sort": "priority:asc",
             "pagination[pageSize]": "1",
@@ -203,7 +152,7 @@ export default async function CategoryPage({
             } : null
           };
         } catch (error) {
-          console.error(`Error fetching coupon for merchant ${merchant.page_slug}:`, error);
+          console.error(`[CategoryPage] Error fetching coupon for merchant ${merchant.page_slug}:`, error);
           return {
             id: merchant.id.toString(),
             name: merchant.merchant_name || merchant.name,
@@ -216,7 +165,7 @@ export default async function CategoryPage({
       })
     );
 
-    // Filter merchants that have coupons for the coupons section
+    // Separate merchants and coupons for the view
     const merchants = merchantsWithCoupons;
     const coupons = merchantsWithCoupons
       .filter((m: any) => m.firstCoupon)
@@ -267,11 +216,6 @@ export default async function CategoryPage({
 
   } catch (error) {
     console.error('[CategoryPage] Error fetching category data:', error);
-    console.error('[CategoryPage] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      categorySlug,
-    });
     notFound();
   }
 }
