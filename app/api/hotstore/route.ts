@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       "filters[market][key][$eq]": marketKey,
       "populate[merchants][fields][0]": "id",
       "populate[merchants][fields][1]": "merchant_name",
-      "populate[merchants][fields][2]": "slug",
+      "populate[merchants][fields][2]": "page_slug",
       "populate[merchants][populate][logo][fields][0]": "url",
     })}`, { 
       revalidate: 3600, 
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       hotstoreMerchants = merchantsFromCMS.map((merchant: any) => ({
         id: merchant.id.toString(),
         name: merchant.merchant_name || merchant.name || '',
-        slug: merchant.slug || '',
+        slug: merchant.page_slug || '',
         logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : null,
       }));
     }

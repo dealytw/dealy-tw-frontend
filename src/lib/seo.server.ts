@@ -5,11 +5,11 @@ import { strapiFetch, qs } from '@/lib/strapi.server';
 // MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex)
 export async function getMerchantSEO(slug: string, revalidate = 300) {
   const params = {
-    'filters[slug][$eq]': slug,
+    'filters[page_slug][$eq]': slug,
     'fields[0]': 'id',
     'fields[1]': 'documentId',
     'fields[2]': 'merchant_name',
-    'fields[3]': 'slug',
+    'fields[3]': 'page_slug',
     'fields[4]': 'seo_title',
     'fields[5]': 'seo_description',
     'fields[6]': 'canonical_url',
@@ -62,10 +62,10 @@ export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw'
 // TOPIC SEO (if you have topics)
 export async function getTopicSEO(slug: string, revalidate = 300) {
   const params = {
-    'filters[slug][$eq]': slug,
+    'filters[page_slug][$eq]': slug,
     'fields[0]': 'id',
     'fields[1]': 'title',
-    'fields[2]': 'slug',
+    'fields[2]': 'page_slug',
     'fields[3]': 'seo_title',
     'fields[4]': 'seo_description',
     'fields[5]': 'canonical_url',

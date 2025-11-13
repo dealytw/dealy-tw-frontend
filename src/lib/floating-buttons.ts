@@ -44,9 +44,9 @@ export async function getFloatingButtons(market = 'tw', revalidate = FLOATING_BU
     'fields[1]': 'button_label',
     'populate[icon][fields][0]': 'url',
     'populate[merchant][fields][0]': 'id',
-    'populate[merchant][fields][1]': 'slug',
+    'populate[merchant][fields][1]': 'page_slug',
     'populate[special_offer][fields][0]': 'id',
-    'populate[special_offer][fields][1]': 'slug',
+    'populate[special_offer][fields][1]': 'page_slug',
     'populate[market][fields][0]': 'key',
   };
 

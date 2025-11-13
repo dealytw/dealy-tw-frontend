@@ -7,7 +7,7 @@ import { getCategoryTag, MERCHANT_REVALIDATE } from './constants';
 export interface Category {
   id: number;
   name: string;
-  slug: string;
+  page_slug: string;
   description?: string;
   icon?: {
     url: string;
@@ -15,7 +15,7 @@ export interface Category {
   merchants?: Array<{
     id: number;
     merchant_name: string;
-    slug: string;
+    page_slug: string;
     logo?: {
       url: string;
     };
@@ -40,16 +40,16 @@ export interface CategoryResponse {
 // Get category by slug
 export async function getCategoryBySlug(slug: string, market = 'tw', revalidate = MERCHANT_REVALIDATE): Promise<CategoryResponse> {
   const params = {
-    'filters[slug][$eq]': slug,
+    'filters[page_slug][$eq]': slug,
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
     'fields[1]': 'name',
-    'fields[2]': 'slug',
+    'fields[2]': 'page_slug',
     'fields[3]': 'description',
     'populate[icon][fields][0]': 'url',
     'populate[merchants][fields][0]': 'id',
     'populate[merchants][fields][1]': 'merchant_name',
-    'populate[merchants][fields][2]': 'slug',
+    'populate[merchants][fields][2]': 'page_slug',
     'populate[merchants][populate][logo][fields][0]': 'url',
     'populate[market][fields][0]': 'key',
   };
@@ -66,7 +66,7 @@ export async function getCategoriesList(market = 'tw', page = 1, pageSize = 20, 
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
     'fields[1]': 'name',
-    'fields[2]': 'slug',
+    'fields[2]': 'page_slug',
     'fields[3]': 'description',
     'sort': 'name:asc',
     'pagination[page]': page.toString(),
@@ -87,7 +87,7 @@ export async function getFeaturedCategories(market = 'tw', limit = 10, revalidat
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
     'fields[1]': 'name',
-    'fields[2]': 'slug',
+    'fields[2]': 'page_slug',
     'fields[3]': 'description',
     'sort': 'name:asc',
     'pagination[pageSize]': limit.toString(),
@@ -107,7 +107,7 @@ export async function searchCategories(query: string, market = 'tw', limit = 20,
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
     'fields[1]': 'name',
-    'fields[2]': 'slug',
+    'fields[2]': 'page_slug',
     'fields[3]': 'description',
     'sort': 'name:asc',
     'pagination[pageSize]': limit.toString(),
@@ -125,9 +125,9 @@ export async function searchCategories(query: string, market = 'tw', limit = 20,
   const searchQuery = query.toLowerCase();
   const filteredCategories = response.data.filter((category) => {
     const name = category.name?.toLowerCase() || '';
-    const slug = category.slug?.toLowerCase() || '';
+    const page_slug = category.page_slug?.toLowerCase() || '';
     const description = category.description?.toLowerCase() || '';
-    return name.includes(searchQuery) || slug.includes(searchQuery) || description.includes(searchQuery);
+    return name.includes(searchQuery) || page_slug.includes(searchQuery) || description.includes(searchQuery);
   });
 
   return {

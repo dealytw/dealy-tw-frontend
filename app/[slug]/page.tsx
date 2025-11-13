@@ -21,7 +21,7 @@ export async function generateStaticParams() {
   try {
     const params = {
       "filters[market][key][$eq]": market,
-      "fields[0]": "slug",
+      "fields[0]": "page_slug",
       "pagination[pageSize]": "100",
     };
 
@@ -31,7 +31,7 @@ export async function generateStaticParams() {
     );
 
     const slugs = (response?.data || []).map((page: any) => ({
-      slug: page.slug,
+      slug: page.page_slug,
     }));
 
     // If we got slugs from CMS, use those; otherwise use fallback
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   try {
     const pageParams = {
-      "filters[slug][$eq]": slug,
+      "filters[page_slug][$eq]": slug,
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
       "fields[1]": "title",
@@ -115,12 +115,12 @@ export default async function LegalPage({ params }: LegalPageProps) {
 
   try {
     const pageParams = {
-      "filters[slug][$eq]": slug,
+      "filters[page_slug][$eq]": slug,
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
       "fields[1]": "title",
       "fields[2]": "content",
-      "fields[3]": "slug",
+      "fields[3]": "page_slug",
       "pagination[pageSize]": "1",
     };
 

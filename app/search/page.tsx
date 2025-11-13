@@ -49,7 +49,7 @@ export default async function SearchPage({
         "filters[market][key][$eq]": market, // Market relation filter
         "fields[0]": "id",
         "fields[1]": "merchant_name",
-        "fields[2]": "slug", 
+        "fields[2]": "page_slug", 
         "fields[3]": "summary",
         "fields[4]": "default_affiliate_link",
         "sort": "merchant_name:asc",
@@ -70,7 +70,7 @@ export default async function SearchPage({
       const merchants = allMerchants
         .filter((merchant: any) => {
           const name = merchant.merchant_name?.toLowerCase() || '';
-          const slug = merchant.slug?.toLowerCase() || '';
+          const slug = merchant.page_slug?.toLowerCase() || '';
           const summary = merchant.summary?.toLowerCase() || '';
           const searchQuery = query.toLowerCase();
           
@@ -80,7 +80,7 @@ export default async function SearchPage({
         .map((merchant: any) => ({
           id: merchant.id,
           name: merchant.merchant_name,
-          slug: merchant.slug,
+          slug: merchant.page_slug,
           logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
           description: merchant.summary || "",
           website: merchant.website || "",
@@ -109,7 +109,7 @@ export default async function SearchPage({
           "pagination[pageSize]": "1000",
           "populate[merchant][fields][0]": "id",
           "populate[merchant][fields][1]": "merchant_name",
-          "populate[merchant][fields][2]": "slug",
+          "populate[merchant][fields][2]": "page_slug",
           "populate[merchant][populate][logo][fields][0]": "url",
           "populate[market][fields][0]": "key",
         };
@@ -147,7 +147,7 @@ export default async function SearchPage({
             merchant: {
               id: coupon.merchant?.id,
               name: coupon.merchant?.merchant_name || 'Unknown Merchant',
-              slug: coupon.merchant?.slug || '',
+              slug: coupon.merchant?.page_slug || '',
               logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120",
             },
             type: 'coupon'

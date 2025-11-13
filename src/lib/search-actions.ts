@@ -44,7 +44,7 @@ export async function getAllMerchantsForSearch(market: string = 'tw'): Promise<M
       firstMerchant: merchantsData?.data?.[0] ? {
         id: merchantsData.data[0].id,
         merchant_name: merchantsData.data[0].merchant_name,
-        slug: merchantsData.data[0].slug,
+        slug: merchantsData.data[0].page_slug,
         website: merchantsData.data[0].website,
         hasLogo: !!merchantsData.data[0].logo
       } : null

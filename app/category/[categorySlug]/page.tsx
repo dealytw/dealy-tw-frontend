@@ -17,12 +17,12 @@ export async function generateMetadata({
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
   try {
-    // Fetch category SEO data from Strapi by slug (slug is unique)
+    // Fetch category SEO data from Strapi by page_slug (page_slug is unique)
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
-        "filters[slug][$eq]": categorySlug,
+        "filters[page_slug][$eq]": categorySlug,
         "fields[0]": "name",
-        "fields[1]": "slug",
+        "fields[1]": "page_slug",
         "fields[2]": "seo_title",
         "fields[3]": "seo_description",
       })}`,
@@ -72,17 +72,17 @@ export default async function CategoryPage({
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
   try {
-    // Fetch category by slug (slug is unique, no need to filter by market)
+    // Fetch category by page_slug (page_slug is unique, no need to filter by market)
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
-        "filters[slug][$eq]": categorySlug,
+        "filters[page_slug][$eq]": categorySlug,
         "fields[0]": "id",
         "fields[1]": "name",
-        "fields[2]": "slug",
+        "fields[2]": "page_slug",
         "fields[3]": "summary",
         "populate[merchants][fields][0]": "id",
         "populate[merchants][fields][1]": "merchant_name",
-        "populate[merchants][fields][2]": "slug",
+        "populate[merchants][fields][2]": "page_slug",
         "populate[merchants][fields][3]": "summary",
         "populate[merchants][populate][logo][fields][0]": "url",
         "populate[merchants][populate][market][fields][0]": "key",
@@ -97,7 +97,7 @@ export default async function CategoryPage({
       notFound();
     }
     
-    console.log(`[CategoryPage] Category found: ${category.name} (${category.slug})`);
+    console.log(`[CategoryPage] Category found: ${category.name} (${category.page_slug})`);
     console.log(`[CategoryPage] Category merchants data:`, {
       hasMerchants: !!category.merchants,
       merchantsType: typeof category.merchants,
@@ -152,7 +152,7 @@ export default async function CategoryPage({
             "fields[7]": "description",
           })}`, { 
             revalidate: 300, 
-            tag: `merchant:${merchant.slug}` 
+            tag: `merchant:${merchant.page_slug}` 
           });
           
           const firstCoupon = couponData?.data?.[0] || null;
@@ -160,7 +160,7 @@ export default async function CategoryPage({
           return {
             id: merchant.id.toString(),
             name: merchant.merchant_name || merchant.name,
-            slug: merchant.slug,
+            slug: merchant.page_slug,
             logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
             description: merchant.summary || "",
             firstCoupon: firstCoupon ? {
@@ -175,11 +175,11 @@ export default async function CategoryPage({
             } : null
           };
         } catch (error) {
-          console.error(`Error fetching coupon for merchant ${merchant.slug}:`, error);
+          console.error(`Error fetching coupon for merchant ${merchant.page_slug}:`, error);
           return {
             id: merchant.id.toString(),
             name: merchant.merchant_name || merchant.name,
-            slug: merchant.slug,
+            slug: merchant.page_slug,
             logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
             description: merchant.summary || "",
             firstCoupon: null

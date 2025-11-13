@@ -44,7 +44,7 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
       "sort": "priority:desc",
       "populate[merchant][fields][0]": "id",
       "populate[merchant][fields][1]": "merchant_name",
-      "populate[merchant][fields][2]": "slug",
+      "populate[merchant][fields][2]": "page_slug",
       "populate[merchant][populate][logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
     };
@@ -70,7 +70,7 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
       merchant: {
         id: coupon.merchant.id,
         name: coupon.merchant.merchant_name,
-        slug: coupon.merchant.slug,
+        slug: coupon.merchant.page_slug,
         logo: coupon.merchant.logo?.url || "",
       },
       market: {
@@ -105,7 +105,7 @@ export async function getTopCouponForMerchant(merchantId: string, marketKey: str
       "pagination[pageSize]": "1", // Only get the first (priority 1) coupon
       "populate[merchant][fields][0]": "id",
       "populate[merchant][fields][1]": "merchant_name",
-      "populate[merchant][fields][2]": "slug",
+      "populate[merchant][fields][2]": "page_slug",
       "populate[merchant][populate][logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
     };
@@ -136,7 +136,7 @@ export async function getTopCouponForMerchant(merchantId: string, marketKey: str
       merchant: {
         id: coupon.merchant.id,
         name: coupon.merchant.merchant_name,
-        slug: coupon.merchant.slug,
+        slug: coupon.merchant.page_slug,
         logo: coupon.merchant.logo?.url || "",
       },
       market: {
@@ -169,7 +169,7 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
       "pagination[pageSize]": "50",
       "populate[merchant][fields][0]": "id",
       "populate[merchant][fields][1]": "merchant_name",
-      "populate[merchant][fields][2]": "slug",
+      "populate[merchant][fields][2]": "page_slug",
       "populate[merchant][populate][logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
     };
@@ -195,7 +195,7 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
       merchant: {
         id: coupon.merchant.id,
         name: coupon.merchant.merchant_name,
-        slug: coupon.merchant.slug,
+        slug: coupon.merchant.page_slug,
         logo: coupon.merchant.logo?.url || "",
       },
       market: {

@@ -419,10 +419,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const [merchantRes, couponsRes, hotstoreRes] = await Promise.all([
       // Fetch merchant data with ISR (including related_merchants for manyToMany)
       strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
-        "filters[slug][$eq]": id,
+        "filters[page_slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
         "fields[0]": "merchant_name",
-        "fields[1]": "slug",
+        "fields[1]": "page_slug",
         "fields[2]": "location_filtering",
         "fields[3]": "creditcard_filtering",
         "fields[4]": "summary",
@@ -435,11 +435,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[useful_links][fields][1]": "url",
         "populate[related_merchants][fields][0]": "id",
         "populate[related_merchants][fields][1]": "merchant_name",
-        "populate[related_merchants][fields][2]": "slug",
+        "populate[related_merchants][fields][2]": "page_slug",
         "populate[related_merchants][populate][logo][fields][0]": "url",
         "populate[special_offers][fields][0]": "id",
         "populate[special_offers][fields][1]": "title",
-        "populate[special_offers][fields][2]": "slug",
+        "populate[special_offers][fields][2]": "page_slug",
         "populate[market][fields][0]": "key",
         "populate[market][fields][1]": "defaultLocale",
       })}`, { 
@@ -448,7 +448,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       }),
       // Fetch coupons data with ISR (include display_count for usage tracking)
       strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
-        "filters[merchant][slug][$eq]": id,
+        "filters[merchant][page_slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
         "sort": "priority:asc",
         "fields[0]": "id",
@@ -466,7 +466,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[12]": "coupon_status",
         "populate[merchant][fields][0]": "id",
         "populate[merchant][fields][1]": "merchant_name",
-        "populate[merchant][fields][2]": "slug",
+        "populate[merchant][fields][2]": "page_slug",
         "populate[merchant][populate][logo][fields][0]": "url",
         "populate[market][fields][0]": "key",
         "populate[market][fields][1]": "defaultLocale",
@@ -479,7 +479,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "filters[market][key][$eq]": marketKey,
         "populate[merchants][fields][0]": "id",
         "populate[merchants][fields][1]": "merchant_name",
-        "populate[merchants][fields][2]": "slug",
+        "populate[merchants][fields][2]": "page_slug",
         "populate[merchants][populate][logo][fields][0]": "url",
       })}`, { 
         revalidate: 3600, 
@@ -521,7 +521,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
                 "pagination[pageSize]": "1",
               })}`, { 
                 revalidate: 300, 
-                tag: `merchant:${relatedMerchant.slug}` 
+                tag: `merchant:${relatedMerchant.page_slug}` 
               });
               
               const firstCoupon = couponData?.data?.[0] || null;
@@ -529,7 +529,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
-                slug: relatedMerchant.slug,
+                slug: relatedMerchant.page_slug,
                 logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
                 firstCoupon: firstCoupon ? {
                   id: firstCoupon.id.toString(),
@@ -542,11 +542,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
                 } : null
               };
             } catch (error) {
-              console.error(`Error fetching coupon for merchant ${relatedMerchant.slug}:`, error);
+              console.error(`Error fetching coupon for merchant ${relatedMerchant.page_slug}:`, error);
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
-                slug: relatedMerchant.slug,
+                slug: relatedMerchant.page_slug,
                 logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
                 firstCoupon: null
               };
@@ -599,7 +599,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const merchant = {
       id: merchantData.id,
       name: merchantData.merchant_name,
-      slug: merchantData.slug,
+      slug: merchantData.page_slug,
       logo: rewrittenLogoUrl,
       description: merchantData.summary || "",
       store_description: merchantData.store_description || "",
@@ -644,7 +644,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         return specialOffersFromCMS.map((so: any) => ({
           id: so.id,
           title: so.title,
-          slug: so.slug,
+          slug: so.page_slug,
         }));
       })(),
     };
@@ -669,7 +669,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       hotstoreMerchants = merchantsFromCMS.map((merchant: any) => ({
         id: merchant.id.toString(),
         name: merchant.merchant_name || merchant.name || '',
-        slug: merchant.slug || '',
+        slug: merchant.page_slug || '',
         logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : null,
       }));
     }
@@ -692,7 +692,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       merchant: {
         id: coupon.merchant?.id || coupon.merchant,
         name: coupon.merchant?.merchant_name || coupon.merchant?.name || "Unknown",
-        slug: coupon.merchant?.slug || "unknown",
+        slug: coupon.merchant?.page_slug || "unknown",
         logo: coupon.merchant?.logo?.url || "",
       },
       market: {
@@ -711,7 +711,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       .sort((a: any, b: any) => (a.priority || 0) - (b.priority || 0));
 
     // Build JSON-LD blocks using @graph structure (matching HK site format)
-    // Ensure slug is available - use id param as fallback if slug is missing
+    // Ensure page_slug is available - use id param as fallback if page_slug is missing
     const merchantSlug = merchant.slug || id;
     const merchantUrl = `${siteUrl}/shop/${merchantSlug}`;
     const merchantId = `${merchantUrl}#merchant`;

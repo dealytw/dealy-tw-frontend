@@ -76,7 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       "filters[market][key][$eq]": marketKey, // Filter by market relation key
       "fields[0]": "id",
       "fields[1]": "merchant_name",
-      "fields[2]": "slug",
+      "fields[2]": "page_slug",
       "fields[3]": "summary",
       "fields[4]": "site_url", // Use site_url for merchant website
       "sort[0]": "merchant_name:asc",
@@ -99,7 +99,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       firstMerchant: merchantsData?.data?.[0] ? {
         id: merchantsData.data[0].id,
         merchant_name: merchantsData.data[0].merchant_name,
-        slug: merchantsData.data[0].slug,
+        slug: merchantsData.data[0].page_slug,
         hasLogo: !!merchantsData.data[0].logo,
         hasMarket: !!merchantsData.data[0].market
       } : null
@@ -108,7 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     searchMerchants = (merchantsData?.data || []).map((merchant: any) => ({
       id: merchant.id,
       name: merchant.merchant_name,
-      slug: merchant.slug,
+      slug: merchant.page_slug,
       logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
       website: merchant.site_url || merchant.website || "",
     }));

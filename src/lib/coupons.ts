@@ -6,7 +6,7 @@ import { strapiFetch, qs } from './strapi.server';
 interface MerchantData {
   id: number;
   merchant_name: string;
-  slug: string;
+  page_slug: string;
   summary?: string;
   website?: string;
   affiliate_link?: string;
@@ -52,7 +52,7 @@ interface CouponData {
   merchant: {
     id: number;
     merchant_name: string;
-    slug: string;
+    page_slug: string;
     logo?: {
       url: string;
     };
@@ -63,12 +63,12 @@ interface CouponData {
 }
 
 // Field definitions based on actual Strapi v5 structure
-type MerchantScalar = 'merchant_name' | 'slug' | 'summary' | 'website' | 'affiliate_link' | 'store_description' | 'faqs' | 'how_to' | 'page_layout' | 'is_featured' | 'seo_title' | 'seo_description' | 'canonical_url' | 'priority' | 'robots';
+type MerchantScalar = 'merchant_name' | 'page_slug' | 'summary' | 'website' | 'affiliate_link' | 'store_description' | 'faqs' | 'how_to' | 'page_layout' | 'is_featured' | 'seo_title' | 'seo_description' | 'canonical_url' | 'priority' | 'robots';
 type CouponScalar = 'coupon_title' | 'coupon_type' | 'value' | 'code' | 'expires_at' | 'user_count' | 'affiliate_link' | 'description' | 'editor_tips' | 'priority' | 'is_active' | 'coupon_status';
 
 const MERCHANT_FIELDS: MerchantScalar[] = [
   'merchant_name', 
-  'slug', 
+  'page_slug', 
   'summary', 
   'website', 
   'affiliate_link', 
@@ -102,7 +102,7 @@ const COUPON_FIELDS: CouponScalar[] = [
 // Fetch merchant with minimal populate
 export async function fetchMerchant(slug: string, market = 'tw', revalidateSec = 300) {
   const params = {
-    'filters[slug][$eq]': slug,
+    'filters[page_slug][$eq]': slug,
     'filters[market][key][$eq]': market,
     'populate[logo][fields][0]': 'url',
     'populate[market][fields][0]': 'key',
@@ -124,7 +124,7 @@ export async function fetchMerchant(slug: string, market = 'tw', revalidateSec =
 // Fetch merchant coupons with minimal populate
 export async function fetchMerchantCoupons(slug: string, market = 'tw', revalidateSec = 300) {
   const params = {
-    'filters[merchant][slug][$eq]': slug,
+    'filters[merchant][page_slug][$eq]': slug,
     'filters[market][key][$eq]': market,
     'filters[is_active][$eq]': 'true', // Strapi v5 active filter
     'sort[0]': 'priority:desc',
@@ -139,7 +139,7 @@ export async function fetchMerchantCoupons(slug: string, market = 'tw', revalida
 
   // Minimal populate for merchant relation
   params['populate[merchant][fields][0]'] = 'merchant_name';
-  params['populate[merchant][fields][1]'] = 'slug';
+  params['populate[merchant][fields][1]'] = 'page_slug';
   params['populate[merchant][populate][logo][fields][0]'] = 'url';
   params['populate[market][fields][0]'] = 'key';
 
@@ -152,7 +152,7 @@ export async function fetchMerchantCoupons(slug: string, market = 'tw', revalida
 // Fetch expired coupons for merchant
 export async function fetchMerchantExpiredCoupons(slug: string, market = 'tw', revalidateSec = 300) {
   const params = {
-    'filters[merchant][slug][$eq]': slug,
+    'filters[merchant][page_slug][$eq]': slug,
     'filters[market][key][$eq]': market,
     'filters[is_active][$eq]': 'false', // Expired coupons
     'sort[0]': 'priority:desc',
@@ -167,7 +167,7 @@ export async function fetchMerchantExpiredCoupons(slug: string, market = 'tw', r
 
   // Minimal populate for merchant relation
   params['populate[merchant][fields][0]'] = 'merchant_name';
-  params['populate[merchant][fields][1]'] = 'slug';
+  params['populate[merchant][fields][1]'] = 'page_slug';
   params['populate[merchant][populate][logo][fields][0]'] = 'url';
   params['populate[market][fields][0]'] = 'key';
 
@@ -182,7 +182,7 @@ export async function fetchCouponFreshById(id: string) {
   const params = {
     'filters[id][$eq]': id,
     'populate[merchant][fields][0]': 'merchant_name',
-    'populate[merchant][fields][1]': 'slug',
+    'populate[merchant][fields][1]': 'page_slug',
     'populate[merchant][populate][logo][fields][0]': 'url',
   };
 
@@ -200,7 +200,7 @@ export async function fetchCouponFreshById(id: string) {
 // Fetch related merchants
 export async function fetchRelatedMerchants(slug: string, market = 'tw', revalidateSec = 300) {
   const params = {
-    'filters[slug][$ne]': slug, // Exclude current merchant
+    'filters[page_slug][$ne]': slug, // Exclude current merchant
     'filters[market][key][$eq]': market,
     'filters[is_featured][$eq]': 'true', // Only featured merchants
     'populate[logo][fields][0]': 'url',
@@ -212,7 +212,7 @@ export async function fetchRelatedMerchants(slug: string, market = 'tw', revalid
     'pagination[pageSize]': '6',
   };
 
-  const merchantFields = ['merchant_name', 'slug', 'summary'];
+  const merchantFields = ['merchant_name', 'page_slug', 'summary'];
   merchantFields.forEach((field, i) => {
     params[`fields[${i}]`] = field;
   });
@@ -232,7 +232,7 @@ export async function searchMerchantsAndCoupons(query: string, market = 'tw', re
     'pagination[pageSize]': '20',
   };
 
-  const merchantFields = ['merchant_name', 'slug', 'summary'];
+  const merchantFields = ['merchant_name', 'page_slug', 'summary'];
   merchantFields.forEach((field, i) => {
     merchantParams[`fields[${i}]`] = field;
   });
@@ -241,7 +241,7 @@ export async function searchMerchantsAndCoupons(query: string, market = 'tw', re
     'filters[market][key][$eq]': market,
     'filters[is_active][$eq]': 'true',
     'populate[merchant][fields][0]': 'merchant_name',
-    'populate[merchant][fields][1]': 'slug',
+    'populate[merchant][fields][1]': 'page_slug',
     'populate[merchant][populate][logo][fields][0]': 'url',
     'sort[0]': 'createdAt:desc',
     'pagination[pageSize]': '20',
@@ -269,9 +269,9 @@ export async function searchMerchantsAndCoupons(query: string, market = 'tw', re
   
   const filteredMerchants = merchantsData.data.filter((merchant: any) => {
     const name = merchant.merchant_name?.toLowerCase() || '';
-    const slug = merchant.slug?.toLowerCase() || '';
+    const page_slug = merchant.page_slug?.toLowerCase() || '';
     const summary = merchant.summary?.toLowerCase() || '';
-    return name.includes(searchQuery) || slug.includes(searchQuery) || summary.includes(searchQuery);
+    return name.includes(searchQuery) || page_slug.includes(searchQuery) || summary.includes(searchQuery);
   });
 
   const filteredCoupons = couponsData.data.filter((coupon: any) => {

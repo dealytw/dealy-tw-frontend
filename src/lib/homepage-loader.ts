@@ -126,7 +126,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
         popularMerchants.push({
           id: merchant.id,
           name: merchant.merchant_name,
-          slug: merchant.slug,
+          slug: merchant.page_slug,
           logoUrl: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
           description: merchant.summary || "",
           topCouponTitle: topCoupon?.coupon_title || "",
@@ -137,7 +137,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
         popularMerchants.push({
           id: merchant.id,
           name: merchant.merchant_name,
-          slug: merchant.slug,
+          slug: merchant.page_slug,
           logoUrl: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
           description: merchant.summary || "",
           topCouponTitle: "",
@@ -150,7 +150,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   const categories = a.category?.categories?.map((category: any) => ({
     id: category.id,
     name: category.name,
-    slug: category.slug,
+    slug: category.page_slug,
     iconUrl: "", // Categories don't have icons yet
   })) || [];
 
@@ -158,7 +158,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   const specialOffers = a.topicpage?.special_offers?.map((specialOffer: any) => ({
     id: specialOffer.id,
     name: specialOffer.title,
-    slug: specialOffer.slug,
+    slug: specialOffer.page_slug,
     iconUrl: specialOffer.logo?.url ? rewriteImageUrl(specialOffer.logo.url) : "",
   })) || [];
 
@@ -174,7 +174,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           couponItems.push({
             id: `coupon-${topCoupon.id}`,
             merchantId: merchant.id.toString(),
-            merchantSlug: topCoupon.merchant.slug,
+            merchantSlug: topCoupon.merchant.page_slug,
             logo: topCoupon.merchant.logo ? rewriteImageUrl(topCoupon.merchant.logo) : "",
             discount: topCoupon.value,
             type: topCoupon.coupon_type === "promo_code" ? "優惠碼" : 

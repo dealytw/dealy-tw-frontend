@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Fetch special offer data for SEO - use explicit fields like merchant page
     const specialOfferRes = await strapiFetch<{ data: any[] }>(
       `/api/special-offers?${qs({
-        "filters[slug][$eq]": slug,
+        "filters[page_slug][$eq]": slug,
         "fields[0]": "title",
         "fields[1]": "seo_title",
         "fields[2]": "seo_description",
@@ -58,17 +58,17 @@ export default async function SpecialOfferPage({
   try {
     // Use explicit populate structure like merchant page - don't use "populate=deep"
     const specialOfferRes = await strapiFetch<{ data: any[] }>(`/api/special-offers?${qs({
-      "filters[slug][$eq]": slug,
+      "filters[page_slug][$eq]": slug,
       "fields[0]": "id",
       "fields[1]": "title",
-      "fields[2]": "slug",
+      "fields[2]": "page_slug",
       "fields[3]": "intro",
       "fields[4]": "seo_title",
       "fields[5]": "seo_description",
       "populate[logo][fields][0]": "url",
       "populate[featured_merchants][fields][0]": "id",
       "populate[featured_merchants][fields][1]": "merchant_name",
-      "populate[featured_merchants][fields][2]": "slug",
+      "populate[featured_merchants][fields][2]": "page_slug",
       "populate[featured_merchants][populate][logo][fields][0]": "url",
       "populate[coupons][fields][0]": "id",
       "populate[coupons][fields][1]": "coupon_title",
@@ -83,7 +83,7 @@ export default async function SpecialOfferPage({
       "populate[coupons][fields][10]": "editor_tips",
       "populate[coupons][populate][merchant][fields][0]": "id",
       "populate[coupons][populate][merchant][fields][1]": "merchant_name",
-      "populate[coupons][populate][merchant][fields][2]": "slug",
+      "populate[coupons][populate][merchant][fields][2]": "page_slug",
       "populate[coupons][populate][merchant][populate][logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
     })}`, { 
@@ -97,10 +97,10 @@ export default async function SpecialOfferPage({
       // Debug: fetch all slugs
       try {
         const allSpecialOffersRes = await strapiFetch<{ data: any[] }>(
-          `/api/special-offers?${qs({ "fields[0]": "slug", "fields[1]": "title", "pagination[pageSize]": "100" })}`,
+          `/api/special-offers?${qs({ "fields[0]": "page_slug", "fields[1]": "title", "pagination[pageSize]": "100" })}`,
           { revalidate: 60, tag: 'special-offers:debug' }
         );
-        const allSlugs = (allSpecialOffersRes.data || []).map((so: any) => ({ slug: so.slug, title: so.title }));
+        const allSlugs = (allSpecialOffersRes.data || []).map((so: any) => ({ slug: so.page_slug, title: so.title }));
       } catch (debugError) {
         console.error('[SpecialOfferPage] Error fetching all slugs:', debugError);
       }
@@ -120,18 +120,18 @@ export default async function SpecialOfferPage({
       featuredMerchants = [{
         id: merchant.id,
         name: merchant.merchant_name,
-        slug: merchant.slug,
+        slug: merchant.page_slug,
         logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-        link: `/shop/${merchant.slug}`,
+        link: `/shop/${merchant.page_slug}`,
       }];
     } else if (Array.isArray(specialOffer.featured_merchants)) {
       // Current schema format: oneToMany relation
       featuredMerchants = specialOffer.featured_merchants.map((merchant: any) => ({
         id: merchant.id,
         name: merchant.merchant_name,
-        slug: merchant.slug,
+        slug: merchant.page_slug,
         logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-        link: `/shop/${merchant.slug}`,
+        link: `/shop/${merchant.page_slug}`,
       }));
     }
 
@@ -162,7 +162,7 @@ export default async function SpecialOfferPage({
       merchant: {
         id: coupon.merchant?.id,
         merchant_name: coupon.merchant?.merchant_name,
-        slug: coupon.merchant?.slug,
+        slug: coupon.merchant?.page_slug,
         logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120",
       },
     }));

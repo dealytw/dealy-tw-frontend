@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
       "fields[1]": "merchant_name",
-      "fields[2]": "slug", 
+      "fields[2]": "page_slug", 
       "fields[3]": "summary",
       "fields[4]": "website",
       "fields[5]": "affiliate_link",
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const merchants = allMerchants
       .filter((merchant: any) => {
         const name = merchant.merchant_name?.toLowerCase() || '';
-        const slug = merchant.slug?.toLowerCase() || '';
+        const slug = merchant.page_slug?.toLowerCase() || '';
         const summary = merchant.summary?.toLowerCase() || '';
         const query = searchQuery.toLowerCase();
         
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       .map((merchant: any) => ({
         id: merchant.id,
         name: merchant.merchant_name,
-        slug: merchant.slug,
+        slug: merchant.page_slug,
         logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
         description: merchant.summary || "",
         website: merchant.website || "",
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         "pagination[pageSize]": "50",
         "populate[merchant][fields][0]": "id",
         "populate[merchant][fields][1]": "merchant_name",
-        "populate[merchant][fields][2]": "slug",
+        "populate[merchant][fields][2]": "page_slug",
         "populate[merchant][populate][logo][fields][0]": "url",
       };
 
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
           merchant: {
             id: coupon.merchant?.id,
             name: coupon.merchant?.merchant_name || 'Unknown Merchant',
-            slug: coupon.merchant?.slug || '',
+            slug: coupon.merchant?.page_slug || '',
             logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120",
           },
           type: 'coupon'

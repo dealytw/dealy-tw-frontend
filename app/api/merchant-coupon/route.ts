@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch the first priority active coupon for the merchant with explicit fields
     const params = {
-      "filters[merchant][slug][$eq]": merchantSlug,
+      "filters[merchant][page_slug][$eq]": merchantSlug,
       "filters[market][key][$eq]": market,
       "filters[coupon_status][$eq]": "active",
       "fields[0]": "id",
