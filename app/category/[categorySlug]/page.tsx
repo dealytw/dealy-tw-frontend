@@ -78,7 +78,32 @@ export default async function CategoryPage({
       tag: `category:${categorySlug}` 
     });
     
-    if (!categoryRes.data || categoryRes.data.length === 0) {
+    console.log(`[CategoryPage] Fetch result for ${categorySlug}:`, {
+      hasData: !!categoryRes?.data,
+      dataLength: categoryRes?.data?.length || 0,
+      firstItem: categoryRes?.data?.[0] || null,
+    });
+    
+    if (!categoryRes?.data || categoryRes.data.length === 0) {
+      console.error(`[CategoryPage] Category not found: ${categorySlug}`);
+      // Debug: try to fetch all categories to see what's available
+      try {
+        const allCategoriesRes = await strapiFetch<{ data: any[] }>(
+          `/api/categories?${qs({ 
+            "fields[0]": "page_slug", 
+            "fields[1]": "name", 
+            "pagination[pageSize]": "100" 
+          })}`,
+          { revalidate: 60, tag: 'categories:debug' }
+        );
+        const allSlugs = (allCategoriesRes?.data || []).map((cat: any) => ({ 
+          page_slug: cat.page_slug, 
+          name: cat.name 
+        }));
+        console.error(`[CategoryPage] Available categories:`, allSlugs);
+      } catch (debugError) {
+        console.error('[CategoryPage] Error fetching all categories:', debugError);
+      }
       notFound();
     }
 
