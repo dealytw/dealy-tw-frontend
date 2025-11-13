@@ -15,14 +15,19 @@ export async function generateMetadata({
   params: Promise<{ categorySlug: string }> 
 }) {
   const { categorySlug } = await params;
+  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const marketKey = market.toLowerCase();
   
   try {
     // Fetch category data for SEO - use page_slug (unique identifier)
+    // Only fetch categories with market = tw (this is a TW site)
     const categoryRes = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[page_slug][$eq]": categorySlug,
+        "filters[market][key][$eq]": marketKey,
         "fields[0]": "name",
         "fields[1]": "page_slug",
+        "populate[market][fields][0]": "key",
       })}`,
       { revalidate: 3600, tag: `category:${categorySlug}` }
     );
@@ -62,11 +67,14 @@ export default async function CategoryPage({
 
   try {
     // Fetch category by page_slug - use explicit fields like merchant page
+    // Only fetch categories with market = tw (this is a TW site)
     const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs({
       "filters[page_slug][$eq]": categorySlug,
+      "filters[market][key][$eq]": marketKey,
       "fields[0]": "id",
       "fields[1]": "name",
       "fields[2]": "page_slug",
+      "populate[market][fields][0]": "key",
       "populate[merchants][fields][0]": "id",
       "populate[merchants][fields][1]": "merchant_name",
       "populate[merchants][fields][2]": "page_slug",
