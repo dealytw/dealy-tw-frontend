@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { warmPaths } from '@/lib/warm';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 export const preferredRegion = ['sin1'];   // near TW/Strapi
 export const dynamic = 'force-dynamic';    // never cache
@@ -108,12 +109,22 @@ export async function POST(req: NextRequest) {
         { status: 206, headers: corsHeaders }
       );
     }
+    // Wait 3 seconds for ISR rebuilds to complete before purging
+    await sleep(3000);
   }
 
   if (purge && allPaths.length) {
     const base = process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw';
     await purgeCF(allPaths.map((p) => `${base}${p}`));
     purged = true;
+    
+    // Warm again after purge so Cloudflare caches the fresh pages
+    await warmPaths(allPaths, {
+      origin: process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw',
+      concurrency: 3,
+      timeoutMs: 4000,
+      retries: 2,
+    });
   }
 
   return NextResponse.json({

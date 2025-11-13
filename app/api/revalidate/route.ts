@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { warmPaths } from '@/lib/warm';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 export const preferredRegion = ['sin1']; // Singapore (close to Strapi)
 export const dynamic = 'force-dynamic'; // never cache this route
@@ -110,6 +111,8 @@ export async function POST(req: NextRequest) {
         }
       );
     }
+    // Wait 3 seconds for ISR rebuilds to complete before purging
+    await sleep(3000);
   }
 
   if (purgeEverything) {
@@ -127,6 +130,14 @@ export async function POST(req: NextRequest) {
     const urls = uniqueWarmPaths.map(path => `${ORIGIN}${path}`);
     await purgeCF(urls);
     purged = true;
+    
+    // Warm again after purge so Cloudflare caches the fresh pages
+    await warmPaths(uniqueWarmPaths, {
+      origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
+      concurrency: 3,
+      timeoutMs: 4000,
+      retries: 2,
+    });
   }
 
   return NextResponse.json({ 
