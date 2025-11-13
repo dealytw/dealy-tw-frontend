@@ -1,4 +1,7 @@
-// src/lib/strapi.ts
+// src/lib/strapi.ts - Server-only Strapi utilities
+// Note: This file should only be imported in server components
+import 'server-only';
+
 const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || "").replace(/\/$/, "");
 const TOKEN = process.env.STRAPI_TOKEN; // server-only
 
