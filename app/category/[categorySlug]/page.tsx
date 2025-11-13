@@ -72,28 +72,25 @@ export default async function CategoryPage({
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
   try {
-    // Fetch category by page_slug (page_slug is unique, no need to filter by market)
-    // Use explicit populate structure like merchant/special-offer pages
-    const categoryData = await strapiFetch<{ data: any[] }>(
-      `/api/categories?${qs({
-        "filters[page_slug][$eq]": categorySlug,
-        "fields[0]": "id",
-        "fields[1]": "name",
-        "fields[2]": "page_slug",
-        "fields[3]": "summary",
-        "populate[merchants][fields][0]": "id",
-        "populate[merchants][fields][1]": "merchant_name",
-        "populate[merchants][fields][2]": "page_slug",
-        "populate[merchants][fields][3]": "summary",
-        "populate[merchants][populate][logo][fields][0]": "url",
-        "populate[merchants][populate][market][fields][0]": "key",
-      })}`,
-      { revalidate: 3600, tag: `category:${categorySlug}` }
-    );
+    // Use server-only Strapi fetch with ISR - copy exact pattern from merchant page
+    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs({
+      "filters[page_slug][$eq]": categorySlug,
+      "fields[0]": "id",
+      "fields[1]": "name",
+      "fields[2]": "page_slug",
+      "fields[3]": "summary",
+      "populate[merchants][fields][0]": "id",
+      "populate[merchants][fields][1]": "merchant_name",
+      "populate[merchants][fields][2]": "page_slug",
+      "populate[merchants][fields][3]": "summary",
+      "populate[merchants][populate][logo][fields][0]": "url",
+      "populate[merchants][populate][market][fields][0]": "key",
+    })}`, { 
+      revalidate: 3600, 
+      tag: `category:${categorySlug}` 
+    });
 
-    const category = categoryData?.data?.[0];
-    
-    if (!category) {
+    if (!categoryRes.data || categoryRes.data.length === 0) {
       console.error(`[CategoryPage] Category data fetch failed for slug: ${categorySlug}`);
       
       // Debug: fetch all categories to see what's available
@@ -117,36 +114,26 @@ export default async function CategoryPage({
       
       notFound();
     }
+
+    const categoryData = categoryRes.data[0];
     
-    console.log(`[CategoryPage] Category found: ${category.name} (${category.page_slug})`);
-    console.log(`[CategoryPage] Category merchants data:`, {
-      hasMerchants: !!category.merchants,
-      merchantsType: typeof category.merchants,
-      isArray: Array.isArray(category.merchants),
-      merchantsLength: Array.isArray(category.merchants) ? category.merchants.length : 'N/A',
-      merchantsData: category.merchants,
-    });
+    console.log(`[CategoryPage] Category found: ${categoryData.name} (${categoryData.page_slug})`);
 
     // Extract merchants from category relation and filter by market
-    // Handle different formats for manyToMany relation (same as merchant/special-offer pages)
+    // Handle all possible formats for manyToMany relation (same as merchant page):
+    // 1. Direct array: [{ id, ... }]
+    // 2. With data wrapper: { data: [{ id, ... }] }
+    // 3. Nested: [{ data: { id, ... } }]
     let merchantsFromCMS: any[] = [];
-    if (category.merchants) {
-      if (Array.isArray(category.merchants)) {
-        // Check if it's nested format (Strapi v5 sometimes wraps in data)
-        if (category.merchants[0]?.data) {
-          merchantsFromCMS = category.merchants.map((item: any) => item.data || item);
-        } else {
-          merchantsFromCMS = category.merchants;
-        }
-      } else if (category.merchants?.data) {
-        // Handle case where merchants is wrapped in data object
-        merchantsFromCMS = Array.isArray(category.merchants.data) 
-          ? category.merchants.data 
-          : [category.merchants.data];
-      } else if (typeof category.merchants === 'object') {
-        // Handle case where merchants might be a single object
-        merchantsFromCMS = [category.merchants];
+    if (Array.isArray(categoryData?.merchants)) {
+      // Check if it's nested format
+      if (categoryData.merchants[0]?.data) {
+        merchantsFromCMS = categoryData.merchants.map((item: any) => item.data || item);
+      } else {
+        merchantsFromCMS = categoryData.merchants;
       }
+    } else if (categoryData?.merchants?.data) {
+      merchantsFromCMS = categoryData.merchants.data;
     }
     
     console.log(`[CategoryPage] Extracted ${merchantsFromCMS.length} merchants before market filter`);
@@ -245,17 +232,17 @@ export default async function CategoryPage({
     const breadcrumb = breadcrumbJsonLd([
       { name: '首頁', url: `${siteUrl}/` },
       { name: '分類', url: `${siteUrl}/category` },
-      { name: category.name, url: categoryUrl },
+      { name: categoryData.name, url: categoryUrl },
     ]);
 
     return (
       <>
         <CategoryView 
           category={{
-            id: category.id,
-            name: category.name,
-            slug: category.page_slug, // Map page_slug to slug for frontend
-            summary: category.summary,
+            id: categoryData.id,
+            name: categoryData.name,
+            slug: categoryData.page_slug, // Map page_slug to slug for frontend
+            summary: categoryData.summary,
           }}
           merchants={merchants}
           coupons={coupons}
