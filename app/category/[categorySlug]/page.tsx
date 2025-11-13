@@ -57,21 +57,29 @@ export async function generateMetadata({
 }
 
 export default async function CategoryPage({ 
-  params, 
-  searchParams 
+  params
 }: { 
   params: Promise<{ categorySlug: string }>;
-  searchParams: Promise<{ page?: string }>;
 }) {
   const { categorySlug } = await params;
-  const { page } = await searchParams;
-  const pageNum = Number(page || 1);
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
   try {
-    // Fetch category data
+    // Fetch category data with merchants relation
     const categoryData = await strapiFetch<{ data: any[] }>(
-      `/api/categories?filters[slug][$eq]=${categorySlug}&fields[0]=id&fields[1]=name&fields[2]=slug&fields[3]=summary`,
+      `/api/categories?${qs({
+        "filters[slug][$eq]": categorySlug,
+        "fields[0]": "id",
+        "fields[1]": "name",
+        "fields[2]": "slug",
+        "fields[3]": "summary",
+        "populate[merchants][fields][0]": "id",
+        "populate[merchants][fields][1]": "merchant_name",
+        "populate[merchants][fields][2]": "slug",
+        "populate[merchants][fields][3]": "summary",
+        "populate[merchants][populate][logo][fields][0]": "url",
+        "populate[merchants][filters][market][key][$eq]": market,
+      })}`,
       { revalidate: 3600, tag: `category:${categorySlug}` }
     );
 
@@ -81,83 +89,97 @@ export default async function CategoryPage({
       notFound();
     }
 
-    // Fetch merchants for this category
-    const merchantParams = {
-      "filters[categories][slug][$eq]": categorySlug,
-      "filters[market][key][$eq]": market, // Market relation filter
-      "fields[0]": "id",
-      "fields[1]": "merchant_name", 
-      "fields[2]": "slug",
-      "fields[3]": "summary",
-      "sort": "merchant_name:asc",
-      "pagination[page]": "1",
-      "pagination[pageSize]": "20",
-      "populate[logo][fields][0]": "url",
-      "populate[market][fields][0]": "key",
-    };
+    // Extract merchants from category relation
+    let merchantsFromCMS: any[] = [];
+    if (category.merchants) {
+      if (Array.isArray(category.merchants)) {
+        if (category.merchants[0]?.data) {
+          merchantsFromCMS = category.merchants.map((item: any) => item.data || item);
+        } else {
+          merchantsFromCMS = category.merchants;
+        }
+      } else if (category.merchants?.data) {
+        merchantsFromCMS = category.merchants.data;
+      }
+    }
 
-    const merchantsData = await strapiFetch<{ data: any[] }>(
-      `/api/merchants?${qs(merchantParams)}`,
-      { revalidate: 3600, tag: `category:${categorySlug}` }
+    // Transform merchants and fetch first (priority 1) coupon for each
+    const merchantsWithCoupons = await Promise.all(
+      merchantsFromCMS.map(async (merchant: any) => {
+        try {
+          // Fetch priority 1 coupon for this merchant
+          const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
+            "filters[merchant][id][$eq]": merchant.id.toString(),
+            "filters[market][key][$eq]": market,
+            "filters[coupon_status][$eq]": "active",
+            "sort": "priority:asc",
+            "pagination[pageSize]": "1",
+            "fields[0]": "id",
+            "fields[1]": "coupon_title",
+            "fields[2]": "coupon_type",
+            "fields[3]": "value",
+            "fields[4]": "code",
+            "fields[5]": "affiliate_link",
+            "fields[6]": "priority",
+            "fields[7]": "description",
+          })}`, { 
+            revalidate: 300, 
+            tag: `merchant:${merchant.slug}` 
+          });
+          
+          const firstCoupon = couponData?.data?.[0] || null;
+          
+          return {
+            id: merchant.id.toString(),
+            name: merchant.merchant_name || merchant.name,
+            slug: merchant.slug,
+            logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+            description: merchant.summary || "",
+            firstCoupon: firstCoupon ? {
+              id: firstCoupon.id.toString(),
+              title: firstCoupon.coupon_title,
+              value: firstCoupon.value?.replace('$$', '$') || firstCoupon.value,
+              code: firstCoupon.code,
+              coupon_type: firstCoupon.coupon_type,
+              affiliate_link: firstCoupon.affiliate_link,
+              priority: firstCoupon.priority,
+              description: firstCoupon.description || "",
+            } : null
+          };
+        } catch (error) {
+          console.error(`Error fetching coupon for merchant ${merchant.slug}:`, error);
+          return {
+            id: merchant.id.toString(),
+            name: merchant.merchant_name || merchant.name,
+            slug: merchant.slug,
+            logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+            description: merchant.summary || "",
+            firstCoupon: null
+          };
+        }
+      })
     );
 
-    // Fetch paginated coupons for this category
-    const couponParams = {
-      "filters[categories][slug][$eq]": categorySlug,
-      "filters[market][key][$eq]": market, // Market relation filter
-      "filters[coupon_status][$eq]": "active",
-      "fields[0]": "id",
-      "fields[1]": "coupon_title",
-      "fields[2]": "coupon_type", 
-      "fields[3]": "value",
-      "fields[4]": "code",
-      "fields[5]": "expires_at",
-      "fields[6]": "user_count",
-      "fields[7]": "description",
-      "fields[8]": "affiliate_link",
-      "fields[9]": "priority",
-      "fields[10]": "last_click_at",
-      "sort[0]": "priority:desc",
-      "sort[1]": "last_click_at:desc",
-      "pagination[page]": String(pageNum),
-      "pagination[pageSize]": "20",
-      "populate[merchant][fields][0]": "id",
-      "populate[merchant][fields][1]": "merchant_name",
-      "populate[merchant][fields][2]": "slug",
-      "populate[merchant][populate][logo][fields][0]": "url",
-    };
-
-    const couponsData = await strapiFetch<{ data: any[]; meta: any }>(
-      `/api/coupons?${qs(couponParams)}`,
-      { revalidate: 3600, tag: `category:${categorySlug}` }
-    );
-
-    // Transform merchants data
-    const merchants = (merchantsData?.data || []).map((merchant: any) => ({
-      id: merchant.id.toString(),
-      name: merchant.merchant_name,
-      slug: merchant.slug,
-      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-      description: merchant.summary || "",
-    }));
-
-    // Transform coupons data
-    const coupons = (couponsData?.data || []).map((coupon: any) => ({
-      id: coupon.id.toString(),
-      code: coupon.code || "",
-      title: coupon.coupon_title || 'Untitled Coupon',
-      description: coupon.description || "",
-      discount: coupon.value || "",
-      expiry: coupon.expires_at || "長期有效",
-      usageCount: coupon.user_count || 0,
-      affiliate_link: coupon.affiliate_link || '#',
-      coupon_type: coupon.coupon_type || 'promo_code',
-      merchant: {
-        name: coupon.merchant?.merchant_name || 'Unknown Merchant',
-        slug: coupon.merchant?.slug || '',
-        logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/60/60",
-      },
-    }));
+    // Filter merchants that have coupons for the coupons section
+    const merchants = merchantsWithCoupons;
+    const coupons = merchantsWithCoupons
+      .filter((m: any) => m.firstCoupon)
+      .map((merchant: any) => ({
+        id: merchant.firstCoupon.id,
+        code: merchant.firstCoupon.code || "",
+        title: merchant.firstCoupon.title || 'Untitled Coupon',
+        description: merchant.firstCoupon.description || "",
+        discount: merchant.firstCoupon.value || "",
+        expiry: "長期有效",
+        usageCount: 0,
+        affiliate_link: merchant.firstCoupon.affiliate_link || '#',
+        coupon_type: merchant.firstCoupon.coupon_type || 'promo_code',
+        merchant: {
+          name: merchant.name,
+          slug: merchant.slug,
+          logo: merchant.logo,
+        },
+      }));
 
     // Build breadcrumb JSON-LD
     const domainConfig = getDomainConfigServer();
@@ -175,7 +197,6 @@ export default async function CategoryPage({
           category={category}
           merchants={merchants}
           coupons={coupons}
-          pagination={couponsData?.meta?.pagination}
           categorySlug={categorySlug}
         />
         {/* Breadcrumb JSON-LD */}

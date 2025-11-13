@@ -1,9 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CouponCard from "@/components/CouponCard";
+import CategoryCouponCard from "@/components/CategoryCouponCard";
 import Image from "next/image";
 
 interface Merchant {
@@ -40,12 +39,6 @@ interface CategoryViewProps {
   };
   merchants: Merchant[];
   coupons: Coupon[];
-  pagination?: {
-    page: number;
-    pageSize: number;
-    pageCount: number;
-    total: number;
-  };
   categorySlug: string;
 }
 
@@ -53,10 +46,8 @@ export default function CategoryView({
   category, 
   merchants, 
   coupons, 
-  pagination,
   categorySlug 
 }: CategoryViewProps) {
-  const router = useRouter();
 
   const handleCouponClick = (coupon: Coupon) => {
     // Track coupon click for GTM/GA4
@@ -107,7 +98,7 @@ export default function CategoryView({
         {merchants.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
-              熱門商店
+              本分類熱門商戶
             </h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8">
@@ -141,63 +132,32 @@ export default function CategoryView({
         {/* Coupons Section */}
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-6">
-            {category.name}優惠券
+            本分類熱門優惠
           </h2>
           
           {coupons.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {coupons.map((coupon) => (
-                  <CouponCard
+                  <CategoryCouponCard
                     key={coupon.id}
                     coupon={{
                       id: coupon.id,
-                      coupon_title: coupon.title,
-                      coupon_type: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'auto_discount',
-                      value: coupon.discount,
+                      title: coupon.title,
                       code: coupon.code,
-                      expires_at: coupon.expiry,
-                      user_count: coupon.usageCount,
-                      description: coupon.description,
-                      affiliate_link: coupon.affiliate_link || '#',
+                      discount: coupon.discount,
+                      coupon_type: coupon.coupon_type,
+                      affiliate_link: coupon.affiliate_link,
                       merchant: {
                         name: coupon.merchant.name,
                         logo: coupon.merchant.logo,
+                        slug: coupon.merchant.slug,
                       },
                     }}
                     onGetCode={() => handleCouponClick(coupon)}
                   />
                 ))}
               </div>
-              
-              {/* Pagination */}
-              {pagination && pagination.pageCount > 1 && (
-                <div className="mt-8 flex justify-center">
-                  <div className="flex gap-2">
-                    {pagination.page > 1 && (
-                      <button
-                        onClick={() => router.push(`/category/${categorySlug}?page=${pagination.page - 1}`)}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                      >
-                        上一頁
-                      </button>
-                    )}
-                    
-                    <span className="px-4 py-2 bg-pink-500 text-white rounded">
-                      {pagination.page} / {pagination.pageCount}
-                    </span>
-                    
-                    {pagination.page < pagination.pageCount && (
-                      <button
-                        onClick={() => router.push(`/category/${categorySlug}?page=${pagination.page + 1}`)}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                      >
-                        下一頁
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
             </>
           ) : (
             <div className="text-center py-12">
