@@ -14,12 +14,20 @@ export async function generateMetadata({
   params: Promise<{ categorySlug: string }> 
 }) {
   const { categorySlug } = await params;
+  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
   try {
-    // Fetch category SEO data from Strapi
+    // Fetch category SEO data from Strapi, filtered by market=tw
     const categoryData = await strapiFetch<{ data: any[] }>(
-      `/api/categories?filters[slug][$eq]=${categorySlug}&fields[0]=name&fields[1]=slug&fields[2]=seo_title&fields[3]=seo_description`,
-      { revalidate: 3600, tag: `category:${categorySlug}` }
+      `/api/categories?${qs({
+        "filters[slug][$eq]": categorySlug,
+        "filters[market][key][$eq]": market, // Filter category by market
+        "fields[0]": "name",
+        "fields[1]": "slug",
+        "fields[2]": "seo_title",
+        "fields[3]": "seo_description",
+      })}`,
+      { revalidate: 3600, tag: `category:${categorySlug}:${market}` }
     );
     
     const category = categoryData?.data?.[0];
@@ -65,10 +73,11 @@ export default async function CategoryPage({
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
   try {
-    // Fetch category data with merchants relation
+    // Fetch category data with merchants relation, filtered by market=tw
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[slug][$eq]": categorySlug,
+        "filters[market][key][$eq]": market, // Filter category by market
         "fields[0]": "id",
         "fields[1]": "name",
         "fields[2]": "slug",
@@ -78,18 +87,27 @@ export default async function CategoryPage({
         "populate[merchants][fields][2]": "slug",
         "populate[merchants][fields][3]": "summary",
         "populate[merchants][populate][logo][fields][0]": "url",
-        "populate[merchants][filters][market][key][$eq]": market,
+        "populate[merchants][populate][market][fields][0]": "key",
       })}`,
-      { revalidate: 3600, tag: `category:${categorySlug}` }
+      { revalidate: 3600, tag: `category:${categorySlug}:${market}` }
     );
 
     const category = categoryData?.data?.[0];
     
     if (!category) {
+      console.error(`[CategoryPage] Category data fetch failed for slug: ${categorySlug}`);
       notFound();
     }
+    
+    console.log(`[CategoryPage] Category found: ${category.name} (${category.slug})`);
+    console.log(`[CategoryPage] Category merchants data:`, {
+      hasMerchants: !!category.merchants,
+      merchantsType: typeof category.merchants,
+      isArray: Array.isArray(category.merchants),
+      merchantsLength: Array.isArray(category.merchants) ? category.merchants.length : 'N/A',
+    });
 
-    // Extract merchants from category relation
+    // Extract merchants from category relation and filter by market
     let merchantsFromCMS: any[] = [];
     if (category.merchants) {
       if (Array.isArray(category.merchants)) {
@@ -100,8 +118,20 @@ export default async function CategoryPage({
         }
       } else if (category.merchants?.data) {
         merchantsFromCMS = category.merchants.data;
+      } else if (typeof category.merchants === 'object') {
+        // Handle case where merchants might be a single object
+        merchantsFromCMS = [category.merchants];
       }
     }
+    
+    // Filter merchants by market
+    merchantsFromCMS = merchantsFromCMS.filter((merchant: any) => {
+      if (!merchant) return false;
+      const merchantMarket = merchant.market?.key || merchant.market;
+      return merchantMarket?.toLowerCase() === market.toLowerCase();
+    });
+    
+    console.log(`[CategoryPage] Found ${merchantsFromCMS.length} merchants for category ${categorySlug} in market ${market}`);
 
     // Transform merchants and fetch first (priority 1) coupon for each
     const merchantsWithCoupons = await Promise.all(
