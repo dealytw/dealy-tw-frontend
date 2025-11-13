@@ -55,8 +55,38 @@ const CategoryCouponCard = ({ coupon, onGetCode }: CategoryCouponCardProps) => {
   };
 
   const handleButtonClick = () => {
-    if (onGetCode) {
-      onGetCode(coupon);
+    // Track coupon click for GTM/GA4
+    if (typeof window !== 'undefined') {
+      const { trackCouponClick } = require('@/lib/analytics');
+      trackCouponClick({
+        couponId: coupon.id,
+        couponTitle: coupon.title,
+        couponCode: coupon.code,
+        merchantName: coupon.merchant.name,
+        merchantSlug: coupon.merchant.slug || '',
+        affiliateLink: coupon.affiliate_link || '#',
+        couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
+        clickSource: 'button',
+        pageLocation: window.location.pathname,
+      });
+    }
+    
+    // Parallel actions (no delays, no setTimeout)
+    // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
+    if (coupon.merchant.slug) {
+      const merchantUrl = `/shop/${coupon.merchant.slug}#coupon-${coupon.id}`;
+      const link = document.createElement('a');
+      link.href = merchantUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Action 2: Redirect current tab to affiliate link (instant, no delay)
+    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+      window.location.href = coupon.affiliate_link;
     }
   };
 
@@ -71,14 +101,6 @@ const CategoryCouponCard = ({ coupon, onGetCode }: CategoryCouponCardProps) => {
         <h3 className="text-sm font-medium text-gray-900 mb-2 leading-tight">
           {coupon.title}
         </h3>
-        
-        {/* Coupon Code */}
-        {coupon.code && (
-          <div className="flex items-center gap-1 mb-3">
-            <span className="text-red-500 text-xs">•</span>
-            <span className="text-xs text-gray-700">優惠碼: {coupon.code}</span>
-          </div>
-        )}
         
         {/* Thumbnail Image */}
         <div className="absolute top-3 right-3 w-16 h-16 rounded overflow-hidden bg-gray-100">
@@ -103,8 +125,7 @@ const CategoryCouponCard = ({ coupon, onGetCode }: CategoryCouponCardProps) => {
       {/* Bottom Section - Pink to Red Gradient */}
       <div className="bg-gradient-to-r from-pink-500 to-red-500 px-4 py-3 flex items-center justify-between">
         <div className="text-white">
-          <div className="text-lg font-bold mb-1">{discountValue}</div>
-          <div className="text-xs opacity-90">低消門檻: TWD 1,527</div>
+          <div className="text-lg font-bold">{discountValue}</div>
         </div>
         
         <Button 
