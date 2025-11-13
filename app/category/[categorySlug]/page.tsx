@@ -19,13 +19,12 @@ export async function generateMetadata({
   
   try {
     // Fetch category SEO data from Strapi by page_slug (page_slug is unique)
+    // Category only has: market, name, slug, merchants, page_slug (no seo fields)
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[page_slug][$eq]": categorySlug,
         "fields[0]": "name",
         "fields[1]": "page_slug",
-        "fields[2]": "seo_title",
-        "fields[3]": "seo_description",
       })}`,
       { revalidate: 3600, tag: `category:${categorySlug}` }
     );
@@ -33,8 +32,8 @@ export async function generateMetadata({
     const category = categoryData?.data?.[0];
     
     if (category) {
-      const title = category.seo_title || `${category.name} 優惠與折扣`;
-      const description = category.seo_description || `精選 ${category.name} 最新優惠與折扣合集。`;
+      const title = `${category.name} 優惠與折扣`;
+      const description = `精選 ${category.name} 最新優惠與折扣合集。`;
       
       return pageMeta({
         title,
@@ -74,12 +73,13 @@ export default async function CategoryPage({
 
   try {
     // Use server-only Strapi fetch with ISR - copy exact pattern from merchant page
+    // Category only has: market, name, slug, merchants, page_slug (no summary field)
+    // Merchants have: summary field
     const queryParams = {
       "filters[page_slug][$eq]": categorySlug,
       "fields[0]": "id",
       "fields[1]": "name",
       "fields[2]": "page_slug",
-      "fields[3]": "summary",
       "populate[merchants][fields][0]": "id",
       "populate[merchants][fields][1]": "merchant_name",
       "populate[merchants][fields][2]": "page_slug",
@@ -254,7 +254,7 @@ export default async function CategoryPage({
             id: categoryData.id,
             name: categoryData.name,
             slug: categoryData.page_slug, // Map page_slug to slug for frontend
-            summary: categoryData.summary,
+            summary: "", // Category doesn't have summary field
           }}
           merchants={merchants}
           coupons={coupons}
