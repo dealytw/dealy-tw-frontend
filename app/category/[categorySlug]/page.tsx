@@ -17,17 +17,16 @@ export async function generateMetadata({
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   
   try {
-    // Fetch category SEO data from Strapi, filtered by market=tw
+    // Fetch category SEO data from Strapi by slug (slug is unique)
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[slug][$eq]": categorySlug,
-        "filters[market][key][$eq]": market, // Filter category by market
         "fields[0]": "name",
         "fields[1]": "slug",
         "fields[2]": "seo_title",
         "fields[3]": "seo_description",
       })}`,
-      { revalidate: 3600, tag: `category:${categorySlug}:${market}` }
+      { revalidate: 3600, tag: `category:${categorySlug}` }
     );
     
     const category = categoryData?.data?.[0];
@@ -73,11 +72,10 @@ export default async function CategoryPage({
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
   try {
-    // Fetch category data with merchants relation, filtered by market=tw
+    // Fetch category by slug (slug is unique, no need to filter by market)
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[slug][$eq]": categorySlug,
-        "filters[market][key][$eq]": market, // Filter category by market
         "fields[0]": "id",
         "fields[1]": "name",
         "fields[2]": "slug",
@@ -89,7 +87,7 @@ export default async function CategoryPage({
         "populate[merchants][populate][logo][fields][0]": "url",
         "populate[merchants][populate][market][fields][0]": "key",
       })}`,
-      { revalidate: 3600, tag: `category:${categorySlug}:${market}` }
+      { revalidate: 3600, tag: `category:${categorySlug}` }
     );
 
     const category = categoryData?.data?.[0];
