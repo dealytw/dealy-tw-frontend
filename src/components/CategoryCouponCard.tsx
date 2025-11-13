@@ -16,10 +16,9 @@ interface CategoryCouponCardProps {
       slug?: string;
     };
   };
-  onGetCode?: (coupon: any) => void;
 }
 
-const CategoryCouponCard = ({ coupon, onGetCode }: CategoryCouponCardProps) => {
+const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
   // Extract discount value from coupon discount string
   const extractDiscountValue = (value: string) => {
     if (!value) return "優惠";

@@ -49,35 +49,6 @@ export default function CategoryView({
   categorySlug 
 }: CategoryViewProps) {
 
-  const handleCouponClick = (coupon: Coupon) => {
-    // Track coupon click for GTM/GA4
-    if (typeof window !== 'undefined') {
-      const { trackCouponClick } = require('@/lib/analytics');
-      trackCouponClick({
-        couponId: coupon.id,
-        couponTitle: coupon.title,
-        couponCode: coupon.code,
-        merchantName: coupon.merchant.name,
-        merchantSlug: coupon.merchant.slug || '',
-        affiliateLink: coupon.affiliate_link || '#',
-        couponType: (coupon.coupon_type || 'promo_code') as 'promo_code' | 'coupon' | 'discount',
-        clickSource: 'button',
-        pageLocation: window.location.pathname,
-      });
-    }
-    
-    // Open affiliate link in same tab
-    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
-      window.open(coupon.affiliate_link, '_self');
-    }
-    
-    // Open merchant page in new tab if merchant slug is available
-    if (coupon.merchant.slug) {
-      setTimeout(() => {
-        window.open(`/shop/${coupon.merchant.slug}#coupon-${coupon.id}`, '_blank');
-      }, 100);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,7 +125,6 @@ export default function CategoryView({
                         slug: coupon.merchant.slug,
                       },
                     }}
-                    onGetCode={() => handleCouponClick(coupon)}
                   />
                 ))}
               </div>
