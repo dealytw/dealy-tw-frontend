@@ -9,6 +9,31 @@ import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 export const revalidate = 3600; // ISR - revalidate every 1 hour
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
 
+// Generate static params at build time to pre-generate category pages
+export async function generateStaticParams() {
+  try {
+    const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+    const categoryData = await strapiFetch<{ data: any[] }>(
+      `/api/categories?${qs({
+        "fields[0]": "page_slug",
+        "pagination[pageSize]": "100",
+      })}`,
+      { revalidate: 86400 } // Cache for 24 hours for build-time generation
+    );
+
+    const categories = (categoryData?.data || []).map((category: any) => ({
+      categorySlug: category.page_slug,
+    }));
+
+    console.log(`[CategoryPage] Pre-generating ${categories.length} category pages`);
+    return categories;
+  } catch (error) {
+    console.error('Error generating static params for category pages:', error);
+    // Return empty array so build doesn't fail, pages will be generated on-demand
+    return [];
+  }
+}
+
 export async function generateMetadata({ 
   params 
 }: { 
