@@ -80,18 +80,16 @@ export default function CategoryView({
                   href={`/shop/${merchant.slug}`}
                   className="text-center group"
                 >
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white p-2 group-hover:shadow-xl transition-shadow">
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Image 
-                        src={merchant.logo} 
-                        alt={merchant.name}
-                        width={96}
-                        height={96}
-                        className="w-full h-full object-cover"
-                        sizes="96px"
-                        loading="lazy"
-                      />
-                    </div>
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
+                    <Image 
+                      src={merchant.logo} 
+                      alt={merchant.name}
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                      sizes="96px"
+                      loading="lazy"
+                    />
                   </div>
                   <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
                   {merchant.firstCouponTitle && (
