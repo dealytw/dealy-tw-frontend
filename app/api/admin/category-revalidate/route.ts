@@ -1,0 +1,134 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { warmPaths } from '@/lib/warm';
+import { setTimeout as sleep } from 'node:timers/promises';
+
+export const preferredRegion = ['sin1'];   // near TW/Strapi
+export const dynamic = 'force-dynamic';    // never cache
+
+// Simple token auth
+function authorized(req: NextRequest) {
+  const token = req.headers.get('x-admin-token') ?? '';
+  return token === process.env.ADMIN_REVALIDATE_TOKEN;
+}
+
+// Batch helper: chunk an array
+const chunk = <T,>(arr: T[], size = 50) =>
+  arr.reduce<T[][]>((a, _, i) => (i % size ? a : [...a, arr.slice(i, i + size)]), []);
+
+async function purgeCF(urls: string[]) {
+  if (!process.env.CF_API_TOKEN || !process.env.CF_ZONE_ID || urls.length === 0) return;
+  
+  // Chunk to avoid rate limits
+  for (const group of chunk(urls, 30)) {
+    try {
+      await fetch(`https://api.cloudflare.com/client/v4/zones/${process.env.CF_ZONE_ID}/purge_cache`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.CF_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: group }),
+      });
+    } catch (error) {
+      console.error('Cloudflare purge failed for group:', error);
+    }
+  }
+}
+
+export async function POST(req: NextRequest) {
+  // CORS headers for admin app
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, x-admin-token',
+  };
+
+  if (!authorized(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { 
+      status: 401,
+      headers: corsHeaders
+    });
+  }
+
+  const { categories = [], paths = [], tags = [], purge = false } =
+    await req.json().catch(() => ({}));
+
+  // From categories → derive tags/paths
+  // Expect each category has page_slug (or slug)
+  const derivedTags: string[] = [];
+  const derivedPaths: string[] = [];
+
+  // Handle categories individually
+  for (const cat of categories as Array<{page_slug?: string, slug?: string}>) {
+    const categorySlug = cat.page_slug || cat.slug;
+    if (categorySlug) {
+      derivedTags.push(`category:${categorySlug}`);
+      derivedPaths.push(`/category/${categorySlug}`);
+    }
+  }
+
+  // De-dupe
+  const allTags = Array.from(new Set([...tags, ...derivedTags]));
+  const allPaths = Array.from(new Set([...paths, ...derivedPaths]));
+
+  // Revalidate tags first (widest coverage), then specific paths
+  for (const t of allTags) revalidateTag(t);
+  for (const p of allPaths) revalidatePath(p);
+
+  // Warm origin HTML before purge to avoid edge fetching stale
+  let purged = false;
+  if (allPaths.length) {
+    const warm = await warmPaths(allPaths, {
+      origin: process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw',
+      concurrency: 3,
+      timeoutMs: 4000,
+      retries: 2,
+    });
+    if (!warm.ok) {
+      return NextResponse.json(
+        { ok: false, warmed: warm },
+        { status: 206, headers: corsHeaders }
+      );
+    }
+    // Wait 3 seconds for ISR rebuilds to complete before purging
+    await sleep(3000);
+  }
+
+  if (purge && allPaths.length) {
+    const base = process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw';
+    await purgeCF(allPaths.map((p) => `${base}${p}`));
+    purged = true;
+    
+    // Warm again after purge so Cloudflare caches the fresh pages
+    await warmPaths(allPaths, {
+      origin: process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw',
+      concurrency: 3,
+      timeoutMs: 4000,
+      retries: 2,
+    });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    counts: { tags: allTags.length, paths: allPaths.length },
+    purged,
+    revalidated: { tags: allTags, paths: allPaths }
+  }, {
+    headers: corsHeaders
+  });
+}
+
+// Handle CORS preflight requests
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-admin-token',
+      'Access-Control-Max-Age': '86400', // Cache preflight for 24 hours
+    },
+  });
+}
+
