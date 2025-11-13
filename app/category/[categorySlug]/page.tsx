@@ -73,6 +73,7 @@ export default async function CategoryPage({
 
   try {
     // Fetch category by page_slug (page_slug is unique, no need to filter by market)
+    // Use explicit populate structure like merchant/special-offer pages
     const categoryData = await strapiFetch<{ data: any[] }>(
       `/api/categories?${qs({
         "filters[page_slug][$eq]": categorySlug,
@@ -94,6 +95,26 @@ export default async function CategoryPage({
     
     if (!category) {
       console.error(`[CategoryPage] Category data fetch failed for slug: ${categorySlug}`);
+      
+      // Debug: fetch all categories to see what's available
+      try {
+        const allCategoriesRes = await strapiFetch<{ data: any[] }>(
+          `/api/categories?${qs({ 
+            "fields[0]": "page_slug", 
+            "fields[1]": "name", 
+            "pagination[pageSize]": "100" 
+          })}`,
+          { revalidate: 60, tag: 'categories:debug' }
+        );
+        const allSlugs = (allCategoriesRes.data || []).map((cat: any) => ({ 
+          page_slug: cat.page_slug, 
+          name: cat.name 
+        }));
+        console.error(`[CategoryPage] Available categories:`, allSlugs);
+      } catch (debugError) {
+        console.error('[CategoryPage] Error fetching all categories:', debugError);
+      }
+      
       notFound();
     }
     
@@ -103,24 +124,32 @@ export default async function CategoryPage({
       merchantsType: typeof category.merchants,
       isArray: Array.isArray(category.merchants),
       merchantsLength: Array.isArray(category.merchants) ? category.merchants.length : 'N/A',
+      merchantsData: category.merchants,
     });
 
     // Extract merchants from category relation and filter by market
+    // Handle different formats for manyToMany relation (same as merchant/special-offer pages)
     let merchantsFromCMS: any[] = [];
     if (category.merchants) {
       if (Array.isArray(category.merchants)) {
+        // Check if it's nested format (Strapi v5 sometimes wraps in data)
         if (category.merchants[0]?.data) {
           merchantsFromCMS = category.merchants.map((item: any) => item.data || item);
         } else {
           merchantsFromCMS = category.merchants;
         }
       } else if (category.merchants?.data) {
-        merchantsFromCMS = category.merchants.data;
+        // Handle case where merchants is wrapped in data object
+        merchantsFromCMS = Array.isArray(category.merchants.data) 
+          ? category.merchants.data 
+          : [category.merchants.data];
       } else if (typeof category.merchants === 'object') {
         // Handle case where merchants might be a single object
         merchantsFromCMS = [category.merchants];
       }
     }
+    
+    console.log(`[CategoryPage] Extracted ${merchantsFromCMS.length} merchants before market filter`);
     
     // Filter merchants by market
     merchantsFromCMS = merchantsFromCMS.filter((merchant: any) => {
@@ -222,7 +251,12 @@ export default async function CategoryPage({
     return (
       <>
         <CategoryView 
-          category={category}
+          category={{
+            id: category.id,
+            name: category.name,
+            slug: category.page_slug, // Map page_slug to slug for frontend
+            summary: category.summary,
+          }}
           merchants={merchants}
           coupons={coupons}
           categorySlug={categorySlug}
