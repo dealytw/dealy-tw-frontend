@@ -1031,9 +1031,11 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
         {/* Breadcrumb */}
         <div className="mt-8 pt-6 border-t border-gray-200">
           <div className="flex items-center text-sm text-blue-600 mb-4">
-            <span className="cursor-pointer hover:underline">Dealy.HK 最新優惠平台</span>
+            <Link href="/" className="cursor-pointer hover:underline">
+              Dealy.TW 最新優惠平台
+            </Link>
             <ChevronRight className="w-4 h-4 mx-2" />
-            <span className="cursor-pointer hover:underline">所有商店</span>
+            <Link href="/shop" className="cursor-pointer hover:underline">所有商店</Link>
             <ChevronRight className="w-4 h-4 mx-2" />
             <span className="text-gray-600">{merchant.name}</span>
           </div>
