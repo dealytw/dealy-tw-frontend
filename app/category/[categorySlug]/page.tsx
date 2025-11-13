@@ -74,7 +74,7 @@ export default async function CategoryPage({
 
   try {
     // Use server-only Strapi fetch with ISR - copy exact pattern from merchant page
-    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs({
+    const queryParams = {
       "filters[page_slug][$eq]": categorySlug,
       "fields[0]": "id",
       "fields[1]": "name",
@@ -86,9 +86,20 @@ export default async function CategoryPage({
       "populate[merchants][fields][3]": "summary",
       "populate[merchants][populate][logo][fields][0]": "url",
       "populate[merchants][populate][market][fields][0]": "key",
-    })}`, { 
+    };
+    
+    console.log(`[CategoryPage] Fetching category with page_slug: ${categorySlug}`);
+    console.log(`[CategoryPage] Query params:`, queryParams);
+    
+    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs(queryParams)}`, { 
       revalidate: 3600, 
       tag: `category:${categorySlug}` 
+    });
+
+    console.log(`[CategoryPage] API Response:`, {
+      hasData: !!categoryRes?.data,
+      dataLength: categoryRes?.data?.length || 0,
+      data: categoryRes?.data,
     });
 
     if (!categoryRes.data || categoryRes.data.length === 0) {
