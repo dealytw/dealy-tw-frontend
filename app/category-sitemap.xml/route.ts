@@ -11,7 +11,7 @@ export async function GET() {
   let categoryPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
   try {
     const categoryParams = {
-      "fields[0]": "slug",
+      "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "pagination[pageSize]": "100",
       "sort[0]": "name:asc",
@@ -23,7 +23,7 @@ export async function GET() {
     )
 
     categoryPages = (categoriesData?.data || []).map((category: any) => ({
-      url: `${baseUrl}/category/${category.slug}`,
+      url: `${baseUrl}/category/${category.page_slug}`,
       lastmod: category.updatedAt ? new Date(category.updatedAt).toISOString() : currentDate.toISOString(),
       changefreq: 'weekly',
       priority: '0.7',
