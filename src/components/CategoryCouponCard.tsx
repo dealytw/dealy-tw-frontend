@@ -38,6 +38,9 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
 
   const discountValue = extractDiscountValue(coupon.discount);
 
+  // Format title as: "merchant name - 精選優惠 (coupon value)"
+  const formattedTitle = `${coupon.merchant.name} - 精選優惠 (${discountValue})`;
+
   // Helper function to get button text based on coupon type
   const getButtonText = (couponType?: string) => {
     switch (couponType) {
@@ -97,7 +100,7 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
         
         {/* Coupon Title */}
         <h3 className="text-sm font-medium text-gray-900 mb-3 leading-tight pr-20">
-          {coupon.title}
+          {formattedTitle}
         </h3>
         
         {/* Thumbnail Image */}
