@@ -89,19 +89,19 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
   };
 
   return (
-    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[280px] flex flex-col">
+    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[220px] flex flex-col">
       {/* Top Section - White Background */}
-      <div className="p-5 pb-4 flex-1">
+      <div className="p-4 pb-3 flex-1">
         {/* 適用全站商品 */}
-        <div className="text-xs text-gray-500 mb-3">適用全站商品</div>
+        <div className="text-xs text-gray-500 mb-2">適用全站商品</div>
         
         {/* Coupon Title */}
-        <h3 className="text-sm font-medium text-gray-900 mb-4 leading-tight pr-20">
+        <h3 className="text-sm font-medium text-gray-900 mb-3 leading-tight pr-20">
           {coupon.title}
         </h3>
         
         {/* Thumbnail Image */}
-        <div className="absolute top-4 right-4 w-16 h-16 rounded overflow-hidden bg-gray-100">
+        <div className="absolute top-3 right-3 w-16 h-16 rounded overflow-hidden bg-gray-100">
           {coupon.merchant.logo ? (
             <Image
               src={coupon.merchant.logo}
@@ -121,13 +121,13 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
       </div>
 
       {/* Bottom Section - Pink to Red Gradient */}
-      <div className="bg-gradient-to-r from-pink-500 to-red-500 px-5 py-4 flex items-center justify-between mt-auto">
+      <div className="bg-gradient-to-r from-pink-500 to-red-500 px-4 py-3 flex items-center justify-between mt-auto">
         <div className="text-white">
-          <div className="text-xl font-bold">{discountValue}</div>
+          <div className="text-lg font-bold">{discountValue}</div>
         </div>
         
         <Button 
-          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-5 py-2.5 rounded border border-red-300"
+          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-4 py-2 rounded border border-red-300"
           size="sm"
           onClick={handleButtonClick}
         >
