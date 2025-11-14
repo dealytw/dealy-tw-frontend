@@ -22,7 +22,7 @@ export async function getAllMerchantsForSearch(market: string = 'tw'): Promise<M
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
       "fields[1]": "merchant_name",
-      "fields[2]": "slug",
+      "fields[2]": "page_slug",
       "fields[3]": "summary",
       "fields[4]": "website",
       "fields[5]": "affiliate_link",
@@ -54,7 +54,7 @@ export async function getAllMerchantsForSearch(market: string = 'tw'): Promise<M
       const mapped = {
         id: merchant.id,
         name: merchant.merchant_name, // Map merchant_name to name
-        slug: merchant.slug,
+        slug: merchant.page_slug,
         logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
         website: merchant.website || merchant.affiliate_link || "",
       };

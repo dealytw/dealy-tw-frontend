@@ -22,7 +22,7 @@ export default async function SpecialOffersIndex() {
     const specialOffersParams = {
       "fields[0]": "id",
       "fields[1]": "title", 
-      "fields[2]": "slug",
+      "fields[2]": "page_slug",
       "fields[3]": "intro",
       "fields[4]": "seo_title",
       "fields[5]": "seo_description",
@@ -45,11 +45,11 @@ export default async function SpecialOffersIndex() {
     const transformedSpecialOffers = specialOffers.map((specialOffer: any) => ({
       id: specialOffer.id,
       title: specialOffer.title,
-      slug: specialOffer.slug,
+      slug: specialOffer.page_slug,
       intro: specialOffer.intro,
       seo_title: specialOffer.seo_title,
       seo_description: specialOffer.seo_description,
-      link: `/special-offers/${specialOffer.slug}`,
+      link: `/special-offers/${specialOffer.page_slug}`,
     }));
 
     return (

@@ -150,7 +150,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   const categories = a.category?.categories?.map((category: any) => ({
     id: category.id,
     name: category.name,
-    slug: category.page_slug,
+    page_slug: category.page_slug,
     iconUrl: "", // Categories don't have icons yet
   })) || [];
 

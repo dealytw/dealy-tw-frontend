@@ -47,7 +47,7 @@ export default async function ShopIndex({
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
       "fields[1]": "merchant_name",
-      "fields[2]": "slug",
+      "fields[2]": "page_slug",
       "fields[3]": "summary",
       "fields[4]": "default_affiliate_link",
       "pagination[page]": String(pageNum),
@@ -66,7 +66,7 @@ export default async function ShopIndex({
     const merchants = (merchantsData?.data || []).map((merchant: any) => ({
       id: merchant.id.toString(),
       name: merchant.merchant_name,
-      slug: merchant.slug,
+      slug: merchant.page_slug,
       logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
       letter: getFirstEnglishLetter(merchant.merchant_name || ''),
       description: merchant.summary || '',

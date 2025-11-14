@@ -17,7 +17,7 @@ interface DealySidebarProps {
     categories: Array<{
       id: number;
       name: string;
-      slug: string;
+      page_slug: string;
     }>;
   };
 }
@@ -75,7 +75,7 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
               sidebarCategories.categories.map((category: any) => (
                 <Link
                   key={category.id}
-                  href={`/category/${category.slug}`}
+                  href={`/category/${category.page_slug || category.slug}`}
                   className="text-xs px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                 >
                   #{category.name}
