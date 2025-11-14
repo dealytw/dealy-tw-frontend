@@ -60,12 +60,19 @@ export async function POST(req: NextRequest) {
   const derivedPaths: string[] = [];
 
   // Handle categories individually
+  let hasCategories = false;
   for (const cat of categories as Array<{page_slug?: string, slug?: string}>) {
     const categorySlug = cat.page_slug || cat.slug;
     if (categorySlug) {
       derivedTags.push(`category:${categorySlug}`);
       derivedPaths.push(`/category/${categorySlug}`);
+      hasCategories = true;
     }
+  }
+  // Revalidate category sitemap when categories are updated
+  if (hasCategories) {
+    derivedTags.push('sitemap:categories');
+    derivedPaths.push('/category-sitemap.xml');
   }
 
   // De-dupe

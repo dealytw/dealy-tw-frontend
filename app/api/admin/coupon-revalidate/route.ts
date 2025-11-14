@@ -60,19 +60,33 @@ export async function POST(req: NextRequest) {
   const derivedPaths: string[] = [];
 
   // Handle merchants individually
+  let hasMerchants = false;
   for (const m of merchants as Array<{slug: string}>) {
     if (m.slug) {
       derivedTags.push(`merchant:${m.slug}`);
       derivedPaths.push(`/shop/${m.slug}`);
+      hasMerchants = true;
     }
+  }
+  // Revalidate shop sitemap when merchants are updated
+  if (hasMerchants) {
+    derivedTags.push('sitemap:merchants');
+    derivedPaths.push('/shop-sitemap.xml');
   }
 
   // Handle special offers individually
+  let hasSpecialOffers = false;
   for (const so of specialOffers as Array<{slug: string}>) {
     if (so.slug) {
       derivedTags.push(`special-offer:${so.slug}`);
       derivedPaths.push(`/special-offers/${so.slug}`);
+      hasSpecialOffers = true;
     }
+  }
+  // Revalidate topicpage sitemap when special offers are updated
+  if (hasSpecialOffers) {
+    derivedTags.push('sitemap:topics');
+    derivedPaths.push('/topicpage-sitemap.xml');
   }
 
   // Handle coupons → derive tags/paths
@@ -83,7 +97,7 @@ export async function POST(req: NextRequest) {
     }
     if (c.path) derivedPaths.push(c.path); // e.g. /special-offers/xyz
     // Always consider homepage/collections that list coupons:
-    derivedTags.push('list:home', 'sitemap');
+    derivedTags.push('list:home');
   }
 
   // De-dupe
