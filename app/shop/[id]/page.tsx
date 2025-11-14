@@ -364,15 +364,17 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       const firstCoupon = getFirstValidCoupon(coupons);
       
       // Extract highlight for description
-      // Format from highlights: "最抵 $800 OFF & 新客優惠 & 免運費"
+      // Format from highlights: "最省 4折 & 新客優惠 & 免運費"
       let highlight = '';
       if (highlights.includes('新客優惠')) {
         highlight = '新客優惠';
       } else if (highlights.includes('免運費')) {
         highlight = '免運費';
+      } else if (highlights.includes('會員優惠')) {
+        highlight = '會員優惠';
       } else if (highlights) {
-        // Extract first value after "最抵" (e.g., "最抵 $800 OFF & ...")
-        const valueMatch = highlights.match(/最抵\s*([^&]+)/);
+        // Extract first value after "最省" (e.g., "最省 4折 & ...")
+        const valueMatch = highlights.match(/最省\s*([^&]+)/);
         if (valueMatch) {
           highlight = valueMatch[1].trim();
         }
