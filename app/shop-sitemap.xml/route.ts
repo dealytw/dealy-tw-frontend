@@ -10,12 +10,12 @@ export async function GET() {
 
   // Fetch all merchants dynamically from CMS
   // Only include published merchants (publishedAt exists)
-  let merchantPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
+  let merchantPages: Array<{ url: string; lastmod: string }> = []
   try {
     const merchantParams = {
       "filters[market][key][$eq]": market,
       "filters[publishedAt][$notNull]": true, // Only published merchants
-      "fields[0]": "slug",
+      "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "fields[2]": "publishedAt",
       "pagination[pageSize]": "500",
@@ -30,10 +30,8 @@ export async function GET() {
     merchantPages = (merchantsData?.data || [])
       .filter((merchant: any) => merchant.publishedAt) // Double-check published status
       .map((merchant: any) => ({
-        url: `${baseUrl}/shop/${merchant.slug}`,
+        url: `${baseUrl}/shop/${merchant.page_slug || merchant.slug}`,
         lastmod: merchant.updatedAt ? new Date(merchant.updatedAt).toISOString() : currentDate.toISOString(),
-        changefreq: 'daily',
-        priority: '0.8',
       }))
   } catch (error) {
     console.error('Error fetching merchants for sitemap:', error)
@@ -44,8 +42,6 @@ export async function GET() {
 ${merchantPages.map(page => `  <url>
     <loc>${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
   </url>`).join('\n')}
 </urlset>`
 

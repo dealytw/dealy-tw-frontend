@@ -9,11 +9,11 @@ export async function GET() {
 
   // Fetch all special offers (topicpage) from CMS
   // Only include published special offers (publishedAt exists)
-  let topicPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
+  let topicPages: Array<{ url: string; lastmod: string }> = []
   try {
     const topicParams = {
       "filters[publishedAt][$notNull]": true, // Only published special offers
-      "fields[0]": "slug",
+      "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "fields[2]": "publishedAt",
       "pagination[pageSize]": "500",
@@ -28,12 +28,10 @@ export async function GET() {
     topicPages = (topicsData?.data || [])
       .filter((topic: any) => topic.publishedAt) // Double-check published status
       .map((topic: any) => ({
-        url: `${baseUrl}/special-offers/${topic.slug}`,
+        url: `${baseUrl}/special-offers/${topic.page_slug || topic.slug}`,
         lastmod: topic.updatedAt 
           ? new Date(topic.updatedAt).toISOString() 
           : (topic.publishedAt ? new Date(topic.publishedAt).toISOString() : currentDate.toISOString()),
-        changefreq: 'daily',
-        priority: '0.8',
       }))
   } catch (error) {
     console.error('Error fetching special offers for sitemap:', error)
@@ -44,8 +42,6 @@ export async function GET() {
 ${topicPages.map(page => `  <url>
     <loc>${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
   </url>`).join('\n')}
 </urlset>`
 

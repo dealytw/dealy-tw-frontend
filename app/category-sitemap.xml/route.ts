@@ -8,7 +8,7 @@ export async function GET() {
   const currentDate = new Date()
 
   // Fetch all categories dynamically from CMS
-  let categoryPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
+  let categoryPages: Array<{ url: string; lastmod: string }> = []
   try {
     const categoryParams = {
       "fields[0]": "page_slug",
@@ -25,8 +25,6 @@ export async function GET() {
     categoryPages = (categoriesData?.data || []).map((category: any) => ({
       url: `${baseUrl}/category/${category.page_slug}`,
       lastmod: category.updatedAt ? new Date(category.updatedAt).toISOString() : currentDate.toISOString(),
-      changefreq: 'weekly',
-      priority: '0.7',
     }))
   } catch (error) {
     console.error('Error fetching categories for sitemap:', error)
@@ -38,8 +36,6 @@ export async function GET() {
 ${categoryPages.map(page => `  <url>
     <loc>${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
   </url>`).join('\n')}
 </urlset>`
 

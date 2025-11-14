@@ -23,25 +23,19 @@ export async function GET() {
     {
       url: baseUrl,
       lastmod: currentDate.toISOString(),
-      changefreq: 'daily',
-      priority: '1.0',
     },
     {
       url: `${baseUrl}/shop`,
       lastmod: currentDate.toISOString(),
-      changefreq: 'daily',
-      priority: '0.9',
     },
     {
       url: `${baseUrl}/special-offers`,
       lastmod: currentDate.toISOString(),
-      changefreq: 'daily',
-      priority: '0.9',
     },
   ]
 
   // Fetch all legal pages from CMS
-  let legalPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
+  let legalPages: Array<{ url: string; lastmod: string }> = []
   try {
     const legalParams = {
       "filters[market][key][$eq]": market,
@@ -59,8 +53,6 @@ export async function GET() {
     legalPages = (legalsData?.data || []).map((legal: any) => ({
       url: `${baseUrl}/${legal.slug}`,
       lastmod: legal.updatedAt ? new Date(legal.updatedAt).toISOString() : currentDate.toISOString(),
-      changefreq: 'monthly',
-      priority: '0.3',
     }))
   } catch (error) {
     console.error('Error fetching legal pages for sitemap:', error)
@@ -73,8 +65,6 @@ export async function GET() {
 ${allPages.map(page => `  <url>
     <loc>${escapeXml(page.url)}</loc>
     <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
   </url>`).join('\n')}
 </urlset>`
 

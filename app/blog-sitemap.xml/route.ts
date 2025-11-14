@@ -9,7 +9,7 @@ export async function GET() {
 
   // Fetch all blog posts dynamically from CMS
   // Only include published posts (publishedAt exists)
-  let blogPages: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = []
+  let blogPages: Array<{ url: string; lastmod: string }> = []
   try {
     const blogParams = {
       "filters[publishedAt][$notNull]": true, // Only published posts
@@ -32,8 +32,6 @@ export async function GET() {
         lastmod: post.updatedAt 
           ? new Date(post.updatedAt).toISOString() 
           : (post.publishedAt ? new Date(post.publishedAt).toISOString() : currentDate.toISOString()),
-        changefreq: 'monthly',
-        priority: '0.6',
       }))
   } catch (error) {
     console.error('Error fetching blog posts for sitemap:', error)
@@ -44,8 +42,6 @@ export async function GET() {
 ${blogPages.map(page => `  <url>
     <loc>${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
   </url>`).join('\n')}
 </urlset>`
 
