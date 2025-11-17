@@ -258,7 +258,7 @@ const DealyCouponCard = ({
           {showViewMoreButton && merchantSlug && (
             <Link href={`/shop/${merchantSlug}`} className="mt-4 flex justify-center">
               <Button 
-                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 overflow-hidden"
+                className="bg-white hover:bg-gray-50 text-gray-800 rounded-full border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 style={{
                   fontSize: (() => {
                     const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
@@ -268,7 +268,7 @@ const DealyCouponCard = ({
                     if (length <= 20) return '0.6rem';
                     return '0.55rem';
                   })(),
-                  padding: '0.25rem 0.75rem',
+                  padding: '0.2rem 0.75rem',
                   lineHeight: '1.2',
                 }}
               >
@@ -384,7 +384,7 @@ const DealyCouponCard = ({
       <div className="md:hidden">
         <div className="flex items-start gap-3 p-2 px-3">
           {/* Left: Logo and Discount - Wider */}
-          <div className="flex-shrink-0 w-24 flex flex-col items-center justify-between">
+          <div className="flex-shrink-0 w-24 flex flex-col items-center justify-between min-h-full">
             <div className="flex flex-col items-center w-full">
               <div className="w-12 h-10 mb-2 flex items-center justify-center">
                 {coupon.merchant.logo ? (
@@ -431,7 +431,7 @@ const DealyCouponCard = ({
               </div>
             </div>
             {showViewMoreButton && merchantSlug && (
-              <Link href={`/shop/${merchantSlug}`} className="mt-2 w-full">
+              <Link href={`/shop/${merchantSlug}`} className="mt-auto w-full">
                 <Button 
                   className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
                   style={{
@@ -443,7 +443,7 @@ const DealyCouponCard = ({
                       if (length <= 20) return '0.55rem';
                       return '0.5rem';
                     })(),
-                    padding: '0.25rem 0.375rem',
+                    padding: '0.2rem 0.5rem',
                     lineHeight: '1.2',
                   }}
                 >
