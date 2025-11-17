@@ -584,7 +584,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const taiwanDate = getTaiwanDate();
     const currentYear = taiwanDate.getFullYear();
     const currentMonth = taiwanDate.getMonth() + 1;
-    const generatedH1 = `${merchantData.merchant_name}優惠碼${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
+    const generatedH1 = `${merchantData.merchant_name}折扣碼及優惠${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
     const h1Title = merchantData.page_title_h1 || generatedH1;
     
     // Format last updated date for server-side

@@ -605,7 +605,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           // If clicking "信用卡優惠", scroll to credit card coupons section
                           if (filter === "信用卡優惠") {
                             setTimeout(() => {
-                              const creditCardSection = document.getElementById('credit-card-coupons-section');
+                              const creditCardSection = document.getElementById('creditcard-active-coupons');
                               if (creditCardSection) {
                                 creditCardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }
@@ -735,33 +735,42 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
 
               {/* Credit Card Coupons Section - Only show when creditcard_filtering is true */}
               {merchant.creditcard_filtering && (
-                <div id="credit-card-coupons-section" className="space-y-0">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">
+                <section
+                  id="creditcard-active-coupons"
+                  aria-labelledby={`${merchant.slug}-creditcard-heading`}
+                  className="mb-10"
+                >
+                  <h2
+                    id={`${merchant.slug}-creditcard-heading`}
+                    className="text-xl font-bold mb-4"
+                  >
                     {merchant.name}信用卡優惠一覽
                   </h2>
-                  {coupons
-                    .filter((coupon) => isCreditCardCoupon(coupon.coupon_title || ""))
-                    .map((coupon, index) => {
-                      const transformedCoupon = transformCoupon(coupon);
-                      if (!transformedCoupon) {
-                        console.error('Skipping invalid credit card coupon:', coupon);
-                        return null;
-                      }
-                      return (
-                        <div 
-                          key={coupon.id} 
-                          id={`credit-card-coupon-${coupon.id}`}
-                        >
-                          <DealyCouponCard 
-                            coupon={transformedCoupon} 
-                            onClick={() => handleCouponClick(coupon)}
-                            isScrolledTo={scrolledToCouponId === coupon.id}
-                            merchantSlug={merchant.slug}
-                          />
-                        </div>
-                      );
-                    }).filter(Boolean)}
-                </div>
+                  <div className="space-y-0">
+                    {coupons
+                      .filter((coupon) => isCreditCardCoupon(coupon.coupon_title || ""))
+                      .map((coupon, index) => {
+                        const transformedCoupon = transformCoupon(coupon);
+                        if (!transformedCoupon) {
+                          console.error('Skipping invalid credit card coupon:', coupon);
+                          return null;
+                        }
+                        return (
+                          <div 
+                            key={coupon.id} 
+                            id={`credit-card-coupon-${coupon.id}`}
+                          >
+                            <DealyCouponCard 
+                              coupon={transformedCoupon} 
+                              onClick={() => handleCouponClick(coupon)}
+                              isScrolledTo={scrolledToCouponId === coupon.id}
+                              merchantSlug={merchant.slug}
+                            />
+                          </div>
+                        );
+                      }).filter(Boolean)}
+                  </div>
+                </section>
               )}
 
               {/* Expired Coupons Section */}
