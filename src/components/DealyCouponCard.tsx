@@ -220,7 +220,7 @@ const DealyCouponCard = ({
   };
 
   return (
-    <article className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground md:mx-0 -mx-2">
+    <article className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground md:mx-0 -mx-3">
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-col md:flex-row">
         {/* Left: Logo and Badge */}

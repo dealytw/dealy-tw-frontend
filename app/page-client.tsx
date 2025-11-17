@@ -520,8 +520,8 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
 
       {/* Coupon Rail */}
       {initialData.couponRail?.items && initialData.couponRail.items.length > 0 && (
-        <section id="popular-coupons" className="py-12 px-4" aria-labelledby="popular-coupons-heading">
-          <div className="container mx-auto">
+        <section id="popular-coupons" className="py-12 px-4 md:px-4 px-2" aria-labelledby="popular-coupons-heading">
+          <div className="container mx-auto md:px-4 px-0">
             {/* CMS: coupon.heading */}
             <h2 id="popular-coupons-heading" className="text-2xl font-bold text-center mb-12 text-gray-800">
               {initialData.couponRail?.heading || "本日最新最受歡迎折扣碼/優惠券/Promo Code"}
@@ -529,7 +529,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
             
             <div className="flex gap-8">
               {/* Main Content */}
-              <div className="flex-1 space-y-8">
+              <div className="flex-1 space-y-8 md:space-y-8 space-y-4">
                 {initialData.couponRail.items.map((coupon) => {
                   const transformedCoupon = transformCoupon(coupon);
                   if (!transformedCoupon) {

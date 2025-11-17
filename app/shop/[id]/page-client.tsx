@@ -486,7 +486,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
         </div>
       </div>
       
-      <main id="main" className="container mx-auto px-4 py-4">
+      <main id="main" className="container mx-auto md:px-4 px-2 py-4">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Column - Content */}
