@@ -55,6 +55,7 @@ export type HomePageData = {
     items: Array<{
       id: string;
       merchantId: string;
+      merchantSlug?: string;
       logo: string;
       discount: string;
       type: string;
@@ -193,6 +194,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
           couponItems.push({
             id: `merchant-${merchant.id}`,
             merchantId: merchant.id.toString(),
+            merchantSlug: merchant.page_slug,
             logo: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
             discount: "10% OFF",
             type: "優惠券",
@@ -212,6 +214,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
         couponItems.push({
           id: `merchant-${merchant.id}`,
           merchantId: merchant.id.toString(),
+          merchantSlug: merchant.page_slug,
           logo: merchant.logo?.url ? rewriteImageUrl(merchant.logo.url) : "",
           discount: "10% OFF",
           type: "優惠券",
