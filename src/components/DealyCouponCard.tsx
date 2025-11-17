@@ -264,12 +264,12 @@ const DealyCouponCard = ({
           
           {/* Show countdown timer if within 48 hours (but not if expired) */}
           {timeDisplay && !isExpired && (
-            <div className="text-sm text-orange-600 mb-3">
+            <p className="text-sm text-orange-600 mb-3">
               ⏳ {timeDisplay}
-            </div>
+            </p>
           )}
           
-          <div className="text-xs text-red-500 mb-3 flex items-center gap-2">
+          <p className="text-xs text-red-500 mb-3 flex items-center gap-2">
             {isExpired ? (
               <span className="text-red-500">{timeDisplay}</span>
             ) : timeDisplay ? (
@@ -279,7 +279,7 @@ const DealyCouponCard = ({
             )}
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
-          </div>
+          </p>
           
           <div className="flex items-center gap-4 mb-4">
             {couponType === "promo_code" && isScrolledTo ? (
@@ -424,12 +424,12 @@ const DealyCouponCard = ({
             
             {/* Show countdown timer if within 48 hours (but not if expired) */}
             {timeDisplay && !isExpired && (
-              <div className="text-xs text-orange-600 mb-2">
+              <p className="text-xs text-orange-600 mb-2">
                 ⏳ {timeDisplay}
-              </div>
+              </p>
             )}
             
-            <div className="text-xs text-red-500 mb-3 flex items-center gap-2">
+            <p className="text-xs text-red-500 mb-3 flex items-center gap-2">
               {isExpired ? (
                 <span className="text-red-500">{timeDisplay}</span>
               ) : timeDisplay ? (
@@ -439,7 +439,7 @@ const DealyCouponCard = ({
               )}
               <span className="text-gray-400">•</span>
               <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
-            </div>
+            </p>
 
             {/* Mobile Buttons - Same as Desktop */}
             <div className="flex items-center gap-4 mb-3">

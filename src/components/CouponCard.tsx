@@ -92,9 +92,9 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
           </h3>
           
           {timeLeft && (
-            <div className="text-sm text-orange-600 mb-3">
+            <p className="text-sm text-orange-600 mb-3">
               ⏳ {timeLeft}
-            </div>
+            </p>
           )}
           
           <div className="flex items-center gap-4 mb-4">
@@ -121,13 +121,13 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
             )}
           </div>
           
-          <div className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-600 mb-3">
             {coupon.user_count} 人已使用
-          </div>
+          </p>
           
-          <div className="text-sm text-gray-700 leading-relaxed mb-4">
+          <p className="text-sm text-gray-700 leading-relaxed mb-4">
             {coupon.description}
-          </div>
+          </p>
           
           {coupon.editor_tips && (
             <details className="mt-4">
