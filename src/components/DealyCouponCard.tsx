@@ -355,23 +355,32 @@ const DealyCouponCard = ({
 
       {/* Mobile Layout */}
       <div className="md:hidden">
-        <div className="flex items-start gap-2 p-2 px-3">
-          {/* Left: Logo and Discount - Slimmer */}
-          <div className="flex-shrink-0 w-12">
-            <div className="w-10 h-8 mb-1 flex items-center justify-center">
+        <div className="flex items-start gap-3 p-2 px-3">
+          {/* Left: Logo and Discount - Wider */}
+          <div className="flex-shrink-0 w-24">
+            <div className="w-12 h-10 mb-2 flex items-center justify-center">
               {coupon.merchant.logo ? (
-                <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={40} height={32} className="max-w-full max-h-full object-contain" sizes="40px" loading="lazy" />
+                <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={48} height={40} className="max-w-full max-h-full object-contain" sizes="48px" loading="lazy" />
               ) : (
-                <div className="w-8 h-6 bg-gray-200 rounded flex items-center justify-center">
+                <div className="w-10 h-8 bg-gray-200 rounded flex items-center justify-center">
                   <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
                 </div>
               )}
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-pink-600 break-words leading-tight">
-                {coupon.discount.replace('HK', '')}
+              <div className="font-bold text-pink-600 leading-tight whitespace-nowrap" style={{ fontSize: 'clamp(0.75rem, 3vw, 1.125rem)' }}>
+                {(() => {
+                  // Remove currency symbols for mobile view only
+                  let mobileDiscount = coupon.discount.replace('HK', '');
+                  // Remove common currency prefixes/suffixes (NT, NTD, USD, etc.)
+                  mobileDiscount = mobileDiscount.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
+                  mobileDiscount = mobileDiscount.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
+                  // Remove $ symbol (can appear before or after numbers)
+                  mobileDiscount = mobileDiscount.replace(/\$/g, '');
+                  return mobileDiscount.trim();
+                })()}
               </div>
-              <div className="text-xs text-gray-500 px-1 py-0.5 bg-white rounded-full border text-xs">
+              <div className="text-xs text-gray-500 px-1 py-0.5 bg-white rounded-full border mt-1 whitespace-nowrap">
                 {discountType}
               </div>
               {showViewMoreButton && merchantSlug && (
