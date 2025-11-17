@@ -157,10 +157,10 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {/* Mobile: Left side with slight margin, covers almost full screen */}
+      {/* Mobile: Right side with dark theme, leaves gap on left */}
       <SheetContent 
-        side="left" 
-        className="md:hidden w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] h-full overflow-y-auto bg-gray-900 p-0 ml-8 [&>button]:hidden"
+        side="right" 
+        className="md:hidden w-[calc(100%-3rem)] sm:w-[calc(100%-4rem)] h-full overflow-y-auto bg-gray-900 p-0 [&>button]:hidden"
       >
         {menuContent}
       </SheetContent>

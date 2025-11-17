@@ -782,7 +782,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     id={`${merchant.slug}-expired-heading`}
                     className="text-lg md:text-xl font-bold mb-4"
                   >
-                    已過期優惠碼（僅供參考）
+                    已過期優惠碼
                   </h2>
                   <div className="relative">
                     <Card className="shadow-md relative">
