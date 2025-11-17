@@ -256,9 +256,9 @@ const DealyCouponCard = ({
             </div>
           </div>
           {showViewMoreButton && merchantSlug && (
-            <Link href={`/shop/${merchantSlug}`} className="mt-4 w-full">
+            <Link href={`/shop/${merchantSlug}`} className="mt-4 flex justify-center">
               <Button 
-                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 overflow-hidden"
                 style={{
                   fontSize: (() => {
                     const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
@@ -268,11 +268,11 @@ const DealyCouponCard = ({
                     if (length <= 20) return '0.6rem';
                     return '0.55rem';
                   })(),
-                  padding: '0.375rem 0.5rem',
+                  padding: '0.375rem 0.75rem',
                   lineHeight: '1.2',
                 }}
               >
-                <span className="whitespace-nowrap block truncate">
+                <span className="whitespace-nowrap">
                   查看更多 {coupon.merchant.name} 優惠
                 </span>
               </Button>

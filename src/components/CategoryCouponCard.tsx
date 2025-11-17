@@ -104,27 +104,19 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
           {formattedTitle}
         </h3>
         
-        {/* View More Button - Small, under title */}
+        {/* View More Button - Small, under title, yellow background, brown text */}
         {coupon.merchant.slug && (
-          <Link href={`/shop/${coupon.merchant.slug}`} className="mb-3 block">
+          <Link href={`/shop/${coupon.merchant.slug}`} className="mb-3 inline-block">
             <Button 
-              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
+              className="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border border-yellow-200 rounded-full"
               style={{
-                fontSize: (() => {
-                  const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
-                  const length = buttonText.length;
-                  if (length <= 12) return '0.65rem';
-                  if (length <= 16) return '0.6rem';
-                  if (length <= 20) return '0.55rem';
-                  return '0.5rem';
-                })(),
-                padding: '0.25rem 0.5rem',
+                fontSize: '0.7rem',
+                padding: '0.25rem 0.75rem',
                 lineHeight: '1.2',
+                whiteSpace: 'nowrap',
               }}
             >
-              <span className="whitespace-nowrap block truncate">
-                查看更多 {coupon.merchant.name} 優惠
-              </span>
+              查看更多 {coupon.merchant.name} 優惠
             </Button>
           </Link>
         )}
