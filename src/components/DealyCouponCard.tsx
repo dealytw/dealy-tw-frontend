@@ -376,14 +376,14 @@ const DealyCouponCard = ({
                     let textForLength = coupon.discount.replace('HK', '');
                     textForLength = textForLength.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
                     textForLength = textForLength.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
-                    const length = textForLength.trim().length;
-                    // Dynamic font size: shorter text = larger, longer text = smaller
-                    // Base size 1.5rem (24px), scales down based on length
-                    if (length <= 5) return '1.5rem';      // Very short: $300, $1
-                    if (length <= 8) return '1.25rem';     // Short: $1,200
-                    if (length <= 12) return '1.125rem';   // Medium: $10,000
-                    if (length <= 16) return '1rem';       // Long: $100,000
-                    return '0.875rem';                     // Very long: fallback
+                  const length = textForLength.trim().length;
+                  // Dynamic font size: shorter text = larger, longer text = smaller
+                  // Base size 1.75rem (28px), scales down based on length
+                  if (length <= 5) return '1.75rem';     // Very short: $300, $1
+                  if (length <= 8) return '1.5rem';      // Short: $1,200
+                  if (length <= 12) return '1.25rem';    // Medium: $10,000
+                  if (length <= 16) return '1.125rem';   // Long: $100,000
+                  return '1rem';                         // Very long: fallback
                   })()
                 }}
               >

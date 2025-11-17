@@ -515,17 +515,28 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 </div>
               </div>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-6">
               {merchant.description ? merchant.description : `${merchant.name}優惠碼限時登場！透過信用卡專屬折扣或指定 Promo Code，即享機票、酒店、高鐵優惠，助你即省更多。`}
             </p>
             
-            {/* Filter Section */}
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                {merchant.name}優惠碼總整理（每日更新）｜Promo code／Discount code
-              </h2>
-              
-              <div className="mb-6 overflow-x-auto scrollbar-hide">
+            {/* Continued Content */}
+            <div className="space-y-8">
+              {/* Active Coupons Section */}
+              <section
+                id="active-coupons"
+                aria-labelledby={`${merchant.slug}-active-heading`}
+                className="mb-10"
+              >
+                <h2
+                  id={`${merchant.slug}-active-heading`}
+                  className="text-lg md:text-xl font-bold text-gray-900 mb-4"
+                >
+                  {merchant.name}優惠碼總整理 (每日更新) | Promo code/ Discount code
+                </h2>
+                
+                {/* Filter Section */}
+                <div className="mb-6">
+                  <div className="mb-6 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-2 flex-nowrap">
                   {filters.map(filter => {
                     // Handle "精選地區" with expandable inline region selector
@@ -617,24 +628,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                       </Badge>
                     );
                   })}
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Continued Content */}
-            <div className="space-y-8">
-              {/* Active Coupons Section */}
-              <section
-                id="active-coupons"
-                aria-labelledby={`${merchant.slug}-active-heading`}
-                className="mb-10"
-              >
-                <h2
-                  id={`${merchant.slug}-active-heading`}
-                  className="text-xl font-bold mb-4"
-                >
-                  {merchant.name}最新優惠碼 / 折扣碼
-                </h2>
+                
                 <div className="space-y-0">
                   {coupons
                     .filter((coupon) => {
@@ -742,7 +738,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 >
                   <h2
                     id={`${merchant.slug}-creditcard-heading`}
-                    className="text-xl font-bold mb-4"
+                    className="text-lg md:text-xl font-bold mb-4"
                   >
                     {merchant.name}信用卡優惠一覽
                   </h2>
@@ -783,7 +779,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 >
                   <h2
                     id={`${merchant.slug}-expired-heading`}
-                    className="text-xl font-bold mb-4"
+                    className="text-lg md:text-xl font-bold mb-4"
                   >
                     已過期優惠碼（僅供參考）
                   </h2>
@@ -872,7 +868,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               >
                 <h2
                   id={`${merchant.slug}-related-heading`}
-                  className="text-xl font-bold mb-4"
+                  className="text-lg md:text-xl font-bold mb-4"
                 >
                   同類商戶折扣優惠
                 </h2>
