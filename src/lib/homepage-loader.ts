@@ -172,10 +172,12 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
         const topCoupon = await getTopCouponForMerchant(merchant.id.toString(), marketKey);
         
         if (topCoupon) {
+          // Use merchant.page_slug from homepage data if available, otherwise use topCoupon.merchant.slug
+          const merchantSlug = merchant.page_slug || topCoupon.merchant.slug;
           couponItems.push({
             id: `coupon-${topCoupon.id}`,
             merchantId: merchant.id.toString(),
-            merchantSlug: topCoupon.merchant.page_slug,
+            merchantSlug: merchantSlug,
             logo: topCoupon.merchant.logo ? rewriteImageUrl(topCoupon.merchant.logo) : "",
             discount: topCoupon.value,
             type: topCoupon.coupon_type === "promo_code" ? "優惠碼" : 

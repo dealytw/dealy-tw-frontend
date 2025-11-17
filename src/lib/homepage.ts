@@ -88,6 +88,9 @@ export async function getHomePageByMarket(market = 'tw', revalidate = HOME_REVAL
     'fields[3]': 'seo_description',
     'populate[hero][populate][background][fields][0]': 'url',
     'populate[category][populate][merchants][populate][logo][fields][0]': 'url',
+    'populate[coupon][populate][merchants][fields][0]': 'id',
+    'populate[coupon][populate][merchants][fields][1]': 'merchant_name',
+    'populate[coupon][populate][merchants][fields][2]': 'page_slug',
     'populate[coupon][populate][merchants][populate][logo][fields][0]': 'url',
     'populate[category][populate][categories]': 'true',
     'populate[topicpage][populate][special_offers][populate][logo][fields][0]': 'url', // Populate logo for special offers
