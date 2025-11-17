@@ -51,9 +51,10 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
 
   if (loading) {
     return (
-      <article className="relative overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-4 pb-0">
+      <article className="relative overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200 min-h-[280px] flex flex-col">
+        <div className="p-4 pb-0 flex-1">
           <div className="animate-pulse">
+            <div className="h-16 w-16 mx-auto mb-3 bg-gray-200 rounded-full"></div>
             <div className="h-4 bg-gray-200 rounded mb-2"></div>
           </div>
         </div>
@@ -147,30 +148,47 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
   };
 
   return (
-    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-      {/* Merchant Logo */}
-      <div className="absolute top-3 right-3 w-8 h-8 rounded-full overflow-hidden bg-gray-100">
-        {relatedMerchant.logo ? (
-          <Image
-            src={relatedMerchant.logo}
-            alt={relatedMerchant.name}
-            width={32}
-            height={32}
-            className="w-full h-full object-cover"
-            sizes="32px"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-            {relatedMerchant.name.charAt(0)}
-          </div>
-        )}
-      </div>
-
+    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[280px] flex flex-col">
       {/* Main Content */}
-      <div className="p-4 pb-0">
+      <div className="p-4 pb-0 flex-1 flex flex-col">
+        {/* Merchant Logo - Bigger */}
+        <div className="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+          {relatedMerchant.logo ? (
+            <Image
+              src={relatedMerchant.logo}
+              alt={relatedMerchant.name}
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+              sizes="64px"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+              {relatedMerchant.name.charAt(0)}
+            </div>
+          )}
+        </div>
+
+        {/* View More Button - Under logo, yellow background, brown text */}
+        {relatedMerchant.slug && (
+          <Link href={`/shop/${relatedMerchant.slug}`} className="mb-3 flex justify-center">
+            <Button 
+              className="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border border-yellow-200 rounded-full"
+              style={{
+                fontSize: '0.7rem',
+                padding: '0.25rem 0.75rem',
+                lineHeight: '1.2',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              查看更多
+            </Button>
+          </Link>
+        )}
+
         {/* Coupon Title */}
-        <h3 className="text-sm font-medium text-gray-900 mb-2 pr-12">
+        <h3 className="text-sm font-medium text-gray-900 mb-2 text-center">
           {couponTitle}
         </h3>
       </div>
