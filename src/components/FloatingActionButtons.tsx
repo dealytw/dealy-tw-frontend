@@ -11,9 +11,9 @@ interface FloatingActionButtonsProps {
 export default function FloatingActionButtons({ buttons }: FloatingActionButtonsProps) {
   const getHref = (button: FloatingButton): string => {
     if (button.merchant) {
-      return `/shop/${button.merchant.slug}`;
+      return `/shop/${button.merchant.page_slug}`;
     } else if (button.special_offer) {
-      return `/special-offers/${button.special_offer.slug}`;
+      return `/special-offers/${button.special_offer.page_slug}`;
     }
     return '#';
   };

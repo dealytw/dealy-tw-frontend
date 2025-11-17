@@ -486,7 +486,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
         </div>
       </div>
       
-      <main className="container mx-auto px-4 py-4">
+      <main id="main" className="container mx-auto px-4 py-4">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Column - Content */}
@@ -623,103 +623,115 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
 
             {/* Continued Content */}
             <div className="space-y-8">
-              {/* Active Coupons */}
-              <div className="space-y-0">
-                {coupons
-                  .filter((coupon) => {
-                    // Apply filtering based on activeFilter
+              {/* Active Coupons Section */}
+              <section
+                id="active-coupons"
+                aria-labelledby={`${merchant.slug}-active-heading`}
+                className="mb-10"
+              >
+                <h2
+                  id={`${merchant.slug}-active-heading`}
+                  className="text-xl font-bold mb-4"
+                >
+                  {merchant.name}最新優惠碼 / 折扣碼
+                </h2>
+                <div className="space-y-0">
+                  {coupons
+                    .filter((coupon) => {
+                      // Apply filtering based on activeFilter
+                      if (useSimpleFilters) {
+                        switch (activeFilter) {
+                          case "全部":
+                            return true; // Show all coupons
+                          case "折扣代碼":
+                            return coupon.coupon_type === "promo_code";
+                          case "優惠券":
+                            return coupon.coupon_type !== "promo_code";
+                          case "相關店鋪":
+                            return false; // This will be handled separately, don't show coupons here
+                          default:
+                            return true;
+                        }
+                      } else {
+                        // Advanced filtering logic (when location_filtering or creditcard_filtering is true)
+                        switch (activeFilter) {
+                          case "全部":
+                            return true; // Show all coupons
+                          case "精選地區":
+                            if (!selectedRegion) return true; // If no region selected, show all
+                            return matchesRegion(coupon.coupon_title || "", selectedRegion);
+                          case "信用卡優惠":
+                            // Wait for next implementation
+                            return true;
+                          default:
+                            return true;
+                        }
+                      }
+                    })
+                    .map((coupon, index) => {
+                      const transformedCoupon = transformCoupon(coupon);
+                      if (!transformedCoupon) {
+                        console.error('Skipping invalid coupon:', coupon);
+                        return null;
+                      }
+                      // Hide coupons after the 10th if showAllActiveCoupons is false
+                      const shouldHide = !showAllActiveCoupons && index >= 10;
+                      return (
+                        <div 
+                          key={coupon.id} 
+                          id={`coupon-${coupon.id}`}
+                          className={shouldHide ? 'hidden' : ''}
+                        >
+                          <DealyCouponCard 
+                            coupon={transformedCoupon} 
+                            onClick={() => handleCouponClick(coupon)}
+                            isScrolledTo={scrolledToCouponId === coupon.id}
+                            merchantSlug={merchant.slug}
+                          />
+                        </div>
+                      );
+                    }).filter(Boolean)}
+                  
+                  {/* Show More Button - Only show if there are more than 10 filtered coupons */}
+                  {coupons.filter((coupon) => {
                     if (useSimpleFilters) {
                       switch (activeFilter) {
                         case "全部":
-                          return true; // Show all coupons
+                          return true;
                         case "折扣代碼":
                           return coupon.coupon_type === "promo_code";
                         case "優惠券":
                           return coupon.coupon_type !== "promo_code";
                         case "相關店鋪":
-                          return false; // This will be handled separately, don't show coupons here
+                          return false;
                         default:
                           return true;
                       }
                     } else {
-                      // Advanced filtering logic (when location_filtering or creditcard_filtering is true)
                       switch (activeFilter) {
                         case "全部":
-                          return true; // Show all coupons
+                          return true;
                         case "精選地區":
-                          if (!selectedRegion) return true; // If no region selected, show all
+                          if (!selectedRegion) return true;
                           return matchesRegion(coupon.coupon_title || "", selectedRegion);
                         case "信用卡優惠":
-                          // Wait for next implementation
                           return true;
                         default:
                           return true;
                       }
                     }
-                  })
-                  .map((coupon, index) => {
-                    const transformedCoupon = transformCoupon(coupon);
-                    if (!transformedCoupon) {
-                      console.error('Skipping invalid coupon:', coupon);
-                      return null;
-                    }
-                    // Hide coupons after the 10th if showAllActiveCoupons is false
-                    const shouldHide = !showAllActiveCoupons && index >= 10;
-                    return (
-                      <div 
-                        key={coupon.id} 
-                        id={`coupon-${coupon.id}`}
-                        className={shouldHide ? 'hidden' : ''}
+                  }).length > 10 && !showAllActiveCoupons && activeFilter !== "相關店鋪" && (
+                    <div className="flex justify-center mt-4">
+                      <Button
+                        onClick={() => setShowAllActiveCoupons(true)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2"
                       >
-                        <DealyCouponCard 
-                          coupon={transformedCoupon} 
-                          onClick={() => handleCouponClick(coupon)}
-                          isScrolledTo={scrolledToCouponId === coupon.id}
-                          merchantSlug={merchant.slug}
-                        />
-                      </div>
-                    );
-                  }).filter(Boolean)}
-                
-                {/* Show More Button - Only show if there are more than 10 filtered coupons */}
-                {coupons.filter((coupon) => {
-                  if (useSimpleFilters) {
-                    switch (activeFilter) {
-                      case "全部":
-                        return true;
-                      case "折扣代碼":
-                        return coupon.coupon_type === "promo_code";
-                      case "優惠券":
-                        return coupon.coupon_type !== "promo_code";
-                      case "相關店鋪":
-                        return false;
-                      default:
-                        return true;
-                    }
-                  } else {
-                    switch (activeFilter) {
-                      case "全部":
-                        return true;
-                      case "精選地區":
-                        if (!selectedRegion) return true;
-                        return matchesRegion(coupon.coupon_title || "", selectedRegion);
-                      case "信用卡優惠":
-                        return true;
-                      default:
-                        return true;
-                    }
-                  }
-                }).length > 10 && !showAllActiveCoupons && activeFilter !== "相關店鋪" && (
-                  <div className="flex justify-center mt-4">
-                    <Button
-                      onClick={() => setShowAllActiveCoupons(true)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2"
-                    >
-                      顯示更多
-                    </Button>
-                  </div>
-                )}
-              </div>
+                        顯示更多
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </section>
 
               {/* Credit Card Coupons Section - Only show when creditcard_filtering is true */}
               {merchant.creditcard_filtering && (
@@ -753,109 +765,125 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
               )}
 
               {/* Expired Coupons Section */}
-              <div className="relative">
-                <Card className="shadow-md relative">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-gray-800">已過期但仍可嘗試</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {expiredCoupons.length > 0 ? (
-                      expiredCoupons.map(coupon => {
-                        const transformedCoupon = transformCoupon(coupon);
-                        if (!transformedCoupon) {
-                          console.error('Skipping invalid expired coupon:', coupon);
-                          return null;
-                        }
-                        const showDetails = expiredCouponDetails[coupon.id] || false;
-                        return (
-                          <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
-                            <div className="flex items-start gap-4">
-                              <div className="text-center min-w-[80px]">
-                                <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center relative">
-                                  <Image 
-                                    src={transformedCoupon.merchant?.logo || merchant.logo} 
-                                    alt={transformedCoupon.merchant?.name || merchant.name} 
-                                    fill
-                                    className="object-contain"
-                                    sizes="48px"
-                                  />
+              {expiredCoupons.length > 0 && (
+                <section
+                  id="expired-coupons"
+                  aria-labelledby={`${merchant.slug}-expired-heading`}
+                  className="mb-10"
+                  data-nosnippet="true"
+                >
+                  <h2
+                    id={`${merchant.slug}-expired-heading`}
+                    className="text-xl font-bold mb-4"
+                  >
+                    已過期優惠碼（僅供參考）
+                  </h2>
+                  <div className="relative">
+                    <Card className="shadow-md relative">
+                      <CardContent className="space-y-4">
+                        {expiredCoupons.map(coupon => {
+                          const transformedCoupon = transformCoupon(coupon);
+                          if (!transformedCoupon) {
+                            console.error('Skipping invalid expired coupon:', coupon);
+                            return null;
+                          }
+                          const showDetails = expiredCouponDetails[coupon.id] || false;
+                          return (
+                            <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex items-start gap-4">
+                                <div className="text-center min-w-[80px]">
+                                  <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center relative">
+                                    <Image 
+                                      src={transformedCoupon.merchant?.logo || merchant.logo} 
+                                      alt={transformedCoupon.merchant?.name || merchant.name} 
+                                      fill
+                                      className="object-contain"
+                                      sizes="48px"
+                                    />
+                                  </div>
+                                  <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
+                                  <div className="text-sm text-gray-500">優惠</div>
                                 </div>
-                                <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
-                                <div className="text-sm text-gray-500">優惠</div>
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
-                                <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
-                                 <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
-                                   {getButtonText(coupon.coupon_type)} ➤
-                                 </Button>
-                                 
-                                 {/* Collapsible Description Section */}
-                                 <div className="mt-2">
-                                   <Button 
-                                     variant="ghost" 
-                                     size="sm" 
-                                     onClick={() => setExpiredCouponDetails(prev => ({ ...prev, [coupon.id]: !showDetails }))}
-                                     className="text-xs text-blue-600 p-0 h-auto hover:underline"
-                                   >
-                                     {showDetails ? '隱藏優惠詳情' : '顯示優惠詳情'}
-                                     {showDetails ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                                <div className="flex-1">
+                                  <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
+                                  <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
+                                   <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
+                                     {getButtonText(coupon.coupon_type)} ➤
                                    </Button>
                                    
-                                   {showDetails && (
-                                     <div className="mt-3 space-y-3">
-                                       {transformedCoupon.steps && (
-                                         <div className="text-xs text-gray-600">
-                                           <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: transformedCoupon.steps }}></div>
-                                         </div>
-                                       )}
-                                       {transformedCoupon.terms && (
-                                         <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                                           <div className="text-xs">
-                                             <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
-                                             <div className="text-yellow-700">{transformedCoupon.terms}</div>
+                                   {/* Collapsible Description Section */}
+                                   <div className="mt-2">
+                                     <Button 
+                                       variant="ghost" 
+                                       size="sm" 
+                                       onClick={() => setExpiredCouponDetails(prev => ({ ...prev, [coupon.id]: !showDetails }))}
+                                       className="text-xs text-blue-600 p-0 h-auto hover:underline"
+                                     >
+                                       {showDetails ? '隱藏優惠詳情' : '顯示優惠詳情'}
+                                       {showDetails ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                                     </Button>
+                                     
+                                     {showDetails && (
+                                       <div className="mt-3 space-y-3">
+                                         {transformedCoupon.steps && (
+                                           <div className="text-xs text-gray-600">
+                                             <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: transformedCoupon.steps }}></div>
                                            </div>
-                                         </div>
-                                       )}
-                                     </div>
-                                   )}
-                                 </div>
+                                         )}
+                                         {transformedCoupon.terms && (
+                                           <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                                             <div className="text-xs">
+                                               <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
+                                               <div className="text-yellow-700">{transformedCoupon.terms}</div>
+                                             </div>
+                                           </div>
+                                         )}
+                                       </div>
+                                     )}
+                                   </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      }).filter(Boolean)
+                          );
+                        }).filter(Boolean)}
+                      </CardContent>
+                      {/* Grey overlay on top to make all colors pale */}
+                      <div className="absolute inset-0 bg-white/70 rounded-lg pointer-events-none z-10"></div>
+                    </Card>
+                  </div>
+                </section>
+              )}
+
+              {/* Related Merchants Section */}
+              <section
+                id="related-store-coupons"
+                aria-labelledby={`${merchant.slug}-related-heading`}
+                className="mb-10"
+                data-nosnippet="true"
+              >
+                <h2
+                  id={`${merchant.slug}-related-heading`}
+                  className="text-xl font-bold mb-4"
+                >
+                  同類商戶折扣優惠
+                </h2>
+                <Card id="related-merchants-section" className="shadow-md">
+                  <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {relatedMerchants && relatedMerchants.length > 0 ? (
+                      relatedMerchants.map((relatedMerchant) => (
+                        <RelatedMerchantCouponCard 
+                          key={relatedMerchant.id} 
+                          relatedMerchant={relatedMerchant}
+                        />
+                      ))
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <p>暫無已過期的優惠券</p>
+                      <div className="col-span-full text-center text-gray-500 py-8">
+                        暫無同類商戶折扣優惠
                       </div>
                     )}
                   </CardContent>
-                  {/* Grey overlay on top to make all colors pale */}
-                  <div className="absolute inset-0 bg-white/70 rounded-lg pointer-events-none z-10"></div>
                 </Card>
-              </div>
-
-              {/* Related Merchants Section */}
-              <Card id="related-merchants-section" className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-800">同類商戶折扣優惠</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {relatedMerchants && relatedMerchants.length > 0 ? (
-                    relatedMerchants.map((relatedMerchant) => (
-                      <RelatedMerchantCouponCard 
-                        key={relatedMerchant.id} 
-                        relatedMerchant={relatedMerchant}
-                      />
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center text-gray-500 py-8">
-                      暫無同類商戶折扣優惠
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              </section>
 
               {/* FAQ Section */}
               <Card className="shadow-md">

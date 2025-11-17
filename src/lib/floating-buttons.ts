@@ -13,11 +13,11 @@ export interface FloatingButton {
   };
   merchant?: {
     id: number;
-    slug: string;
+    page_slug: string;
   };
   special_offer?: {
     id: number;
-    slug: string;
+    page_slug: string;
   };
   market?: {
     key: string;
