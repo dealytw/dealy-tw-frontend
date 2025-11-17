@@ -536,6 +536,14 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                     console.error('Skipping invalid coupon:', coupon);
                     return null;
                   }
+                  // Debug: Log merchantSlug for homepage coupons
+                  if (!coupon.merchantSlug) {
+                    console.warn('Homepage coupon missing merchantSlug:', {
+                      couponId: coupon.id,
+                      merchantId: coupon.merchantId,
+                      title: coupon.title
+                    });
+                  }
                   return (
                     <article key={coupon.id} id={`coupon-${coupon.id}`}>
                       <DealyCouponCard 

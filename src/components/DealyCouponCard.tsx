@@ -46,6 +46,18 @@ const DealyCouponCard = ({
   const [isExpired, setIsExpired] = useState(false);
   const { toast } = useToast();
 
+  // Debug: Log button visibility conditions
+  useEffect(() => {
+    if (showViewMoreButton) {
+      console.log('DealyCouponCard button debug:', {
+        showViewMoreButton,
+        merchantSlug,
+        merchantName: coupon.merchant.name,
+        shouldShow: showViewMoreButton && merchantSlug
+      });
+    }
+  }, [showViewMoreButton, merchantSlug, coupon.merchant.name]);
+
   // Parse expiry date and calculate time display
   useEffect(() => {
     const parseExpiry = () => {
