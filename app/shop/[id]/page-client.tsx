@@ -629,6 +629,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     );
                   })}
                   </div>
+                  </div>
                 </div>
                 
                 <div className="space-y-0">
