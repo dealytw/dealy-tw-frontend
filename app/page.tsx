@@ -3,6 +3,8 @@ import { getHomePageData } from "@/lib/homepage-loader";
 import { HOME_REVALIDATE, HOME_TAG } from "@/lib/constants";
 import { pageMeta } from "@/seo/meta";
 import HomePageClient from "./page-client";
+import { webPageJsonLd } from "@/lib/jsonld";
+import { getDomainConfig as getDomainConfigServer, getMarketLocale } from "@/lib/domain-config";
 
 // Enable ISR for this page
 export const revalidate = 3600; // Revalidate every hour
@@ -25,7 +27,7 @@ export async function generateMetadata() {
     console.error('Error fetching homepage metadata:', error);
     // Fallback metadata
     return pageMeta({
-      title: 'Dealy TW 台灣每日最新優惠折扣平台',
+      title: 'Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠',
       description: '精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。',
       path: '/',
     });
@@ -39,19 +41,44 @@ export default async function HomePage() {
     // Fetch homepage data on the server
     const homepageData = await getHomePageData(MARKET);
     
+    // Get domain config and locale for WebPage schema
+    const domainConfig = getDomainConfigServer();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+    const marketLocale = await getMarketLocale(MARKET);
+    
+    // Generate WebPage JSON-LD for homepage
+    const webPageSchema = webPageJsonLd({
+      name: homepageData.seo.title,
+      url: siteUrl,
+      description: homepageData.seo.description,
+      locale: marketLocale,
+      siteId: `${siteUrl}#website`,
+    });
+    
     // Pass data to client component for interactivity
-    return <HomePageClient initialData={homepageData} />;
+    return (
+      <>
+        <HomePageClient initialData={homepageData} />
+        {/* WebPage JSON-LD for homepage */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(webPageSchema, null, 0),
+          }}
+        />
+      </>
+    );
   } catch (error) {
     console.error('Error fetching homepage data:', error);
     
     // Fallback data if CMS fails
     const fallbackData = {
       seo: {
-        title: "Dealy TW 台灣每日最新優惠折扣平台",
+        title: "Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠",
         description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。"
       },
       hero: {
-        title: "Dealy TW 台灣每日最新優惠折扣平台",
+        title: "Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠",
         subtitle: "NEVER Pay Full Price",
         description: "🛍 全台最新優惠情報｜每日更新！ ✨",
         bgUrl: "",
@@ -67,7 +94,7 @@ export default async function HomePage() {
         disclaimer: "通過本站連結完成購物訂單，我們可能會因此獲得佣金，而您無需額外付費。"
       },
       couponRail: {
-        heading: "今日最新最受歡迎優惠券/Promo Code/優惠碼",
+        heading: "本日最新最受歡迎折扣碼/優惠券/Promo Code",
         items: []
       }
     };

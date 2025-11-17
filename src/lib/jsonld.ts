@@ -209,7 +209,7 @@ export function webPageJsonLd(opts: { name: string; url: UrlString; description?
   const page: any = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    '@id': url,
+    '@id': `${url}#webpage`,
     name,
     url,
     inLanguage,

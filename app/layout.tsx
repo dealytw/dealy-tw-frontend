@@ -130,8 +130,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={htmlLang} suppressHydrationWarning>
       <head>
-        {/* Google Tag Manager */}
-        <script
+        {/* Google Tag Manager - Lazy loaded for better performance */}
+        <Script
+          id="gtm-script"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -163,7 +165,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
       </head>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning itemScope itemType="https://schema.org/WebPage">
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

@@ -520,11 +520,11 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
 
       {/* Coupon Rail */}
       {initialData.couponRail?.items && initialData.couponRail.items.length > 0 && (
-        <section className="py-12 px-4">
+        <section id="popular-coupons" className="py-12 px-4" aria-labelledby="popular-coupons-heading">
           <div className="container mx-auto">
             {/* CMS: coupon.heading */}
-            <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
-              {initialData.couponRail?.heading || "今日最新最受歡迎優惠券/Promo Code/優惠碼"}
+            <h2 id="popular-coupons-heading" className="text-2xl font-bold text-center mb-12 text-gray-800">
+              {initialData.couponRail?.heading || "本日最新最受歡迎折扣碼/優惠券/Promo Code"}
             </h2>
             
             <div className="flex gap-8">
@@ -537,13 +537,13 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                     return null;
                   }
                   return (
-                    <div key={coupon.id} id={`coupon-${coupon.id}`}>
+                    <article key={coupon.id} id={`coupon-${coupon.id}`}>
                       <DealyCouponCard 
                         coupon={transformedCoupon} 
                         onClick={() => handleCouponClick(coupon)}
                         isScrolledTo={false}
                       />
-                    </div>
+                    </article>
                   );
                 }).filter(Boolean)}
               </div>

@@ -79,16 +79,40 @@ export function pageMeta({
     );
   }
 
+  // Get domain config for site name and locale
+  const config = getDomainConfig();
+  const siteName = config.name || 'Dealy TW 台灣最新優惠平台';
+  
+  // Convert locale for og:locale (e.g., "zh-Hant-TW" -> "zh_TW")
+  let ogLocale = 'zh_TW';
+  if (config.locale === 'zh-Hant-HK') {
+    ogLocale = 'zh_HK';
+  } else if (config.locale === 'zh-Hant-TW') {
+    ogLocale = 'zh_TW';
+  }
+
   return {
     title,
     description,
     alternates: Object.keys(alternates).length > 0 ? alternates : undefined,
-    robots,
+    robots: robots || {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
+      },
+    },
     openGraph: {
       url,
       type: 'website',
       title,
       description,
+      siteName,
+      locale: ogLocale,
       images: ogImageUrl ? [{ url: ogImageUrl }] : undefined,
     },
     twitter: {
