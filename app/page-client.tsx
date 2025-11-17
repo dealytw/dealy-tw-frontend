@@ -396,6 +396,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               fill
               className="object-cover"
               priority
+              fetchPriority="high"
               sizes="100vw"
               quality={90}
             />
