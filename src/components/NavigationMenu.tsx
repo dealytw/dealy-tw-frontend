@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { X } from "lucide-react";
 
 interface NavigationMenuProps {
   open: boolean;
@@ -67,18 +68,22 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
     return pathname.startsWith(href);
   };
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
-        className="w-full sm:w-[400px] md:w-[500px] overflow-y-auto bg-gray-900 md:bg-stone-50"
+  // Shared content for both mobile and desktop
+  const menuContent = (
+    <>
+      {/* Close Button - Top Right (Mobile only) */}
+      <button
+        onClick={() => onOpenChange(false)}
+        className="md:hidden absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
       >
+        <X className="h-6 w-6 text-white" />
+        <span className="sr-only">Close</span>
+      </button>
+
+      <div className="p-6 pt-16 md:pt-6">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold">
-            <Link href="/" onClick={() => onOpenChange(false)} className="md:hidden">
-              <span className="text-pink-500 text-2xl font-bold">dealy</span>
-            </Link>
-            <Link href="/" onClick={() => onOpenChange(false)} className="hidden md:block">
+            <Link href="/" onClick={() => onOpenChange(false)} className="flex items-center">
               <Image 
                 src="/dealytwlogo.svg"
                 alt="dealy logo"
@@ -146,6 +151,26 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
             </div>
           </div>
         )}
+      </div>
+    </>
+  );
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      {/* Mobile: Left side with slight margin, covers almost full screen */}
+      <SheetContent 
+        side="left" 
+        className="md:hidden w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] h-full overflow-y-auto bg-gray-900 p-0 ml-8 [&>button]:hidden"
+      >
+        {menuContent}
+      </SheetContent>
+
+      {/* Desktop: Right side */}
+      <SheetContent 
+        side="right" 
+        className="hidden md:block w-[500px] overflow-y-auto bg-stone-50"
+      >
+        {menuContent}
       </SheetContent>
     </Sheet>
   );
