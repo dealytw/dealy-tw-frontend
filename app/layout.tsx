@@ -11,26 +11,27 @@ import CWVTracker from "@/components/CWVTracker";
 import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
 import { getHomePageData } from "@/lib/homepage-loader";
 
+// Default metadata (will be overridden by page-specific metadata)
+// This is just a fallback for pages that don't define their own metadata
 export const metadata: Metadata = {
-  title: "Dealy - 香港最佳優惠碼平台",
-  description: "發現最新最優惠的折扣碼，為你的購物節省更多。Dealy 為您精選 Trip.com、Booking.com 等知名商店的優惠碼，100% 免費使用。",
-  authors: [{ name: "Dealy" }],
+  title: "Dealy TW 台灣最新優惠平台",
+  description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
+  authors: [{ name: "Dealy TW" }],
   icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: "/favicon.svg",
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
   openGraph: {
-    title: "Dealy - 香港最佳優惠碼平台",
-    description: "發現最新最優惠的折扣碼，為你的購物節省更多。精選知名商店優惠碼，100% 免費使用。",
+    title: "Dealy TW 台灣最新優惠平台",
+    description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
     type: "website",
     images: ["/favicon.svg"],
   },
   twitter: {
     card: "summary_large_image",
+    title: "Dealy TW 台灣最新優惠平台",
+    description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
     images: ["/favicon.svg"],
   },
 };
@@ -49,11 +50,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
   const alternateUrl = `https://${domainConfig.alternateDomain}`;
   
-  // Generate hreflang links for homepage
-  const hreflangLinks = getHreflangLinks('/');
-  
   // Build sameAs array for Organization schema (link to other domain)
   const sameAs = [alternateUrl];
+  
+  // Note: Hreflang and canonical links are handled by Next.js metadata API via pageMeta()
+  // No need to add them manually in <head> to avoid duplicates
   
   // Fetch hero background image URL for homepage preload
   // Note: This will be added to all pages, but only affects homepage LCP
@@ -147,18 +148,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
         <link rel="dns-prefetch" href="//cms.dealy.tw" />
         
-        {/* Hreflang tags for cross-domain SEO */}
-        {hreflangLinks.map((link) => (
-          <link key={link.hreflang} rel="alternate" hrefLang={link.hreflang} href={link.href} />
-        ))}
-        
-        {/* Explicit favicon links for best SEO and browser compatibility */}
-        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" />
-        <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg" />
+        {/* Favicon links - minimal set for best SEO and browser compatibility */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/favicon.svg" />
-        {/* Fallback for older browsers */}
-        <link rel="alternate icon" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.svg" />
         
         {/* Preload hero background image for homepage LCP optimization */}
         {heroBgUrl && (

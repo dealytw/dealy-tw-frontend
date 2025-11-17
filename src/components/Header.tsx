@@ -38,9 +38,16 @@ const Header = () => {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="text-sm">
-              最新快訊訊息
-            </Button>
+            <Link href="/special-offers">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-sm"
+                type="button"
+              >
+                特別優惠專區
+              </Button>
+            </Link>
             <Link href="/submit-coupons">
               <Button variant="ghost" size="sm" className="text-sm">
                 提交優惠券

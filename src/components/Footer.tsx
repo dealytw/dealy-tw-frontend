@@ -44,7 +44,7 @@ const Footer = () => {
               <li><Link href="/about" className="text-sm text-gray-600 hover:text-gray-900">關於我們</Link></li>
               <li><Link href="/submit-coupons" className="text-sm text-gray-600 hover:text-gray-900">聯絡我們</Link></li>
               <li><Link href="/privacy-policy" className="text-sm text-gray-600 hover:text-gray-900">私隱政策</Link></li>
-              <li><Link href="/terms" className="text-sm text-gray-600 hover:text-gray-900">使用條款</Link></li>
+              <li><Link href="/legal-disclaimer" className="text-sm text-gray-600 hover:text-gray-900">法律聲明</Link></li>
             </ul>
           </div>
         </div>

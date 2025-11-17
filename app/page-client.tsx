@@ -404,7 +404,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
         <div className="container mx-auto text-center relative z-10">
           {/* CMS: hero.title */}
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            {initialData.hero?.title || "Dealy.TW 台灣每日最新優惠折扣平台"}
+            {initialData.hero?.title || "Dealy TW 台灣每日最新優惠折扣平台"}
           </h1>
           {/* CMS: hero.subtitle */}
           <div className="text-2xl font-semibold text-gray-700 mb-6">
@@ -510,7 +510,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
             <div className="text-center mt-8">
               <p className="text-sm text-gray-600">
                 {initialData.categoryBlock.disclaimer}
-                <a href="#" className="text-blue-600 hover:underline ml-1">了解更多</a>
+                <Link href="/legal-disclaimer" className="text-blue-600 hover:underline ml-1">了解更多</Link>
               </p>
             </div>
           </div>

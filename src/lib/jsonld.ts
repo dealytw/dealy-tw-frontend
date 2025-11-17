@@ -26,6 +26,7 @@ export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; sear
   }
   
   const obj: any = {
+    '@context': 'https://schema.org',
     '@type': 'WebSite',
     '@id': `${siteUrl}#website`,
     name: siteName,
@@ -45,6 +46,7 @@ export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; sear
 export function organizationJsonLd(opts: { name: string; url: UrlString; logo?: UrlString; sameAs?: UrlString[]; id?: UrlString }) {
   const { name, url, logo, sameAs, id } = opts;
   const org: any = {
+    '@context': 'https://schema.org',
     '@type': 'Organization',
     name,
     url,
@@ -104,6 +106,7 @@ export function offersItemListJsonLd(coupons: Array<{
     },
   }));
   const list: any = {
+    '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: '優惠一覽',
     itemListOrder: 'ItemListOrderDescending',
@@ -119,6 +122,7 @@ export function offersItemListJsonLd(coupons: Array<{
 export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>, faqId?: UrlString) {
   if (!faqs?.length) return undefined;
   const faq: any = {
+    '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: faqs.map((f) => ({
       '@type': 'Question',
@@ -203,6 +207,7 @@ export function webPageJsonLd(opts: { name: string; url: UrlString; description?
   }
   
   const page: any = {
+    '@context': 'https://schema.org',
     '@type': 'WebPage',
     '@id': url,
     name,

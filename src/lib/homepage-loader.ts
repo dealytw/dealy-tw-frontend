@@ -88,7 +88,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     console.log(`No homepage found for market: ${marketKey}, using fallback data`);
     // Return fallback data if no homepage is found
     return {
-      seo: { title: "Dealy.TW 台灣每日最新優惠折扣平台", description: "全台最新優惠情報｜每日更新！ ✨" },
+      seo: { title: "Dealy TW 台灣每日最新優惠折扣平台", description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。" },
       hero: { title: "Dealy.TW 台灣每日最新優惠折扣平台", subtitle: "NEVER Pay Full Price", description: "🛍 全台最新優惠情報｜每日更新！ ✨", bgUrl: "", searchPlaceholder: "搜尋最抵Deal" },
       popularMerchants: { heading: "台灣最新折扣優惠", items: [] },
       categoryBlock: { heading: "2025優惠主題一覽", categories: [], disclaimer: "通過本站連結完成購物訂單，我們可能會因此獲得佣金，而您無需額外付費。" },
@@ -228,14 +228,34 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     }
   }
 
+  // Normalize title: Replace "Dealy.HK" with "Dealy TW" for consistency
+  const rawTitle = a.seo_title ?? a.title ?? hero.title ?? "Dealy.TW 台灣每日最新優惠折扣平台";
+  const normalizedTitle = rawTitle.replace(/Dealy\.HK/gi, 'Dealy TW').replace(/Dealy\.TW/gi, 'Dealy TW');
+  
+  // Enhance description with SEO keywords if not already present
+  const rawDescription = a.seo_description ?? hero.description ?? "全台最新優惠情報｜每日更新！ ✨";
+  let enhancedDescription = rawDescription;
+  
+  // Only enhance if description is the default/fallback (short description)
+  // If CMS has a custom description, use it as-is
+  const isDefaultDescription = !a.seo_description && (rawDescription === hero.description || rawDescription === "全台最新優惠情報｜每日更新！ ✨");
+  
+  if (isDefaultDescription) {
+    // Use enhanced SEO-optimized description for default case
+    enhancedDescription = "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。";
+  } else if (a.seo_description) {
+    // CMS has custom description - use as-is (already SEO optimized by content team)
+    enhancedDescription = a.seo_description;
+  }
+
   return {
     seo: { 
-      title: a.seo_title ?? a.title ?? hero.title ?? "Dealy.TW 台灣每日最新優惠折扣平台", 
-      description: a.seo_description ?? hero.description ?? "全台最新優惠情報｜每日更新！ ✨" 
+      title: normalizedTitle, 
+      description: enhancedDescription
     },
     hero: {
       bgUrl: hero.bgUrl,
-      title: hero.title ?? a.title ?? "Dealy.TW 台灣每日最新優惠折扣平台",
+      title: hero.title ? hero.title.replace(/Dealy\.HK/gi, 'Dealy TW').replace(/Dealy\.TW/gi, 'Dealy TW') : (a.title ? a.title.replace(/Dealy\.HK/gi, 'Dealy TW').replace(/Dealy\.TW/gi, 'Dealy TW') : "Dealy TW 台灣每日最新優惠折扣平台"),
       subtitle: hero.subtitle ?? "NEVER Pay Full Price",
       description: hero.description ?? "🛍 全台最新優惠情報｜每日更新！ ✨",
       searchPlaceholder: hero.searchPlaceholder ?? "搜尋最抵Deal"

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +36,7 @@ const SpecialOffersIndexClient = ({ specialOffers }: SpecialOffersIndexClientPro
         <div className="container mx-auto">
           <p className="text-xs text-muted-foreground text-center">
             透過本站鏈接完成購物可享，我們可能會因此獲得佣金，而您無需額外付費。
-            <a href="#" className="text-primary hover:underline ml-1">了解更多</a>
+            <Link href="/legal-disclaimer" className="text-primary hover:underline ml-1">了解更多</Link>
           </p>
         </div>
       </div>

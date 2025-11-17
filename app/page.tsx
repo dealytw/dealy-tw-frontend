@@ -25,8 +25,8 @@ export async function generateMetadata() {
     console.error('Error fetching homepage metadata:', error);
     // Fallback metadata
     return pageMeta({
-      title: 'Dealy.TW 台灣每日最新優惠折扣平台',
-      description: '全台最新優惠情報｜每日更新！ ✨',
+      title: 'Dealy TW 台灣每日最新優惠折扣平台',
+      description: '精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。',
       path: '/',
     });
   }
@@ -47,11 +47,11 @@ export default async function HomePage() {
     // Fallback data if CMS fails
     const fallbackData = {
       seo: {
-        title: "Dealy.TW 台灣每日最新優惠折扣平台",
-        description: "全台最新優惠情報｜每日更新！ ✨"
+        title: "Dealy TW 台灣每日最新優惠折扣平台",
+        description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。"
       },
       hero: {
-        title: "Dealy.TW 台灣每日最新優惠折扣平台",
+        title: "Dealy TW 台灣每日最新優惠折扣平台",
         subtitle: "NEVER Pay Full Price",
         description: "🛍 全台最新優惠情報｜每日更新！ ✨",
         bgUrl: "",
