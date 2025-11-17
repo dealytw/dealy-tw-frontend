@@ -104,11 +104,14 @@ function compareCouponValues(
 
 /**
  * Get first coupon highlights (Updated logic)
- * Returns: "最省 4折 & 新客優惠 & 免運費"
+ * Returns: Maximum 3 sections: "最省 4折 & 新客優惠 & 免運費"
  * Logic:
- * 1. First: first coupon value → "最省 {value}"
- * 2. Second: highest coupon value (best deal) other than the first coupon and no repeat
- * 3. Third: check coupon title if any contains "免運費" or "會員優惠"
+ * 1. Must have: 最省 {第一個優惠券值}
+ * 2. Then add up to 2 more from (following priority order):
+ *    - 新客優惠 (priority 2)
+ *    - 免運費 (priority 3)
+ *    - 最高優惠券值 (priority 4)
+ *    - 會員優惠 (priority 5)
  */
 export function getFirstCouponHighlights(
   coupons: CouponForSEO[],
@@ -126,7 +129,7 @@ export function getFirstCouponHighlights(
 
   const parts: string[] = [];
 
-  // Step 1: Get first coupon value (priority 1)
+  // Step 1: Get first coupon value (MUST HAVE)
   const firstCoupon = validCoupons[0];
   let firstValue: { type: string; value: number; label: string } | null = null;
   let firstValueLabel = '';
@@ -138,34 +141,22 @@ export function getFirstCouponHighlights(
       firstValueLabel = firstValue.label;
       parts.push(`最省 ${firstValueLabel}`);
       console.log(`[SEO] First value: ${firstValueLabel}`);
+    } else {
+      // If no value found, return empty (must have first value)
+      return '';
     }
+  } else {
+    return '';
   }
 
-  // Step 2: Find highest coupon value (best deal) other than the first coupon and no repeat
-  if (validCoupons.length > 1 && firstValue) {
-    let highestValue: { type: string; value: number; label: string } | null = null;
-    
-    for (let i = 1; i < validCoupons.length; i++) {
-      const coupon = validCoupons[i];
-      const extracted = extractCouponValue(coupon.value);
-      
-      if (extracted && extracted.label !== firstValueLabel) {
-        // Compare with current highest
-        if (!highestValue || compareCouponValues(extracted, highestValue) > 0) {
-          highestValue = extracted;
-        }
-      }
-    }
-    
-    if (highestValue) {
-      parts.push(highestValue.label);
-      console.log(`[SEO] Highest value (excluding first): ${highestValue.label}`);
-    }
-  }
+  // Step 2: Collect all available options with their priorities
+  const options: Array<{ text: string; priority: number }> = [];
 
-  // Step 3: Check coupon titles for "新客優惠", "免運費", or "會員優惠"
+  // Check for 新客優惠 (priority 2)
   let hasNewUserDiscount = false;
+  // Check for 免運費 (priority 3)
   let hasFreeShipping = false;
+  // Check for 會員優惠 (priority 5)
   let hasMemberDiscount = false;
   
   for (const coupon of validCoupons) {
@@ -182,24 +173,52 @@ export function getFirstCouponHighlights(
       hasMemberDiscount = true;
       console.log(`[SEO] Found 會員優惠 in: ${coupon.coupon_title}`);
     }
-    if (hasNewUserDiscount && hasFreeShipping && hasMemberDiscount) break;
   }
 
-  // Add 新客優惠 if found (can appear alongside highest value)
+  // Add options with priorities
   if (hasNewUserDiscount) {
-    parts.push('新客優惠');
+    options.push({ text: '新客優惠', priority: 2 });
   }
-  
-  // Add 免運費 or 會員優惠 if found
   if (hasFreeShipping) {
-    parts.push('免運費');
+    options.push({ text: '免運費', priority: 3 });
   }
   if (hasMemberDiscount) {
-    parts.push('會員優惠');
+    options.push({ text: '會員優惠', priority: 5 });
+  }
+
+  // Find highest coupon value (priority 4) other than the first coupon and no repeat
+  if (validCoupons.length > 1) {
+    let highestValue: { type: string; value: number; label: string } | null = null;
+    
+    for (let i = 1; i < validCoupons.length; i++) {
+      const coupon = validCoupons[i];
+      const extracted = extractCouponValue(coupon.value);
+      
+      if (extracted && extracted.label !== firstValueLabel) {
+        // Compare with current highest
+        if (!highestValue || compareCouponValues(extracted, highestValue) > 0) {
+          highestValue = extracted;
+        }
+      }
+    }
+    
+    if (highestValue) {
+      options.push({ text: highestValue.label, priority: 4 });
+      console.log(`[SEO] Highest value (excluding first): ${highestValue.label}`);
+    }
+  }
+
+  // Step 3: Sort by priority (lower number = higher priority) and take first 2
+  options.sort((a, b) => a.priority - b.priority);
+  const selectedOptions = options.slice(0, 2); // Take maximum 2 more (total 3 with first value)
+
+  // Add selected options to parts
+  for (const option of selectedOptions) {
+    parts.push(option.text);
   }
 
   const result = parts.join(' & ');
-  console.log(`[SEO] Final highlights: ${result}`);
+  console.log(`[SEO] Final highlights (max 3 sections): ${result}`);
   return result;
 }
 
@@ -223,8 +242,8 @@ export function getFirstValidCoupon(
 
 /**
  * Generate meta title (WordPress format)
- * Format: {Merchant}優惠碼及折扣｜最省 4折 & 新客優惠 & 免運費 | 10月 2025
- * If highlights empty: {Merchant}優惠碼及折扣｜{Month}月 {Year}最新優惠
+ * Format: {Merchant}折扣碼及優惠｜最省 4折 & 新客優惠 & 免運費 | 10月 2025
+ * If highlights empty: {Merchant}折扣碼及優惠｜{Month}月 {Year}最新優惠
  * SEO Limit: 60 characters (for better Google display)
  */
 export function generateMerchantMetaTitle(
@@ -236,11 +255,11 @@ export function generateMerchantMetaTitle(
   const year = twDate.getFullYear();
 
   if (highlights) {
-    const title = `${merchantName}優惠碼及折扣｜${highlights} | ${month}月 ${year}`;
+    const title = `${merchantName}折扣碼及優惠｜${highlights} | ${month}月 ${year}`;
     // Truncate to ~60 chars for SEO
     return title.length > 60 ? title.substring(0, 57) + '...' : title;
   } else {
-    return `${merchantName}優惠碼及折扣｜${month}月 ${year}最新優惠`;
+    return `${merchantName}折扣碼及優惠｜${month}月 ${year}最新優惠`;
   }
 }
 
