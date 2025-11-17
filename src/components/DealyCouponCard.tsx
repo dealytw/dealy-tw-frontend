@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -237,6 +238,16 @@ const DealyCouponCard = ({
               {discountType}
             </div>
             <div className="text-xs text-gray-500 mt-2">折扣碼/ 優惠</div>
+            {merchantSlug && (
+              <Link href={`/shop/${merchantSlug}`} className="mt-3 block">
+                <Button 
+                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xs font-medium px-3 py-1.5 rounded-full border-0"
+                  size="sm"
+                >
+                  查看更多 {coupon.merchant.name} 優惠
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
         
@@ -361,6 +372,16 @@ const DealyCouponCard = ({
               <div className="text-xs text-gray-500 px-1 py-0.5 bg-white rounded-full border text-xs">
                 {discountType}
               </div>
+              {merchantSlug && (
+                <Link href={`/shop/${merchantSlug}`} className="mt-2 block">
+                  <Button 
+                    className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xs font-medium px-2 py-1 rounded-full border-0"
+                    size="sm"
+                  >
+                    查看更多 {coupon.merchant.name} 優惠
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
 

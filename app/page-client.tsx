@@ -542,6 +542,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                         coupon={transformedCoupon} 
                         onClick={() => handleCouponClick(coupon)}
                         isScrolledTo={false}
+                        merchantSlug={coupon.merchantSlug}
                       />
                     </article>
                   );
