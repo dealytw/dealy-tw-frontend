@@ -93,14 +93,14 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
   };
 
   return (
-    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[220px] flex flex-col">
+    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[180px] flex flex-col">
       {/* Top Section - White Background */}
-      <div className="p-4 pb-3 flex-1">
+      <div className="p-3 pb-2 flex-1">
         {/* 適用全站商品 */}
-        <div className="text-xs text-gray-500 mb-2">適用全站商品</div>
+        <div className="text-xs text-gray-500 mb-1">適用全站商品</div>
         
         {/* Coupon Title */}
-        <h3 className="text-sm font-medium text-gray-900 mb-2 leading-tight pr-20">
+        <h3 className="text-sm font-medium text-gray-900 mb-1.5 leading-tight pr-20">
           {formattedTitle}
         </h3>
         
@@ -126,25 +126,25 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
 
       {/* View More Button - Above pink footer, pale grey background, with shadow */}
       {coupon.merchant.slug && (
-        <div className="px-4 pb-2">
+        <div className="px-3 pb-1.5">
           <Link href={`/shop/${coupon.merchant.slug}`} className="inline-block">
             <Button 
               className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow"
               style={{
                 fontSize: '0.7rem',
-                padding: '0.25rem 0.75rem',
+                padding: '0.2rem 0.75rem',
                 lineHeight: '1.2',
                 whiteSpace: 'nowrap',
               }}
             >
-              查看更多 {coupon.merchant.name} 優惠
+              查看更多{coupon.merchant.name}折扣
             </Button>
           </Link>
         </div>
       )}
 
       {/* Bottom Section - Pink to Red Gradient */}
-      <div className="bg-gradient-to-r from-pink-500 to-red-500 px-4 py-3 flex items-center justify-between mt-auto">
+      <div className="bg-gradient-to-r from-pink-500 to-red-500 px-3 py-2 flex items-center justify-between mt-auto">
         <div className="text-white">
           <div className="text-lg font-bold">{discountValue}</div>
         </div>
