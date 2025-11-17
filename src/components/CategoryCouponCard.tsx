@@ -104,23 +104,6 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
           {formattedTitle}
         </h3>
         
-        {/* View More Button - Small, under title, yellow background, brown text */}
-        {coupon.merchant.slug && (
-          <Link href={`/shop/${coupon.merchant.slug}`} className="mb-3 inline-block">
-            <Button 
-              className="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border border-yellow-200 rounded-full"
-              style={{
-                fontSize: '0.7rem',
-                padding: '0.25rem 0.75rem',
-                lineHeight: '1.2',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              查看更多 {coupon.merchant.name} 優惠
-            </Button>
-          </Link>
-        )}
-        
         {/* Thumbnail Image */}
         <div className="absolute top-3 right-3 w-16 h-16 rounded overflow-hidden bg-gray-100">
           {coupon.merchant.logo ? (
@@ -140,6 +123,25 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
           )}
         </div>
       </div>
+
+      {/* View More Button - Above pink footer, pale grey background, with shadow */}
+      {coupon.merchant.slug && (
+        <div className="px-4 pb-2">
+          <Link href={`/shop/${coupon.merchant.slug}`} className="inline-block">
+            <Button 
+              className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow"
+              style={{
+                fontSize: '0.7rem',
+                padding: '0.25rem 0.75rem',
+                lineHeight: '1.2',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              查看更多 {coupon.merchant.name} 優惠
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Bottom Section - Pink to Red Gradient */}
       <div className="bg-gradient-to-r from-pink-500 to-red-500 px-4 py-3 flex items-center justify-between mt-auto">
