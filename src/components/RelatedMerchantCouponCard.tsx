@@ -170,11 +170,16 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
           )}
         </div>
 
-        {/* View More Button - Under logo, yellow background, brown text */}
+        {/* Coupon Title */}
+        <h3 className="text-sm font-medium text-gray-900 mb-2 text-center">
+          {couponTitle}
+        </h3>
+
+        {/* View More Button - Below title, pale grey background, with shadow */}
         {relatedMerchant.slug && (
           <Link href={`/shop/${relatedMerchant.slug}`} className="mb-3 flex justify-center">
             <Button 
-              className="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border border-yellow-200 rounded-full"
+              className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow"
               style={{
                 fontSize: '0.7rem',
                 padding: '0.25rem 0.75rem',
@@ -186,11 +191,6 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
             </Button>
           </Link>
         )}
-
-        {/* Coupon Title */}
-        <h3 className="text-sm font-medium text-gray-900 mb-2 text-center">
-          {couponTitle}
-        </h3>
       </div>
 
       {/* Pink Footer */}
