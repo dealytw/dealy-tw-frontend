@@ -357,7 +357,7 @@ const DealyCouponCard = ({
       <div className="md:hidden">
         <div className="flex items-start gap-3 p-2 px-3">
           {/* Left: Logo and Discount - Wider */}
-          <div className="flex-shrink-0 w-24">
+          <div className="flex-shrink-0 w-24 flex flex-col items-center">
             <div className="w-12 h-10 mb-2 flex items-center justify-center">
               {coupon.merchant.logo ? (
                 <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={48} height={40} className="max-w-full max-h-full object-contain" sizes="48px" loading="lazy" />
@@ -367,16 +367,33 @@ const DealyCouponCard = ({
                 </div>
               )}
             </div>
-            <div className="text-center">
-              <div className="font-bold text-pink-600 leading-tight whitespace-nowrap" style={{ fontSize: 'clamp(0.75rem, 3vw, 1.125rem)' }}>
+            <div className="text-center w-full">
+              <div 
+                className="font-bold text-pink-600 leading-tight whitespace-nowrap w-full" 
+                style={{ 
+                  fontSize: (() => {
+                    // Remove currency symbols to calculate text length (but keep $)
+                    let textForLength = coupon.discount.replace('HK', '');
+                    textForLength = textForLength.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
+                    textForLength = textForLength.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
+                    const length = textForLength.trim().length;
+                    // Dynamic font size: shorter text = larger, longer text = smaller
+                    // Base size 1.5rem (24px), scales down based on length
+                    if (length <= 5) return '1.5rem';      // Very short: $300, $1
+                    if (length <= 8) return '1.25rem';     // Short: $1,200
+                    if (length <= 12) return '1.125rem';   // Medium: $10,000
+                    if (length <= 16) return '1rem';       // Long: $100,000
+                    return '0.875rem';                     // Very long: fallback
+                  })()
+                }}
+              >
                 {(() => {
-                  // Remove currency symbols for mobile view only
+                  // Remove currency symbols for mobile view only (but keep $)
                   let mobileDiscount = coupon.discount.replace('HK', '');
                   // Remove common currency prefixes/suffixes (NT, NTD, USD, etc.)
                   mobileDiscount = mobileDiscount.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
                   mobileDiscount = mobileDiscount.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
-                  // Remove $ symbol (can appear before or after numbers)
-                  mobileDiscount = mobileDiscount.replace(/\$/g, '');
+                  // Keep $ symbol - don't remove it
                   return mobileDiscount.trim();
                 })()}
               </div>
