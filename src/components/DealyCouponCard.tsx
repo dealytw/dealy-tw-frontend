@@ -30,13 +30,15 @@ interface DealyCouponCardProps {
   onClick: () => void;
   isScrolledTo?: boolean; // New prop to indicate if this coupon is scrolled to
   merchantSlug?: string; // Merchant slug for building merchant page URL
+  showViewMoreButton?: boolean; // Show "查看更多" button (only on homepage)
 }
 
 const DealyCouponCard = ({
   coupon,
   onClick,
   isScrolledTo = false,
-  merchantSlug
+  merchantSlug,
+  showViewMoreButton = false
 }: DealyCouponCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -218,7 +220,7 @@ const DealyCouponCard = ({
   };
 
   return (
-    <article className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground">
+    <article className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground md:mx-0 -mx-2">
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-col md:flex-row">
         {/* Left: Logo and Badge */}
@@ -238,7 +240,7 @@ const DealyCouponCard = ({
               {discountType}
             </div>
             <div className="text-xs text-gray-500 mt-2">折扣碼/ 優惠</div>
-            {merchantSlug && (
+            {showViewMoreButton && merchantSlug && (
               <Link href={`/shop/${merchantSlug}`} className="mt-3 block">
                 <Button 
                   className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xs font-medium px-3 py-1.5 rounded-full border-0"
@@ -353,7 +355,7 @@ const DealyCouponCard = ({
 
       {/* Mobile Layout */}
       <div className="md:hidden">
-        <div className="flex items-start gap-2 p-4">
+        <div className="flex items-start gap-2 p-2 px-3">
           {/* Left: Logo and Discount - Slimmer */}
           <div className="flex-shrink-0 w-12">
             <div className="w-10 h-8 mb-1 flex items-center justify-center">
@@ -372,7 +374,7 @@ const DealyCouponCard = ({
               <div className="text-xs text-gray-500 px-1 py-0.5 bg-white rounded-full border text-xs">
                 {discountType}
               </div>
-              {merchantSlug && (
+              {showViewMoreButton && merchantSlug && (
                 <Link href={`/shop/${merchantSlug}`} className="mt-2 block">
                   <Button 
                     className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xs font-medium px-2 py-1 rounded-full border-0"

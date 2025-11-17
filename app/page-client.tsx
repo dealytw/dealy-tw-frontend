@@ -543,6 +543,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                         onClick={() => handleCouponClick(coupon)}
                         isScrolledTo={false}
                         merchantSlug={coupon.merchantSlug}
+                        showViewMoreButton={true}
                       />
                     </article>
                   );
