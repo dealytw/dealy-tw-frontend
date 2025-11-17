@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CategoryCouponCardProps {
   coupon: {
@@ -99,9 +100,34 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
         <div className="text-xs text-gray-500 mb-2">適用全站商品</div>
         
         {/* Coupon Title */}
-        <h3 className="text-sm font-medium text-gray-900 mb-3 leading-tight pr-20">
+        <h3 className="text-sm font-medium text-gray-900 mb-2 leading-tight pr-20">
           {formattedTitle}
         </h3>
+        
+        {/* View More Button - Small, under title */}
+        {coupon.merchant.slug && (
+          <Link href={`/shop/${coupon.merchant.slug}`} className="mb-3 block">
+            <Button 
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
+              style={{
+                fontSize: (() => {
+                  const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
+                  const length = buttonText.length;
+                  if (length <= 12) return '0.65rem';
+                  if (length <= 16) return '0.6rem';
+                  if (length <= 20) return '0.55rem';
+                  return '0.5rem';
+                })(),
+                padding: '0.25rem 0.5rem',
+                lineHeight: '1.2',
+              }}
+            >
+              <span className="whitespace-nowrap block truncate">
+                查看更多 {coupon.merchant.name} 優惠
+              </span>
+            </Button>
+          </Link>
+        )}
         
         {/* Thumbnail Image */}
         <div className="absolute top-3 right-3 w-16 h-16 rounded overflow-hidden bg-gray-100">

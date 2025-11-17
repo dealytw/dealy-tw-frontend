@@ -236,33 +236,48 @@ const DealyCouponCard = ({
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-col md:flex-row">
         {/* Left: Logo and Badge */}
-        <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
-          <div className="w-20 h-20 mb-4 flex items-center justify-center">
-            {coupon.merchant.logo ? (
-              <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={80} height={80} className="max-w-full max-h-full object-contain" sizes="80px" loading="lazy" />
-            ) : (
-              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
-              </div>
-            )}
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-pink-600 mb-1">{coupon.discount}</div>
-            <div className="text-sm text-gray-600 px-3 py-1 bg-white rounded-full">
-              {discountType}
+        <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-between">
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 mb-4 flex items-center justify-center">
+              {coupon.merchant.logo ? (
+                <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={80} height={80} className="max-w-full max-h-full object-contain" sizes="80px" loading="lazy" />
+              ) : (
+                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
+                </div>
+              )}
             </div>
-            <div className="text-xs text-gray-500 mt-2">折扣碼/ 優惠</div>
-            {showViewMoreButton && merchantSlug && (
-              <Link href={`/shop/${merchantSlug}`} className="mt-3 block">
-                <Button 
-                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xs font-medium px-3 py-1.5 rounded-full border-0"
-                  size="sm"
-                >
-                  查看更多 {coupon.merchant.name} 優惠
-                </Button>
-              </Link>
-            )}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-pink-600 mb-1">{coupon.discount}</div>
+              <div className="text-sm text-gray-600 px-3 py-1 bg-white rounded-full">
+                {discountType}
+              </div>
+              <div className="text-xs text-gray-500 mt-2">折扣碼/ 優惠</div>
+            </div>
           </div>
+          {showViewMoreButton && merchantSlug && (
+            <Link href={`/shop/${merchantSlug}`} className="mt-4 w-full">
+              <Button 
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
+                style={{
+                  fontSize: (() => {
+                    const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
+                    const length = buttonText.length;
+                    if (length <= 12) return '0.7rem';
+                    if (length <= 16) return '0.65rem';
+                    if (length <= 20) return '0.6rem';
+                    return '0.55rem';
+                  })(),
+                  padding: '0.375rem 0.5rem',
+                  lineHeight: '1.2',
+                }}
+              >
+                <span className="whitespace-nowrap block truncate">
+                  查看更多 {coupon.merchant.name} 優惠
+                </span>
+              </Button>
+            </Link>
+          )}
         </div>
         
         {/* Right: Content */}
@@ -369,60 +384,75 @@ const DealyCouponCard = ({
       <div className="md:hidden">
         <div className="flex items-start gap-3 p-2 px-3">
           {/* Left: Logo and Discount - Wider */}
-          <div className="flex-shrink-0 w-24 flex flex-col items-center">
-            <div className="w-12 h-10 mb-2 flex items-center justify-center">
-              {coupon.merchant.logo ? (
-                <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={48} height={40} className="max-w-full max-h-full object-contain" sizes="48px" loading="lazy" />
-              ) : (
-                <div className="w-10 h-8 bg-gray-200 rounded flex items-center justify-center">
-                  <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
+          <div className="flex-shrink-0 w-24 flex flex-col items-center justify-between">
+            <div className="flex flex-col items-center w-full">
+              <div className="w-12 h-10 mb-2 flex items-center justify-center">
+                {coupon.merchant.logo ? (
+                  <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={48} height={40} className="max-w-full max-h-full object-contain" sizes="48px" loading="lazy" />
+                ) : (
+                  <div className="w-10 h-8 bg-gray-200 rounded flex items-center justify-center">
+                    <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
+                  </div>
+                )}
+              </div>
+              <div className="text-center w-full">
+                <div 
+                  className="font-bold text-pink-600 leading-tight whitespace-nowrap w-full" 
+                  style={{ 
+                    fontSize: (() => {
+                      // Remove currency symbols to calculate text length (but keep $)
+                      let textForLength = coupon.discount.replace('HK', '');
+                      textForLength = textForLength.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
+                      textForLength = textForLength.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
+                    const length = textForLength.trim().length;
+                    // Dynamic font size: shorter text = larger, longer text = smaller
+                    // Base size 1.75rem (28px), scales down based on length
+                    if (length <= 5) return '1.75rem';     // Very short: $300, $1
+                    if (length <= 8) return '1.5rem';      // Short: $1,200
+                    if (length <= 12) return '1.25rem';    // Medium: $10,000
+                    if (length <= 16) return '1.125rem';   // Long: $100,000
+                    return '1rem';                         // Very long: fallback
+                    })()
+                  }}
+                >
+                  {(() => {
+                    // Remove currency symbols for mobile view only (but keep $)
+                    let mobileDiscount = coupon.discount.replace('HK', '');
+                    // Remove common currency prefixes/suffixes (NT, NTD, USD, etc.)
+                    mobileDiscount = mobileDiscount.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
+                    mobileDiscount = mobileDiscount.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
+                    // Keep $ symbol - don't remove it
+                    return mobileDiscount.trim();
+                  })()}
                 </div>
-              )}
+                <div className="text-xs text-gray-500 px-1 py-0.5 bg-white rounded-full border mt-1 whitespace-nowrap">
+                  {discountType}
+                </div>
+              </div>
             </div>
-            <div className="text-center w-full">
-              <div 
-                className="font-bold text-pink-600 leading-tight whitespace-nowrap w-full" 
-                style={{ 
-                  fontSize: (() => {
-                    // Remove currency symbols to calculate text length (but keep $)
-                    let textForLength = coupon.discount.replace('HK', '');
-                    textForLength = textForLength.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
-                    textForLength = textForLength.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
-                  const length = textForLength.trim().length;
-                  // Dynamic font size: shorter text = larger, longer text = smaller
-                  // Base size 1.75rem (28px), scales down based on length
-                  if (length <= 5) return '1.75rem';     // Very short: $300, $1
-                  if (length <= 8) return '1.5rem';      // Short: $1,200
-                  if (length <= 12) return '1.25rem';    // Medium: $10,000
-                  if (length <= 16) return '1.125rem';   // Long: $100,000
-                  return '1rem';                         // Very long: fallback
-                  })()
-                }}
-              >
-                {(() => {
-                  // Remove currency symbols for mobile view only (but keep $)
-                  let mobileDiscount = coupon.discount.replace('HK', '');
-                  // Remove common currency prefixes/suffixes (NT, NTD, USD, etc.)
-                  mobileDiscount = mobileDiscount.replace(/^(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)\s*/i, '');
-                  mobileDiscount = mobileDiscount.replace(/\s*(NT|NTD|USD|HKD|TWD|CNY|JPY|EUR|GBP|AUD|CAD|SGD|MYR|THB|PHP|IDR|VND|KRW|INR)$/i, '');
-                  // Keep $ symbol - don't remove it
-                  return mobileDiscount.trim();
-                })()}
-              </div>
-              <div className="text-xs text-gray-500 px-1 py-0.5 bg-white rounded-full border mt-1 whitespace-nowrap">
-                {discountType}
-              </div>
-              {showViewMoreButton && merchantSlug && (
-                <Link href={`/shop/${merchantSlug}`} className="mt-2 block">
-                  <Button 
-                    className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xs font-medium px-2 py-1 rounded-full border-0"
-                    size="sm"
-                  >
+            {showViewMoreButton && merchantSlug && (
+              <Link href={`/shop/${merchantSlug}`} className="mt-2 w-full">
+                <Button 
+                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
+                  style={{
+                    fontSize: (() => {
+                      const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
+                      const length = buttonText.length;
+                      if (length <= 12) return '0.65rem';
+                      if (length <= 16) return '0.6rem';
+                      if (length <= 20) return '0.55rem';
+                      return '0.5rem';
+                    })(),
+                    padding: '0.25rem 0.375rem',
+                    lineHeight: '1.2',
+                  }}
+                >
+                  <span className="whitespace-nowrap block truncate">
                     查看更多 {coupon.merchant.name} 優惠
-                  </Button>
-                </Link>
-              )}
-            </div>
+                  </span>
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Right: Content */}
