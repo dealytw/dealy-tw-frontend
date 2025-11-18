@@ -20,6 +20,7 @@ import { TransformedShop } from "@/types/cms";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CouponCard from "@/components/CouponCard";
 import RelatedMerchantCouponCard from "@/components/RelatedMerchantCouponCard";
+import MerchantRating from "@/components/MerchantRating";
 import { useToast } from "@/hooks/use-toast";
 
 // Get Taiwan time (UTC+8)
@@ -769,6 +770,11 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   </div>
                 </section>
               )}
+
+              {/* Merchant Rating Section */}
+              <div className="mb-10 py-4 border-t border-b border-gray-200">
+                <MerchantRating merchantName={merchant.name} />
+              </div>
 
               {/* Expired Coupons Section */}
               {expiredCoupons.length > 0 && (

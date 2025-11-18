@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ShoppingBag, Copy, Check } from "lucide-react";
+import { X, ShoppingBag, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
@@ -30,6 +30,7 @@ interface CouponModalProps {
 
 const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
   const [copied, setCopied] = useState(false);
+  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const { toast } = useToast();
 
   if (!coupon) return null;
@@ -87,6 +88,16 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
       default:
         return "獲取優惠碼"; // Default fallback
     }
+  };
+
+  const handleVote = (vote: 'up' | 'down') => {
+    if (userVote) return; // Already voted
+    
+    setUserVote(vote);
+    toast({
+      title: "感謝評分",
+      description: vote === 'up' ? "感謝您的正面評價！" : "感謝您的反饋！",
+    });
   };
 
 
@@ -197,6 +208,43 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
               </div>
             </div>
           )}
+
+          {/* Feedback Section */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 border-t border-gray-200">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              這個優惠有用嗎?
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleVote('up')}
+                disabled={userVote !== null}
+                className={`p-2 rounded-full transition-all ${
+                  userVote === 'up'
+                    ? 'bg-green-100 text-green-600'
+                    : userVote === null
+                    ? 'bg-pink-50 text-pink-600 hover:bg-pink-100 hover:scale-110 active:scale-95'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                aria-label="有用"
+              >
+                <ThumbsUp className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => handleVote('down')}
+                disabled={userVote !== null}
+                className={`p-2 rounded-full transition-all ${
+                  userVote === 'down'
+                    ? 'bg-red-100 text-red-600'
+                    : userVote === null
+                    ? 'bg-pink-50 text-pink-600 hover:bg-pink-100 hover:scale-110 active:scale-95'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                aria-label="沒用"
+              >
+                <ThumbsDown className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
 
           {/* Continue Browsing Button */}
           <Button 
