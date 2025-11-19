@@ -261,7 +261,7 @@ const DealyCouponCard = ({
                 className="bg-white hover:bg-gray-50 text-gray-800 rounded-full border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 style={{
                   fontSize: (() => {
-                    const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
+                    const buttonText = `查看更多${coupon.merchant.name}折扣`;
                     const length = buttonText.length;
                     if (length <= 12) return '0.7rem';
                     if (length <= 16) return '0.65rem';
@@ -273,7 +273,7 @@ const DealyCouponCard = ({
                 }}
               >
                 <span className="whitespace-nowrap">
-                  查看更多 {coupon.merchant.name} 優惠
+                  查看更多{coupon.merchant.name}折扣
                 </span>
               </Button>
             </Link>
@@ -436,7 +436,7 @@ const DealyCouponCard = ({
                   className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"
                   style={{
                     fontSize: (() => {
-                      const buttonText = `查看更多 ${coupon.merchant.name} 優惠`;
+                      const buttonText = `查看更多${coupon.merchant.name}折扣`;
                       const length = buttonText.length;
                       if (length <= 12) return '0.65rem';
                       if (length <= 16) return '0.6rem';
@@ -448,7 +448,7 @@ const DealyCouponCard = ({
                   }}
                 >
                   <span className="whitespace-nowrap block truncate">
-                    查看更多 {coupon.merchant.name} 優惠
+                    查看更多{coupon.merchant.name}折扣
                   </span>
                 </Button>
               </Link>
