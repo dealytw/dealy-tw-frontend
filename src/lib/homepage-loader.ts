@@ -56,6 +56,7 @@ export type HomePageData = {
       id: string;
       merchantId: string;
       merchantSlug?: string;
+      merchantName?: string;
       logo: string;
       discount: string;
       type: string;
@@ -178,6 +179,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
             id: `coupon-${topCoupon.id}`,
             merchantId: merchant.id.toString(),
             merchantSlug: merchantSlug,
+            merchantName: topCoupon.merchant.name || merchant.merchant_name || '',
             logo: topCoupon.merchant.logo ? rewriteImageUrl(topCoupon.merchant.logo) : "",
             discount: topCoupon.value,
             type: topCoupon.coupon_type === "promo_code" ? "優惠碼" : 

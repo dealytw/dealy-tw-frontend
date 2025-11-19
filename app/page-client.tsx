@@ -34,6 +34,7 @@ type CouponRailItem = {
   id: string;
   merchantId: string;
   merchantSlug?: string;
+  merchantName?: string;
   logo: string;
   discount: string;
   type: string;
@@ -272,15 +273,17 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       // Merchant page structure
       merchantData = coupon.merchant;
     } else if (coupon.merchantId) {
-      // Homepage structure - create merchant object from available data
+      // Homepage structure - use merchantName from coupon data (from getTopCouponForMerchant)
       merchantData = {
-        merchant_name: coupon.title?.split(' ')[0] || 'Unknown Merchant',
+        merchant_name: coupon.merchantName || '',
+        name: coupon.merchantName || '',
         logo: coupon.logo || '',
       };
     } else {
       console.warn('transformCoupon: no merchant data found, using fallback', coupon.id);
       merchantData = {
-        merchant_name: 'Unknown Merchant',
+        merchant_name: '',
+        name: '',
         logo: '',
       };
     }
