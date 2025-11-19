@@ -155,23 +155,21 @@ const MerchantSlider = ({ merchants }: MerchantSliderProps) => {
           <Link
             key={`${merchant.id}-${index}`}
             href={`/shop/${merchant.slug}`}
-            className="flex-shrink-0 text-center group cursor-pointer w-[180px]"
+            className="merchant-item flex-shrink-0 text-center group cursor-pointer w-[180px] flex flex-col items-center"
           >
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
-              <Image
-                src={merchant.logoUrl}
-                alt={merchant.name}
-                width={96}
-                height={96}
-                className="w-full h-full object-cover"
-                sizes="96px"
-                loading={index < 6 ? "eager" : "lazy"}
-              />
-            </div>
-            <h3 className="font-semibold text-gray-800 text-sm mb-2">{merchant.name}</h3>
-            <p className="text-xs text-gray-600 leading-tight px-2">
+            <Image
+              src={merchant.logoUrl}
+              alt={merchant.name}
+              width={96}
+              height={96}
+              className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg object-cover bg-white group-hover:shadow-xl transition-shadow"
+              sizes="96px"
+              loading={index < 6 ? "eager" : "lazy"}
+            />
+            <span className="merchant-name font-semibold text-gray-800 text-sm mb-2">{merchant.name}</span>
+            <span className="coupon-title text-xs text-gray-600 leading-tight px-2">
               {merchant.topCouponTitle || ""}
-            </p>
+            </span>
           </Link>
         ))}
       </div>
