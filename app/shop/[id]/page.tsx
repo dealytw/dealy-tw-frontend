@@ -693,8 +693,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       affiliate_link: coupon.affiliate_link,
       merchant: {
         id: coupon.merchant?.id || coupon.merchant,
-        name: coupon.merchant?.merchant_name || coupon.merchant?.name || "Unknown",
-        slug: coupon.merchant?.page_slug || "unknown",
+        name: coupon.merchant?.merchant_name || coupon.merchant?.name || "",
+        slug: coupon.merchant?.page_slug || "",
         logo: coupon.merchant?.logo?.url || "",
       },
       market: {

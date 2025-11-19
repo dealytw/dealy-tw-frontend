@@ -305,7 +305,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       affiliateLink: coupon.affiliateLink || '#',
       coupon_type: coupon.couponType,
       merchant: {
-        name: merchantData.merchant_name || merchantData.name || 'Unknown Merchant',
+        name: merchantData.merchant_name || merchantData.name || '',
         logo: merchantData.logo || '',
       }
     };

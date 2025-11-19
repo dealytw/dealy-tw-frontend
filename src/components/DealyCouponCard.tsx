@@ -255,7 +255,7 @@ const DealyCouponCard = ({
               <div className="text-xs text-gray-500 mt-2">折扣碼/ 優惠</div>
             </div>
           </div>
-          {showViewMoreButton && merchantSlug && (
+          {showViewMoreButton && merchantSlug && coupon.merchant.name && (
             <Link href={`/shop/${merchantSlug}`} className="mt-4 flex justify-center">
               <Button 
                 className="bg-white hover:bg-gray-50 text-gray-800 rounded-full border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -430,7 +430,7 @@ const DealyCouponCard = ({
                 </div>
               </div>
             </div>
-            {showViewMoreButton && merchantSlug && (
+            {showViewMoreButton && merchantSlug && coupon.merchant.name && (
               <Link href={`/shop/${merchantSlug}`} className="mt-auto w-full">
                 <Button 
                   className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full border-0 w-full max-w-full overflow-hidden"

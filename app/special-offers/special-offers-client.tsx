@@ -103,7 +103,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
       affiliateLink: coupon.affiliate_link || '#',
       coupon_type: coupon.coupon_type,
       merchant: {
-        name: coupon.merchant.merchant_name || 'Unknown Merchant',
+        name: coupon.merchant.merchant_name || '',
         logo: coupon.merchant.logo || '',
       }
     };

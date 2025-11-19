@@ -399,7 +399,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
       affiliateLink: coupon.affiliate_link || '#',
       coupon_type: coupon.coupon_type,
       merchant: {
-        name: coupon.merchant.name || 'Unknown Merchant',
+        name: coupon.merchant.name || '',
         logo: coupon.merchant.logo || '',
       }
     };
