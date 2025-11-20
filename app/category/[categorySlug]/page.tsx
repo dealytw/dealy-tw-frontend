@@ -1,7 +1,7 @@
 // app/category/[categorySlug]/page.tsx - Server Component with ISR
 import { notFound } from 'next/navigation';
 import { pageMeta } from '@/seo/meta';
-import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 import CategoryView from './category-view';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
@@ -150,6 +150,7 @@ export default async function CategoryPage({
             "filters[merchant][id][$eq]": merchant.id.toString(),
             "filters[market][key][$eq]": marketKey,
             "filters[coupon_status][$eq]": "active",
+            ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
             "sort": "priority:asc",
             "pagination[pageSize]": "1",
             "fields[0]": "id",

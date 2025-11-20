@@ -1,5 +1,5 @@
 // src/lib/coupon-queries.ts
-import { strapiFetch, qs } from "./strapi.server";
+import { strapiFetch, qs, getStartsAtFilterParams } from "./strapi.server";
 
 export interface CouponData {
   id: string;
@@ -30,6 +30,7 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
       "filters[merchant][id][$eq]": merchantId,
       "filters[market][key][$eq]": marketKey,
       "filters[coupon_status][$eq]": "active",
+      ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
       "fields[0]": "id",
       "fields[1]": "coupon_title",
       "fields[2]": "coupon_type",
@@ -90,6 +91,7 @@ export async function getTopCouponForMerchant(merchantId: string, marketKey: str
       "filters[merchant][id][$eq]": merchantId,
       "filters[market][key][$eq]": marketKey,
       "filters[coupon_status][$eq]": "active",
+      ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
       "fields[0]": "id",
       "fields[1]": "coupon_title",
       "fields[2]": "coupon_type",
@@ -154,6 +156,7 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
     const params = {
       "filters[market][key][$eq]": marketKey,
       "filters[coupon_status][$eq]": "active",
+      ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
       "fields[0]": "id",
       "fields[1]": "coupon_title",
       "fields[2]": "coupon_type",

@@ -45,6 +45,24 @@ export function qs(params: Record<string, string | number | undefined>) {
   return sp.toString();
 }
 
+/**
+ * Helper function to get starts_at filter params for coupon queries
+ * Filters coupons where starts_at is null OR starts_at <= today (UTC)
+ * This ensures scheduled coupons (starts_at in the future) are not fetched
+ * 
+ * @returns Object with filter params to be merged into query params
+ */
+export function getStartsAtFilterParams(): Record<string, string> {
+  // Get today's date in UTC (YYYY-MM-DD format)
+  const todayStr = new Date().toISOString().split('T')[0];
+  
+  // Return $or filter: starts_at is null OR starts_at <= today
+  return {
+    "filters[$or][0][starts_at][$null]": "true",
+    "filters[$or][1][starts_at][$lte]": todayStr,
+  };
+}
+
 // Helper function to absolutize media URLs
 export function absolutizeMedia(u?: string | null) {
   if (!u) return "";

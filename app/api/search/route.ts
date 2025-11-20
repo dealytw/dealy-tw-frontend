@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams } from "@/lib/strapi.server";
 
 export const runtime = 'nodejs';
 
@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
       const couponParams = {
         "filters[market][key][$eq]": market,
         "filters[coupon_status][$eq]": "active",
+        ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
         "fields[0]": "id",
         "fields[1]": "coupon_title",
         "fields[2]": "description",

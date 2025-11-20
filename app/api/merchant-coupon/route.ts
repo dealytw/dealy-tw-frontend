@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiFetch, qs } from "@/lib/strapi.server";
+import { strapiFetch, qs, getStartsAtFilterParams } from "@/lib/strapi.server";
 
 export const runtime = 'nodejs';
 export const revalidate = 300;
@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       "filters[merchant][page_slug][$eq]": merchantSlug,
       "filters[market][key][$eq]": market,
       "filters[coupon_status][$eq]": "active",
+      ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
       "fields[0]": "id",
       "fields[1]": "coupon_title",
       "fields[2]": "value",

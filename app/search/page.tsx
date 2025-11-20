@@ -1,6 +1,6 @@
 // app/search/page.tsx - Server Component with SSR + noindex
 import { pageMeta } from '@/seo/meta';
-import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 import SearchResults from './search-results';
 
 export const dynamic = 'force-dynamic'; // SSR
@@ -95,6 +95,7 @@ export default async function SearchPage({
         const couponParams = {
           "filters[market][key][$eq]": market, // Market relation filter
           "filters[coupon_status][$eq]": "active",
+          ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
           "fields[0]": "id",
           "fields[1]": "coupon_title",
           "fields[2]": "description",

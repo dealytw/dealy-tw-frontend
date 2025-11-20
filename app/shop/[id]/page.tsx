@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterParams } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client';
@@ -452,6 +452,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
         "filters[merchant][page_slug][$eq]": id,
         "filters[market][key][$eq]": marketKey,
+        ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
         "sort": "priority:asc",
         "fields[0]": "id",
         "fields[1]": "documentId",
@@ -519,6 +520,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
                 "filters[merchant][id][$eq]": relatedMerchant.id.toString(),
                 "filters[market][key][$eq]": marketKey,
                 "filters[coupon_status][$eq]": "active",
+                ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
                 "sort": "priority:asc",
                 "pagination[pageSize]": "1",
               })}`, { 

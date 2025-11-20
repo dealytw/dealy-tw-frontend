@@ -1,6 +1,6 @@
 // src/lib/seo.server.ts
 import 'server-only';
-import { strapiFetch, qs } from '@/lib/strapi.server';
+import { strapiFetch, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 
 // MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex)
 export async function getMerchantSEO(slug: string, revalidate = 300) {
@@ -29,6 +29,7 @@ export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw'
     'filters[merchant][documentId][$eq]': merchantId,
     'filters[market][key][$eq]': market,
     'filters[coupon_status][$eq]': 'active',
+    ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
     'fields[0]': 'id',
     'fields[1]': 'documentId',
     'fields[2]': 'coupon_title',
