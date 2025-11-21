@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { strapiFetch, qs } from '@/lib/strapi.server'
+import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
 
 export const revalidate = 86400 // ISR - revalidate every 24 hours
 
@@ -14,7 +15,8 @@ function escapeXml(unsafe: string): string {
 }
 
 export async function GET() {
-  const baseUrl = 'https://www.dealy.tw'
+  const domainConfig = getDomainConfigServer()
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
 
