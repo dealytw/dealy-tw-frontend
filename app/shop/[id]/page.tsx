@@ -9,16 +9,23 @@ import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib
 /**
  * Parse FAQs from rich text (HTML format)
  * Extracts H3 headings as questions and following text as answers
+ * Removes leading "?" from questions but keeps emoji
  */
 function parseFAQsFromRichText(richText: any): Array<{ question: string; answer: string }> {
   if (!richText) return [];
   
   // If richText is already an array of parsed FAQs, return as-is
   if (Array.isArray(richText) && richText.length > 0 && typeof richText[0] === 'object' && ('question' in richText[0] || 'q' in richText[0])) {
-    return richText.map((f: any) => ({
-      question: f?.question || f?.q || '',
-      answer: f?.answer || f?.a || ''
-    })).filter((f: any) => f.question && f.answer);
+    return richText.map((f: any) => {
+      let question = f?.question || f?.q || '';
+      // Clean question text (remove leading ?)
+      question = cleanQuestionText(question);
+      
+      return {
+        question,
+        answer: f?.answer || f?.a || ''
+      };
+    }).filter((f: any) => f.question && f.answer);
   }
   
   // If richText is Strapi blocks format (JSON array)
@@ -28,7 +35,7 @@ function parseFAQsFromRichText(richText: any): Array<{ question: string; answer:
     let currentAnswer = '';
     
     for (const block of richText) {
-      // Check if it's a heading block with level 3 (H3)
+      // Check if it's a heading block with level 3 (H3) only
       if (block.type === 'heading' && block.level === 3) {
         // Save previous FAQ if exists
         if (currentQuestion && currentAnswer) {
@@ -37,8 +44,9 @@ function parseFAQsFromRichText(richText: any): Array<{ question: string; answer:
             answer: currentAnswer.trim()
           });
         }
-        // Extract text from heading children
-        currentQuestion = extractTextFromBlock(block);
+        // Extract text from heading children and clean it (remove leading ?)
+        const rawQuestion = extractTextFromBlock(block);
+        currentQuestion = cleanQuestionText(rawQuestion);
         currentAnswer = '';
       } else if (currentQuestion) {
         // Accumulate text as answer
@@ -90,6 +98,16 @@ function extractTextFromBlock(block: any): string {
 }
 
 /**
+ * Clean question text by removing leading "?" or ":?"
+ * Keeps emoji in the text
+ */
+function cleanQuestionText(text: string): string {
+  if (!text) return '';
+  // Remove leading "?" or ":?" but keep everything else including emoji
+  return text.replace(/^[:\?]+\s*/, '').trim();
+}
+
+/**
  * Parse FAQs from HTML string
  * Extracts H3 headings as questions and following text as answers
  */
@@ -109,7 +127,9 @@ function parseFAQsFromHTML(html: string): Array<{ question: string; answer: stri
     const match = matches[i];
     const questionStart = match.index!;
     const questionEnd = questionStart + match[0].length;
-    const question = stripHTMLTags(match[1]).trim();
+    const rawQuestion = stripHTMLTags(match[1]).trim();
+    // Clean question text (remove leading ?)
+    const question = cleanQuestionText(rawQuestion);
     
     // Find the answer (text after H3 until next H3 or end)
     const nextMatch = matches[i + 1];

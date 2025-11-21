@@ -162,6 +162,16 @@ function renderRichText(richText: any): string {
   return "";
 }
 
+/**
+ * Clean question text by removing leading "?" or ":?"
+ * Keeps emoji in the text
+ */
+function cleanQuestionText(text: string): string {
+  if (!text) return '';
+  // Remove leading "?" or ":?" but keep everything else including emoji
+  return text.replace(/^[:\?]+\s*/, '').trim();
+}
+
 // Helper function to parse FAQ rich text into question-answer pairs
 function parseFAQs(richText: any): Array<{question: string, answer: string}> {
   if (!richText || !Array.isArray(richText)) return [];
@@ -171,6 +181,7 @@ function parseFAQs(richText: any): Array<{question: string, answer: string}> {
   let currentAnswer = "";
   
   for (const item of richText) {
+    // Check for H3 headings only
     if (item.type === "heading" && item.level === 3) {
       // If we have a previous question-answer pair, save it
       if (currentQuestion && currentAnswer) {
@@ -179,8 +190,9 @@ function parseFAQs(richText: any): Array<{question: string, answer: string}> {
           answer: currentAnswer.trim()
         });
       }
-      // Start new question
-      currentQuestion = item.children?.map((child: any) => child.text || "").join("") || "";
+      // Start new question - extract text and clean it (remove leading ?)
+      const rawQuestion = item.children?.map((child: any) => child.text || "").join("") || "";
+      currentQuestion = cleanQuestionText(rawQuestion);
       currentAnswer = "";
     } else if (item.type === "paragraph" && currentQuestion) {
       // Add to current answer
@@ -909,8 +921,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   {merchant.faqs && Array.isArray(merchant.faqs) && merchant.faqs.length > 0 ? (
                     merchant.faqs.map((faq: any, index: number) => {
                       // Handle both parsed format {question, answer} and raw blocks format
-                      const question = faq?.question || faq?.q || '';
-                      const answer = faq?.answer || faq?.a || '';
+                      let question = faq?.question || faq?.q || '';
+                      let answer = faq?.answer || faq?.a || '';
                       
                       // If it's still in blocks format, parse it
                       if (!question && !answer && faq.type) {
@@ -919,10 +931,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           const parsedFaq = parsed[0];
                           return (
                             <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                              <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
-                                <span className="text-pink-500 mt-1">?</span>
+                              <h3 className="font-medium text-pink-600 mb-2">
                                 {parsedFaq.question}
-                              </h4>
+                              </h3>
                               <p 
                                 className="text-sm text-gray-600 ml-6" 
                                 dangerouslySetInnerHTML={{ __html: parsedFaq.answer }}
@@ -935,12 +946,14 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                       
                       // Use parsed format directly
                       if (question && answer) {
+                        // Clean question if it still contains leading "?"
+                        question = cleanQuestionText(question);
+                        
                         return (
                           <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                            <h4 className="font-medium text-pink-600 mb-2 flex items-start gap-2">
-                              <span className="text-pink-500 mt-1">?</span>
+                            <h3 className="font-medium text-pink-600 mb-2">
                               {question}
-                            </h4>
+                            </h3>
                             <p 
                               className="text-sm text-gray-600 ml-6" 
                               dangerouslySetInnerHTML={{ __html: answer }}
