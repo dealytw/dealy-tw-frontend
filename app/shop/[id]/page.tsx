@@ -613,12 +613,33 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     
     // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
     // Use Map to keep only the first occurrence of each coupon ID
+    // Check both id and documentId to ensure proper deduplication
     const uniqueCouponsMap = new Map<string, any>();
+    const seenIds = new Set<string>();
     for (const coupon of allCouponsRaw) {
-      const couponId = coupon.id?.toString() || coupon.documentId?.toString();
-      if (couponId && !uniqueCouponsMap.has(couponId)) {
-        uniqueCouponsMap.set(couponId, coupon);
+      // Try both id and documentId for deduplication
+      const couponId = coupon.id?.toString();
+      const couponDocumentId = coupon.documentId?.toString();
+      
+      // Use the first available ID for the map key
+      const primaryId = couponId || couponDocumentId;
+      
+      if (!primaryId) {
+        console.warn('Skipping coupon without id or documentId:', coupon);
+        continue;
       }
+      
+      // Check if we've seen this coupon by either id or documentId
+      if (seenIds.has(primaryId) || (couponId && seenIds.has(couponId)) || (couponDocumentId && seenIds.has(couponDocumentId))) {
+        console.warn('Skipping duplicate coupon:', { id: couponId, documentId: couponDocumentId, title: coupon.coupon_title });
+        continue;
+      }
+      
+      // Mark both IDs as seen
+      if (couponId) seenIds.add(couponId);
+      if (couponDocumentId) seenIds.add(couponDocumentId);
+      
+      uniqueCouponsMap.set(primaryId, coupon);
     }
     const allCoupons = Array.from(uniqueCouponsMap.values());
     
@@ -730,7 +751,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
     // Transform coupons data
     const transformedCoupons = allCoupons.map((coupon: any) => ({
-      id: coupon.id.toString(),
+      id: (coupon.id?.toString() || coupon.documentId?.toString() || '').toString(),
       coupon_title: coupon.coupon_title,
       coupon_type: coupon.coupon_type,
       coupon_status: coupon.coupon_status || 'active',

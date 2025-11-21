@@ -318,14 +318,31 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   
   // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
   // This is a safety measure in case server-side deduplication didn't catch everything
+  // Check both id and any other identifier to ensure proper deduplication
   const deduplicateCoupons = (couponList: any[]): any[] => {
     const seen = new Set<string>();
     return couponList.filter((coupon) => {
+      // Try both id and any other identifier
       const couponId = coupon.id?.toString();
-      if (!couponId || seen.has(couponId)) {
+      const couponDocumentId = coupon.documentId?.toString();
+      const primaryId = couponId || couponDocumentId;
+      
+      if (!primaryId) {
+        console.warn('Skipping coupon without id or documentId:', coupon);
         return false;
       }
-      seen.add(couponId);
+      
+      // Check if we've seen this coupon by either id or documentId
+      if (seen.has(primaryId) || (couponId && seen.has(couponId)) || (couponDocumentId && seen.has(couponDocumentId))) {
+        console.warn('Skipping duplicate coupon in client:', { id: couponId, documentId: couponDocumentId, title: coupon.coupon_title });
+        return false;
+      }
+      
+      // Mark both IDs as seen
+      if (couponId) seen.add(couponId);
+      if (couponDocumentId) seen.add(couponDocumentId);
+      seen.add(primaryId);
+      
       return true;
     });
   };
