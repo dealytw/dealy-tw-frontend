@@ -24,9 +24,6 @@ export function getHreflangLinks(
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${config.domain}`;
   const alternateUrl = `https://${config.alternateDomain}`;
   
-  // x-default should always point to TW domain (primary/default)
-  const defaultUrl = 'https://dealy.tw';
-  
   // Main pages that exist on both domains
   const mainPages = ['/', '/shop', '/special-offers', '/blog'];
   
@@ -61,13 +58,6 @@ export function getHreflangLinks(
       href: `${alternateUrl}${alternatePath}`
     });
   }
-  
-  // Always add x-default pointing to TW domain
-  // For merchant pages without alternate, use current path (will redirect to TW version if exists)
-  links.push({
-    hreflang: 'x-default',
-    href: `${defaultUrl}${currentPath}`
-  });
   
   return links;
 }

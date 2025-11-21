@@ -377,7 +377,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         300 // Cache for 5 minutes
       );
     } catch (error) {
-      // Silently fail - hreflang will still work with self + x-default
+      // Silently fail - hreflang will still work with self reference only
       console.warn(`[generateMetadata] Failed to find alternate merchant for ${name}:`, error);
     }
     let title: string;

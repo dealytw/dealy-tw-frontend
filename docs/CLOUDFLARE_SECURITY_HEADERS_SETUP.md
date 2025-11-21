@@ -55,23 +55,30 @@
      - **Operator**: `equals`
      - **Value**: `www.dealy.tw` (如果使用 www)
 4. **Then the settings are**:
-   - 點擊 **Set static** 下拉菜單，選擇 **Set response header**
+   - 點擊 **Add static** 下拉菜單，選擇 **Set static** ⚠️ **重要：必須選擇 "Set static"，不是 "Add static"**
    - 點擊 **Add header** 添加以下標頭：
 
 #### Header 1: Referrer-Policy
+- **Action**: 選擇 **Set static** (不是 Add static)
 - **Header name**: `Referrer-Policy`
 - **Value**: `strict-origin-when-cross-origin`
 - 點擊 **Add**
 
 #### Header 2: X-Content-Type-Options
+- **Action**: 選擇 **Set static**
 - **Header name**: `X-Content-Type-Options`
 - **Value**: `nosniff`
 - 點擊 **Add**
 
 #### Header 3: X-Frame-Options
+- **Action**: 選擇 **Set static**
 - **Header name**: `X-Frame-Options`
 - **Value**: `SAMEORIGIN`
 - 點擊 **Add**
+
+**為什麼使用 "Set static" 而不是 "Add static"？**
+- **Set static**: 會替換現有標頭（如果存在）或創建新標頭（如果不存在），確保只有一個正確的值
+- **Add static**: 會添加標頭，但如果標頭已存在可能導致重複標頭，這可能導致瀏覽器行為不一致
 
 5. 點擊 **Deploy** 保存規則
 
@@ -86,10 +93,10 @@
    - **Operator**: `equals`
    - **Value**: `dealy.tw`
 4. **Then the settings are**:
-   - 點擊 **Set static** → **Set response header**
+   - 點擊 **Add static** 下拉菜單，選擇 **Set static**
    - **Header name**: `Strict-Transport-Security`
    - **Value**: `max-age=31536000; includeSubDomains; preload`
-   - 點擊 **Deploy**
+   - 點擊 **Add**，然後點擊 **Deploy**
 
 ---
 
