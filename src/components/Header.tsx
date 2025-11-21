@@ -58,6 +58,7 @@ const Header = () => {
               variant="ghost" 
               size="icon" 
               onClick={() => setMenuOpen(true)}
+              aria-label="開啟選單"
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -92,6 +93,7 @@ const Header = () => {
               variant="ghost" 
               size="icon" 
               onClick={() => setMenuOpen(true)}
+              aria-label="開啟選單"
             >
               <Menu className="h-5 w-5" />
             </Button>
