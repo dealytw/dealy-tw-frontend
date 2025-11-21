@@ -21,7 +21,6 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link href="/shop" className="text-sm text-gray-600 hover:text-gray-900">所有商戶</Link></li>
               <li><Link href="/category/travel" className="text-sm text-gray-600 hover:text-gray-900">旅遊優惠</Link></li>
-              <li><Link href="/category/shopping" className="text-sm text-gray-600 hover:text-gray-900">購物優惠</Link></li>
               <li><Link href="/special-offers" className="text-sm text-gray-600 hover:text-gray-900">特別優惠</Link></li>
             </ul>
           </div>
