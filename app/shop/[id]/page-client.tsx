@@ -316,6 +316,24 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const [showAllActiveCoupons, setShowAllActiveCoupons] = useState(false);
   const [isRegionExpanded, setIsRegionExpanded] = useState(false);
   
+  // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
+  // This is a safety measure in case server-side deduplication didn't catch everything
+  const deduplicateCoupons = (couponList: any[]): any[] => {
+    const seen = new Set<string>();
+    return couponList.filter((coupon) => {
+      const couponId = coupon.id?.toString();
+      if (!couponId || seen.has(couponId)) {
+        return false;
+      }
+      seen.add(couponId);
+      return true;
+    });
+  };
+  
+  // Deduplicate coupons and expired coupons
+  const uniqueCoupons = deduplicateCoupons(coupons || []);
+  const uniqueExpiredCoupons = deduplicateCoupons(expiredCoupons || []);
+  
   // Determine which filters to show based on merchant settings
   // When location_filtering and creditcard_filtering are false (default), show simple filters
   const useSimpleFilters = !merchant.location_filtering && !merchant.creditcard_filtering;
@@ -437,7 +455,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
           setScrolledToCouponId(couponId);
 
           // Find and open the corresponding coupon modal
-          const coupon = coupons.find(c => c.id === couponId) || expiredCoupons.find(c => c.id === couponId);
+          const coupon = uniqueCoupons.find(c => c.id === couponId) || uniqueExpiredCoupons.find(c => c.id === couponId);
           if (coupon) {
             // Transform the coupon for the modal using the same transformation
             const transformedCoupon = transformCoupon(coupon);
@@ -646,10 +664,12 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                 </div>
                 
                 <div className="space-y-0">
-                  {coupons
+                  {uniqueCoupons
                     .filter((coupon) => {
                       // Apply filtering based on activeFilter
                       if (useSimpleFilters) {
+                        // When useSimpleFilters is true, creditcard_filtering is false
+                        // So credit card coupons should show normally in all filters
                         switch (activeFilter) {
                           case "全部":
                             return true; // Show all coupons
@@ -666,13 +686,23 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                         // Advanced filtering logic (when location_filtering or creditcard_filtering is true)
                         switch (activeFilter) {
                           case "全部":
+                            // Only exclude credit card coupons if creditcard_filtering is enabled
+                            // They will be shown in the separate credit card section
+                            if (merchant.creditcard_filtering && isCreditCardCoupon(coupon.coupon_title || "")) {
+                              return false;
+                            }
                             return true; // Show all coupons
                           case "精選地區":
+                            // Only exclude credit card coupons if creditcard_filtering is enabled
+                            if (merchant.creditcard_filtering && isCreditCardCoupon(coupon.coupon_title || "")) {
+                              return false;
+                            }
                             if (!selectedRegion) return true; // If no region selected, show all
                             return matchesRegion(coupon.coupon_title || "", selectedRegion);
                           case "信用卡優惠":
-                            // Wait for next implementation
-                            return true;
+                            // When "信用卡優惠" filter is active, don't show coupons in active section
+                            // They will be shown in the separate credit card section below
+                            return false;
                           default:
                             return true;
                         }
@@ -703,8 +733,10 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     }).filter(Boolean)}
                   
                   {/* Show More Button - Only show if there are more than 10 filtered coupons */}
-                  {coupons.filter((coupon) => {
+                  {uniqueCoupons.filter((coupon) => {
                     if (useSimpleFilters) {
+                      // When useSimpleFilters is true, creditcard_filtering is false
+                      // So credit card coupons should be counted normally
                       switch (activeFilter) {
                         case "全部":
                           return true;
@@ -720,12 +752,21 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     } else {
                       switch (activeFilter) {
                         case "全部":
+                          // Only exclude credit card coupons if creditcard_filtering is enabled
+                          if (merchant.creditcard_filtering && isCreditCardCoupon(coupon.coupon_title || "")) {
+                            return false;
+                          }
                           return true;
                         case "精選地區":
+                          // Only exclude credit card coupons if creditcard_filtering is enabled
+                          if (merchant.creditcard_filtering && isCreditCardCoupon(coupon.coupon_title || "")) {
+                            return false;
+                          }
                           if (!selectedRegion) return true;
                           return matchesRegion(coupon.coupon_title || "", selectedRegion);
                         case "信用卡優惠":
-                          return true;
+                          // When "信用卡優惠" filter is active, don't count coupons for "Show More" button
+                          return false;
                         default:
                           return true;
                       }
@@ -757,7 +798,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     {merchant.name}信用卡優惠一覽
                   </h2>
                   <div className="space-y-0">
-                    {coupons
+                    {uniqueCoupons
                       .filter((coupon) => isCreditCardCoupon(coupon.coupon_title || ""))
                       .map((coupon, index) => {
                         const transformedCoupon = transformCoupon(coupon);
@@ -805,7 +846,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   <div className="relative">
                     <Card className="shadow-md relative">
                       <CardContent className="space-y-4">
-                        {expiredCoupons.map(coupon => {
+                        {uniqueExpiredCoupons.map(coupon => {
                           const transformedCoupon = transformCoupon(coupon);
                           if (!transformedCoupon) {
                             console.error('Skipping invalid expired coupon:', coupon);
@@ -1077,7 +1118,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
           
           {/* Right Column - Sidebar */}
           <div className="lg:col-span-1">
-            <MerchantSidebar merchant={merchant} coupons={coupons} expiredCoupons={expiredCoupons} hotstoreMerchants={hotstoreMerchants} />
+            <MerchantSidebar merchant={merchant} coupons={uniqueCoupons} expiredCoupons={uniqueExpiredCoupons} hotstoreMerchants={hotstoreMerchants} />
           </div>
         </div>
 

@@ -609,7 +609,18 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     }
 
     const merchantData = merchantRes.data[0];
-    const allCoupons = couponsRes.data || [];
+    const allCouponsRaw = couponsRes.data || [];
+    
+    // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
+    // Use Map to keep only the first occurrence of each coupon ID
+    const uniqueCouponsMap = new Map<string, any>();
+    for (const coupon of allCouponsRaw) {
+      const couponId = coupon.id?.toString() || coupon.documentId?.toString();
+      if (couponId && !uniqueCouponsMap.has(couponId)) {
+        uniqueCouponsMap.set(couponId, coupon);
+      }
+    }
+    const allCoupons = Array.from(uniqueCouponsMap.values());
     
     // Get market locale from merchant data or fetch separately
     const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
