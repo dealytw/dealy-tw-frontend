@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterParams } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
-import { getMerchantSEO } from '@/lib/seo.server';
+import { getMerchantSEO, findAlternateMerchant } from '@/lib/seo.server';
 import Merchant from './page-client';
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
@@ -326,7 +326,11 @@ export const dynamic = 'force-static'; // Force static ISR to ensure cacheable H
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const market = 'tw'; // Default market
+  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const marketKey = market.toLowerCase();
+  
+  // Determine alternate market (tw <-> hk)
+  const alternateMarket = marketKey === 'tw' ? 'hk' : 'tw';
   
   try {
     // Fetch merchant with SEO fields
@@ -342,6 +346,20 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
 
     const name = merchant.merchant_name || id;
+    
+    // Find alternate merchant in other market for hreflang
+    let alternateMerchantSlug: string | null = null;
+    try {
+      alternateMerchantSlug = await findAlternateMerchant(
+        name,
+        marketKey,
+        alternateMarket,
+        300 // Cache for 5 minutes
+      );
+    } catch (error) {
+      // Silently fail - hreflang will still work with self + x-default
+      console.warn(`[generateMetadata] Failed to find alternate merchant for ${name}:`, error);
+    }
     let title: string;
     let description: string;
 
@@ -394,6 +412,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       canonicalOverride: merchant.canonical_url || undefined,
       noindex,
       ogImageUrl: merchant.ogImage?.url || undefined,
+      alternateMerchantSlug, // Pass alternate merchant slug for hreflang
     });
       } catch (error) {
     console.error('Error generating metadata:', error);

@@ -11,9 +11,15 @@ export function canonical(pathOrAbs?: string) {
 
 /**
  * Generate hreflang links for cross-domain SEO
- * Since pages are different between HK and TW, we only link to main pages
+ * Supports both main pages and merchant pages with alternate merchant matching
+ * 
+ * @param currentPath - Current page path (e.g., "/shop/farfetch")
+ * @param alternateMerchantSlug - Optional: slug of alternate merchant in other market (e.g., "farfetch" for HK when on TW)
  */
-export function getHreflangLinks(currentPath: string): Array<{ hreflang: string; href: string }> {
+export function getHreflangLinks(
+  currentPath: string,
+  alternateMerchantSlug?: string | null
+): Array<{ hreflang: string; href: string }> {
   const config = getDomainConfig();
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${config.domain}`;
   const alternateUrl = `https://${config.alternateDomain}`;
@@ -24,23 +30,46 @@ export function getHreflangLinks(currentPath: string): Array<{ hreflang: string;
   // Main pages that exist on both domains
   const mainPages = ['/', '/shop', '/special-offers', '/blog'];
   
-  // Only add hreflang if this is a main page (not specific merchant/coupon pages)
+  // Check if this is a main page
   const isMainPage = mainPages.includes(currentPath) || currentPath === '';
   
-  if (!isMainPage) {
-    // For specific pages, only add self and x-default (no alternate since pages differ)
-    return [
-      { hreflang: config.hreflang, href: `${baseUrl}${currentPath}` },
-      { hreflang: 'x-default', href: `${defaultUrl}${currentPath}` },
-    ];
+  // Check if this is a merchant page (starts with /shop/)
+  const isMerchantPage = currentPath.startsWith('/shop/') && currentPath !== '/shop';
+  
+  // Build hreflang links
+  const links: Array<{ hreflang: string; href: string }> = [];
+  
+  // Always add self reference
+  links.push({
+    hreflang: config.hreflang,
+    href: `${baseUrl}${currentPath}`
+  });
+  
+  // For main pages, add alternate domain with same path
+  if (isMainPage) {
+    links.push({
+      hreflang: config.alternateHreflang,
+      href: `${alternateUrl}${currentPath}`
+    });
   }
   
-  // For main pages, add both domains
-  return [
-    { hreflang: config.hreflang, href: `${baseUrl}${currentPath}` },
-    { hreflang: config.alternateHreflang, href: `${alternateUrl}${currentPath}` },
-    { hreflang: 'x-default', href: `${defaultUrl}${currentPath}` },
-  ];
+  // For merchant pages, add alternate if we have the alternate merchant slug
+  if (isMerchantPage && alternateMerchantSlug) {
+    const alternatePath = `/shop/${alternateMerchantSlug}`;
+    links.push({
+      hreflang: config.alternateHreflang,
+      href: `${alternateUrl}${alternatePath}`
+    });
+  }
+  
+  // Always add x-default pointing to TW domain
+  // For merchant pages without alternate, use current path (will redirect to TW version if exists)
+  links.push({
+    hreflang: 'x-default',
+    href: `${defaultUrl}${currentPath}`
+  });
+  
+  return links;
 }
 
 type PageMetaInput = {
@@ -51,6 +80,7 @@ type PageMetaInput = {
   noindex?: boolean;
   ogImageUrl?: string;
   includeHreflang?: boolean; // Whether to include hreflang tags (default: true)
+  alternateMerchantSlug?: string | null; // Optional: slug of alternate merchant in other market for hreflang
 };
 
 export function pageMeta({
@@ -61,12 +91,13 @@ export function pageMeta({
   noindex,
   ogImageUrl,
   includeHreflang = true,
+  alternateMerchantSlug,
 }: PageMetaInput) {
   const url = canonical(canonicalOverride ?? path);
   const robots = noindex ? { index: false, follow: false, nocache: true } : undefined;
   
-  // Generate hreflang links
-  const hreflangLinks = includeHreflang && path ? getHreflangLinks(path) : [];
+  // Generate hreflang links (with alternate merchant slug if provided)
+  const hreflangLinks = includeHreflang && path ? getHreflangLinks(path, alternateMerchantSlug) : [];
   const alternates: { canonical?: string; languages?: Record<string, string> } = {};
   
   if (url) {
