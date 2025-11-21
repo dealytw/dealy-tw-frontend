@@ -46,41 +46,64 @@ const nextConfig: NextConfig = {
   },
   // Security headers
   async headers() {
-    return [
+    // Common security headers for all resources
+    const commonHeaders = [
       {
-        // Apply security headers to all routes
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+    ];
+
+    // Full security headers for HTML pages
+    const fullHeaders = [
+      ...commonHeaders,
+      {
+        key: 'X-Frame-Options',
+        value: 'SAMEORIGIN',
+      },
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "img-src 'self' data: https: blob:",
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
+          "frame-src 'self' https://www.googletagmanager.com",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "frame-ancestors 'self'",
+          "upgrade-insecure-requests",
+        ].join('; '),
+      },
+    ];
+
+    return [
+      // Apply full headers to HTML pages (exclude static assets)
+      {
         source: '/:path*',
-        headers: [
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: https: blob:",
-              "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
-              "frame-src 'self' https://www.googletagmanager.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'self'",
-              "upgrade-insecure-requests",
-            ].join('; '),
-          },
-        ],
+        headers: fullHeaders,
+      },
+      // Apply basic security headers to Next.js static assets (JS, CSS, images)
+      {
+        source: '/_next/static/:path*',
+        headers: commonHeaders,
+      },
+      // Apply basic security headers to Next.js image optimization API
+      {
+        source: '/_next/image/:path*',
+        headers: commonHeaders,
+      },
+      // Apply basic security headers to uploaded images
+      {
+        source: '/upload/:path*',
+        headers: commonHeaders,
       },
     ];
   },
