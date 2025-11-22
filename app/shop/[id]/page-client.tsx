@@ -172,6 +172,60 @@ function cleanQuestionText(text: string): string {
   return text.replace(/^[:\?]+\s*/, '').trim();
 }
 
+// Helper function to convert a block to HTML, preserving list structure
+function blockToHTML(block: any): string {
+  if (!block) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text' || child.text !== undefined) {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  // Handle different block types
+  if (block.type === 'paragraph') {
+    const content = processChildren(block.children || []);
+    return `<p>${content || '<br>'}</p>`;
+  }
+  
+  if (block.type === 'heading') {
+    const level = block.level || 2;
+    const content = processChildren(block.children || []);
+    return `<h${level}>${content}</h${level}>`;
+  }
+  
+  if (block.type === 'list') {
+    const isOrdered = block.format === 'ordered';
+    const items = (block.children || []).map((item: any) => {
+      const content = processChildren(item.children || []);
+      return `<li>${content}</li>`;
+    }).join('');
+    return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+  }
+  
+  return '';
+}
+
 // Helper function to parse FAQ rich text into question-answer pairs
 function parseFAQs(richText: any): Array<{question: string, answer: string}> {
   if (!richText || !Array.isArray(richText)) return [];
@@ -194,18 +248,11 @@ function parseFAQs(richText: any): Array<{question: string, answer: string}> {
       const rawQuestion = item.children?.map((child: any) => child.text || "").join("") || "";
       currentQuestion = cleanQuestionText(rawQuestion);
       currentAnswer = "";
-    } else if (item.type === "paragraph" && currentQuestion) {
-      // Add to current answer
-      const paragraphText = item.children?.map((child: any) => {
-        if (child.bold) return `<strong>${child.text || ""}</strong>`;
-        if (child.italic) return `<em>${child.text || ""}</em>`;
-        return child.text || "";
-      }).join("") || "";
-      
-      if (currentAnswer) {
-        currentAnswer += " " + paragraphText;
-      } else {
-        currentAnswer = paragraphText;
+    } else if (currentQuestion) {
+      // Convert block to HTML to preserve list structure
+      const html = blockToHTML(item);
+      if (html) {
+        currentAnswer += html;
       }
     }
   }
@@ -992,8 +1039,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                               <h3 className="font-medium text-pink-600 mb-2">
                                 {parsedFaq.question}
                               </h3>
-                              <p 
-                                className="text-sm text-gray-600 ml-6" 
+                              <div 
+                                className="text-sm text-gray-600 ml-6 faq-answer-content" 
                                 dangerouslySetInnerHTML={{ __html: parsedFaq.answer }}
                               />
                             </div>
@@ -1012,8 +1059,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                             <h3 className="font-medium text-pink-600 mb-2">
                               {question}
                             </h3>
-                            <p 
-                              className="text-sm text-gray-600 ml-6" 
+                            <div 
+                              className="text-sm text-gray-600 ml-6 faq-answer-content" 
                               dangerouslySetInnerHTML={{ __html: answer }}
                             />
                           </div>

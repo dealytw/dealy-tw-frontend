@@ -49,13 +49,13 @@ function parseFAQsFromRichText(richText: any): Array<{ question: string; answer:
         currentQuestion = cleanQuestionText(rawQuestion);
         currentAnswer = '';
       } else if (currentQuestion) {
-        // Accumulate text as answer
-        const text = extractTextFromBlock(block);
-        if (text) {
+        // Convert block to HTML to preserve list structure
+        const html = blockToHTML(block);
+        if (html) {
           if (currentAnswer) {
-            currentAnswer += ' ' + text;
+            currentAnswer += html;
           } else {
-            currentAnswer = text;
+            currentAnswer = html;
           }
         }
       }
@@ -81,7 +81,7 @@ function parseFAQsFromRichText(richText: any): Array<{ question: string; answer:
 }
 
 /**
- * Extract text content from a Strapi block
+ * Extract text content from a Strapi block (for questions only)
  */
 function extractTextFromBlock(block: any): string {
   if (!block || !block.children) return '';
@@ -98,6 +98,63 @@ function extractTextFromBlock(block: any): string {
 }
 
 /**
+ * Convert Strapi block to HTML, preserving list structure
+ */
+function blockToHTML(block: any): string {
+  if (!block) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text') {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  // Handle different block types
+  if (block.type === 'paragraph') {
+    const content = processChildren(block.children || []);
+    return `<p>${content || '<br>'}</p>`;
+  }
+  
+  if (block.type === 'heading') {
+    const level = block.level || 2;
+    const content = processChildren(block.children || []);
+    return `<h${level}>${content}</h${level}>`;
+  }
+  
+  if (block.type === 'list') {
+    const isOrdered = block.format === 'ordered';
+    const items = (block.children || []).map((item: any) => {
+      const content = processChildren(item.children || []);
+      return `<li>${content}</li>`;
+    }).join('');
+    return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+  }
+  
+  // Fallback: extract text
+  return extractTextFromBlock(block);
+}
+
+/**
  * Clean question text by removing leading "?" or ":?"
  * Keeps emoji in the text
  */
@@ -109,7 +166,8 @@ function cleanQuestionText(text: string): string {
 
 /**
  * Parse FAQs from HTML string
- * Extracts H3 headings as questions and following text as answers
+ * Extracts H3 headings as questions and following content as answers
+ * Preserves list HTML structure (ul, ol, li)
  */
 function parseFAQsFromHTML(html: string): Array<{ question: string; answer: string }> {
   if (!html || typeof html !== 'string') return [];
@@ -117,7 +175,7 @@ function parseFAQsFromHTML(html: string): Array<{ question: string; answer: stri
   const faqs: Array<{ question: string; answer: string }> = [];
   
   // Match H3 tags and their following content
-  // Pattern: <h3>question</h3> followed by text until next <h3> or end
+  // Pattern: <h3>question</h3> followed by content until next <h3> or end
   const h3Pattern = /<h3[^>]*>(.*?)<\/h3>/gi;
   const matches = Array.from(html.matchAll(h3Pattern));
   
@@ -131,14 +189,21 @@ function parseFAQsFromHTML(html: string): Array<{ question: string; answer: stri
     // Clean question text (remove leading ?)
     const question = cleanQuestionText(rawQuestion);
     
-    // Find the answer (text after H3 until next H3 or end)
+    // Find the answer (content after H3 until next H3 or end)
     const nextMatch = matches[i + 1];
     const answerEnd = nextMatch ? nextMatch.index! : html.length;
-    const answerHTML = html.substring(questionEnd, answerEnd);
-    const answer = stripHTMLTags(answerHTML).trim();
+    let answerHTML = html.substring(questionEnd, answerEnd).trim();
     
-    if (question && answer) {
-      faqs.push({ question, answer });
+    // Clean up the answer HTML but preserve list tags
+    // Remove leading/trailing whitespace and normalize
+    answerHTML = answerHTML
+      .replace(/^\s+|\s+$/g, '') // Trim
+      .replace(/\n\s*\n/g, '\n') // Remove extra blank lines
+      .trim();
+    
+    // Only add if we have both question and answer content
+    if (question && answerHTML) {
+      faqs.push({ question, answer: answerHTML });
     }
   }
   
