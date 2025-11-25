@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-safe Resend client: avoid throwing at import time when API key is missing
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export async function POST(request: Request) {
   try {
@@ -17,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.error('RESEND_API_KEY is not configured');
       // Still return success to user, but log the submission
       console.log('Contact form submission (email service not configured):', {
@@ -65,6 +67,10 @@ ${message}
     `;
 
     try {
+      if (!resend) {
+        throw new Error('Resend client is not initialized');
+      }
+
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'noreply@dealy.tw',
         to: 'info@dealy.tw',

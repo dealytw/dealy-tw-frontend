@@ -5,10 +5,9 @@ import { SearchProvider } from "@/components/SearchProvider";
 import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/jsonld";
 import FloatingActionContainer from "@/components/FloatingActionContainer";
 import { getDomainConfig as getDomainConfigServer, getMarketLocale, localeToHtmlLang, localeToHreflang } from "@/lib/domain-config";
-import { getHreflangLinks } from "@/seo/meta";
 import Script from "next/script";
 import CWVTracker from "@/components/CWVTracker";
-import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from "@/lib/strapi.server";
 import { getHomePageData } from "@/lib/homepage-loader";
 
 // Default metadata (will be overridden by page-specific metadata)
