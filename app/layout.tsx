@@ -106,13 +106,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       } : null
     });
 
-    searchMerchants = (merchantsData?.data || []).map((merchant: any) => ({
-      id: merchant.id,
-      name: merchant.merchant_name,
-      slug: merchant.page_slug,
-      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
-      website: merchant.site_url || merchant.website || "",
-    }));
+    searchMerchants = (merchantsData?.data || []).map((merchant: any) => {
+      const logoUrl = merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "";
+      return {
+        id: merchant.id,
+        name: merchant.merchant_name,
+        slug: merchant.page_slug,
+        // Rewrite logo URL to use custom domain /upload path for better caching and SEO
+        logo: logoUrl ? rewriteImageUrl(logoUrl, siteUrl) : "",
+        website: merchant.site_url || merchant.website || "",
+      };
+    });
 
     console.log(`[Layout] Prefetched ${searchMerchants.length} merchants for search`);
     

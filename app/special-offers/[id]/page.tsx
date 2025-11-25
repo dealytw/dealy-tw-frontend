@@ -1,6 +1,6 @@
 // app/special-offers/[id]/page.tsx - Server Component with ISR
 import { pageMeta } from '@/seo/meta';
-import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.server';
 import SpecialOffersClient from '../special-offers-client';
 import { notFound } from 'next/navigation';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
@@ -117,22 +117,28 @@ export default async function SpecialOfferPage({
     if (specialOffer.featured_merchant) {
       // Fallback for old schema format
       const merchant = specialOffer.featured_merchant;
+      const originalLogoUrl = merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120";
+      const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl) : "/api/placeholder/120/120";
       featuredMerchants = [{
         id: merchant.id,
         name: merchant.merchant_name,
         slug: merchant.page_slug,
-        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+        logo: rewrittenLogoUrl,
         link: `/shop/${merchant.page_slug}`,
       }];
     } else if (Array.isArray(specialOffer.featured_merchants)) {
       // Current schema format: oneToMany relation
-      featuredMerchants = specialOffer.featured_merchants.map((merchant: any) => ({
-        id: merchant.id,
-        name: merchant.merchant_name,
-        slug: merchant.page_slug,
-        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-        link: `/shop/${merchant.page_slug}`,
-      }));
+      featuredMerchants = specialOffer.featured_merchants.map((merchant: any) => {
+        const originalLogoUrl = merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120";
+        const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl) : "/api/placeholder/120/120";
+        return {
+          id: merchant.id,
+          name: merchant.merchant_name,
+          slug: merchant.page_slug,
+          logo: rewrittenLogoUrl,
+          link: `/shop/${merchant.page_slug}`,
+        };
+      });
     }
 
     // Transform coupons data
@@ -159,12 +165,16 @@ export default async function SpecialOfferPage({
       display_count: coupon.display_count || coupon.user_count || 0,
       affiliate_link: coupon.affiliate_link,
       editor_tips: coupon.editor_tips,
-      merchant: {
-        id: coupon.merchant?.id,
-        merchant_name: coupon.merchant?.merchant_name,
-        slug: coupon.merchant?.page_slug,
-        logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120",
-      },
+      merchant: (() => {
+        const logoUrl = coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120";
+        const rewrittenLogo = logoUrl ? rewriteImageUrl(logoUrl) : "/api/placeholder/120/120";
+        return {
+          id: coupon.merchant?.id,
+          merchant_name: coupon.merchant?.merchant_name,
+          slug: coupon.merchant?.page_slug,
+          logo: rewrittenLogo,
+        };
+      })(),
     }));
 
     // Build breadcrumb JSON-LD

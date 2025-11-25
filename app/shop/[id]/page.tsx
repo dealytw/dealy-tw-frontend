@@ -634,11 +634,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
               
               const firstCoupon = couponData?.data?.[0] || null;
               
+              const originalLogoUrl = relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null;
+              const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
+
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
                 slug: relatedMerchant.page_slug,
-                logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
+                logo: rewrittenLogoUrl,
                 firstCoupon: firstCoupon ? {
                   id: firstCoupon.id.toString(),
                   title: firstCoupon.coupon_title,
@@ -651,11 +654,15 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
               };
             } catch (error) {
               console.error(`Error fetching coupon for merchant ${relatedMerchant.page_slug}:`, error);
+
+              const originalLogoUrl = relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null;
+              const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
+
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
                 slug: relatedMerchant.page_slug,
-                logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
+                logo: rewrittenLogoUrl,
                 firstCoupon: null
               };
             }
