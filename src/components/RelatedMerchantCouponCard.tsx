@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 
 interface RelatedMerchantCouponCardProps {
@@ -154,14 +153,13 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
         {/* Merchant Logo - Bigger */}
         <div className="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
           {relatedMerchant.logo ? (
-            <Image
+            <img
               src={relatedMerchant.logo}
               alt={relatedMerchant.name}
-              width={64}
-              height={64}
-              className="w-full h-full object-cover"
-              sizes="64px"
+              width={150}
+              height={150}
               loading="lazy"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm text-gray-500">

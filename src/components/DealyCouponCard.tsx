@@ -1,6 +1,5 @@
-"use client";
+\"use client\";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
@@ -240,7 +239,14 @@ const DealyCouponCard = ({
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 mb-4 flex items-center justify-center">
               {coupon.merchant.logo ? (
-                <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={80} height={80} className="max-w-full max-h-full object-contain" sizes="80px" loading="lazy" />
+                <img
+                  src={coupon.merchant.logo}
+                  alt={coupon.merchant.name}
+                  width={150}
+                  height={150}
+                  loading="lazy"
+                  className="max-w-full max-h-full object-contain"
+                />
               ) : (
                 <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                   <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>
@@ -388,7 +394,14 @@ const DealyCouponCard = ({
             <div className="flex flex-col items-center w-full">
               <div className="w-12 h-10 mb-2 flex items-center justify-center">
                 {coupon.merchant.logo ? (
-                  <Image src={coupon.merchant.logo} alt={coupon.merchant.name} width={48} height={40} className="max-w-full max-h-full object-contain" sizes="48px" loading="lazy" />
+                  <img
+                    src={coupon.merchant.logo}
+                    alt={coupon.merchant.name}
+                    width={150}
+                    height={150}
+                    loading="lazy"
+                    className="max-w-full max-h-full object-contain"
+                  />
                 ) : (
                   <div className="w-10 h-8 bg-gray-200 rounded flex items-center justify-center">
                     <span className="text-gray-500 text-xs font-medium">{coupon.merchant.name?.charAt(0) || '?'}</span>

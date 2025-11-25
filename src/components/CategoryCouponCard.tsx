@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import Link from "next/link";
 
 interface CategoryCouponCardProps {
@@ -107,14 +106,13 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
         {/* Thumbnail Image */}
         <div className="absolute top-3 right-3 w-16 h-16 rounded overflow-hidden bg-gray-100">
           {coupon.merchant.logo ? (
-            <Image
+            <img
               src={coupon.merchant.logo}
               alt={coupon.merchant.name}
-              width={64}
-              height={64}
-              className="w-full h-full object-cover"
-              sizes="64px"
+              width={150}
+              height={150}
               loading="lazy"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
