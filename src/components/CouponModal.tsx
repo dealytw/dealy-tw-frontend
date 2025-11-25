@@ -103,7 +103,7 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 bg-white">
+      <DialogContent className="w-[92vw] max-w-sm sm:max-w-md p-0 bg-white max-h-[85vh] overflow-hidden">
         <DialogTitle className="sr-only">
           {coupon.title} - {coupon.merchant.name} 優惠券
         </DialogTitle>
@@ -116,10 +116,10 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[85vh] overflow-y-auto">
           {/* Merchant Logo */}
           <div className="flex justify-center">
-            <div className="w-[150px] h-[150px] flex items-center justify-center">
+            <div className="w-[110px] h-[110px] sm:w-[150px] sm:h-[150px] flex items-center justify-center">
               <Image 
                 src={coupon.merchant.logo} 
                 alt={coupon.merchant.name}
@@ -134,7 +134,7 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
           
           {/* Main Offer Title */}
           <div className="text-center">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">
+            <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-2">
               {coupon.title}
             </h2>
             
@@ -147,9 +147,9 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
           {/* Conditional Content based on coupon_type */}
           {coupon.coupon_type === "promo_code" ? (
             /* Promo Code Layout - Inline Code with Copy Button */
-            <div className="border-2 border-dashed border-pink-300 rounded-lg p-4 bg-pink-50">
-              <div className="flex items-center justify-between gap-3">
-                <code className="font-mono text-lg font-bold text-gray-800 flex-1 text-center">
+            <div className="border-2 border-dashed border-pink-300 rounded-lg p-3 sm:p-4 bg-pink-50">
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
+                <code className="font-mono text-base sm:text-lg font-bold text-gray-800 flex-1 text-center break-all">
                   {coupon.code}
                 </code>
                 <Button
