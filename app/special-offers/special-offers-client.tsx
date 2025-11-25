@@ -124,24 +124,19 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
         clickSource: 'button',
         pageLocation: window.location.pathname,
       });
-    }
-    
-    // Parallel actions (no delays, no setTimeout)
-    if (coupon.merchant?.slug) {
-      // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
-      const merchantUrl = `/shop/${coupon.merchant.slug}#coupon-${coupon.id}`;
-      const link = document.createElement('a');
-      link.href = merchantUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-    
-    // Action 2: Redirect current tab to affiliate link (instant, no delay)
-    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
-      window.location.href = coupon.affiliate_link;
+
+      // Parallel actions (no delays, no setTimeout)
+      const merchantSlug = coupon.merchant?.slug;
+      if (merchantSlug) {
+        // Action 1: Open merchant page (new tab) with hash so merchant page auto-opens modal & scrolls
+        const merchantUrl = `/shop/${merchantSlug}#coupon-${coupon.id}`;
+        window.open(merchantUrl, '_blank', 'noopener,noreferrer');
+      }
+      
+      // Action 2: Redirect current tab to affiliate link (instant, no delay)
+      if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+        window.location.href = coupon.affiliate_link;
+      }
     }
   };
 

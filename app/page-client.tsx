@@ -331,37 +331,31 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
         clickSource: 'button',
         pageLocation: window.location.pathname,
       });
-    }
-    
-    // Parallel actions (no delays, no setTimeout)
-    if (coupon.merchantSlug) {
-      // Action 1: Open merchant page (new tab) - using <a> tag (faster than window.open)
-      const couponId = coupon.id.startsWith('coupon-') 
-        ? coupon.id.replace('coupon-', '') 
-        : coupon.id;
-      const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${couponId}`;
-      const link = document.createElement('a');
-      link.href = merchantUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      // Fallback: if no merchant slug, open modal for backward compatibility
-      const transformedCoupon = transformCoupon(coupon);
-      if (!transformedCoupon) {
-        console.error('Failed to transform coupon for modal:', coupon);
-        return;
+      
+      // Parallel actions (no delays, no setTimeout)
+      if (coupon.merchantSlug) {
+        // Action 1: Open merchant page (new tab) with hash so merchant page auto-opens modal & scrolls
+        const couponId = coupon.id.startsWith('coupon-') 
+          ? coupon.id.replace('coupon-', '') 
+          : coupon.id;
+        const merchantUrl = `/shop/${coupon.merchantSlug}#coupon-${couponId}`;
+        window.open(merchantUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        // Fallback: if no merchant slug, open modal for backward compatibility
+        const transformedCoupon = transformCoupon(coupon);
+        if (!transformedCoupon) {
+          console.error('Failed to transform coupon for modal:', coupon);
+          return;
+        }
+        
+        setSelectedCoupon(transformedCoupon);
+        setIsModalOpen(true);
       }
       
-      setSelectedCoupon(transformedCoupon);
-      setIsModalOpen(true);
-    }
-    
-    // Action 2: Redirect current tab to affiliate link (instant, no delay)
-    if (coupon.affiliateLink && coupon.affiliateLink !== '#') {
-      window.location.href = coupon.affiliateLink;
+      // Action 2: Redirect current tab to affiliate link (instant, no delay)
+      if (coupon.affiliateLink && coupon.affiliateLink !== '#') {
+        window.location.href = coupon.affiliateLink;
+      }
     }
   };
 

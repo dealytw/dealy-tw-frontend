@@ -19,15 +19,17 @@ This project uses **Resend** to send emails from contact forms. Resend offers a 
    - Add: `RESEND_API_KEY` = `your_api_key_here`
    - Add (optional): `RESEND_FROM_EMAIL` = `noreply@dealy.tw` (or your verified domain email)
 
-4. **Verify Your Domain** (optional, but recommended):
+4. **Verify Your Domain** (required for production):
+   - **📖 See detailed guide:** [`docs/RESEND_DOMAIN_SETUP.md`](./docs/RESEND_DOMAIN_SETUP.md)
    - In Resend dashboard, go to Domains
    - Add your domain (e.g., `dealy.tw`)
-   - Follow DNS setup instructions
+   - Add DNS records (SPF, DKIM, DMARC) to your DNS provider
+   - Wait for verification (5 minutes to 48 hours)
    - This allows you to send from `@dealy.tw` emails
 
 5. **Redeploy**:
    - After adding environment variables, redeploy your site
-   - Forms will now send emails to `info@dealy.hk`
+   - Forms will now send emails to `info@dealy.tw`
 
 ## What's Included
 
@@ -39,7 +41,7 @@ This project uses **Resend** to send emails from contact forms. Resend offers a 
 - Sends emails when users contact from merchant pages
 - Email includes: name, email, message, merchant name
 
-Both forms send emails to: **info@dealy.hk**
+Both forms send emails to: **info@dealy.tw**
 
 ## Without API Key
 

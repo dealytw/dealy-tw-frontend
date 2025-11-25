@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send email to info@dealy.hk
+    // Send email to info@dealy.tw
     const emailSubject = `[Dealy.TW] 聯絡我們${merchantName ? ` - ${merchantName}` : ''} - ${name}`;
     const emailText = `
 新的聯絡訊息來自 Dealy.TW：

@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send email to info@dealy.hk
+    // Send email to info@dealy.tw
     const emailSubject = `[Dealy.TW] ${merchant ? `商家：${merchant}` : '聯絡我們'} - ${name}`;
     const emailText = `
 新的提交來自 Dealy.TW：
