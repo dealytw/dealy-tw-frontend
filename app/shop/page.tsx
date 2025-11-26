@@ -1,6 +1,6 @@
 // app/shop/page.tsx - Server Component with ISR
 import { pageMeta } from '@/seo/meta';
-import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.server';
 import MerchantIndex from './merchant-index';
 
 export const revalidate = 3600; // ISR - revalidate every hour (merchants don't change often)
@@ -63,16 +63,22 @@ export default async function ShopIndex({
     );
 
     // Transform merchants data
-    const merchants = (merchantsData?.data || []).map((merchant: any) => ({
-      id: merchant.id.toString(),
-      name: merchant.merchant_name,
-      slug: merchant.page_slug,
-      logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-      letter: getFirstEnglishLetter(merchant.merchant_name || ''),
-      description: merchant.summary || '',
-      affiliateLink: merchant.default_affiliate_link || '',
-      market: market,
-    }));
+    const merchants = (merchantsData?.data || []).map((merchant: any) => {
+      const logo = merchant.logo?.url
+        ? rewriteImageUrl(absolutizeMedia(merchant.logo.url))
+        : "/api/placeholder/120/120";
+
+      return {
+        id: merchant.id.toString(),
+        name: merchant.merchant_name,
+        slug: merchant.page_slug,
+        logo,
+        letter: getFirstEnglishLetter(merchant.merchant_name || ''),
+        description: merchant.summary || '',
+        affiliateLink: merchant.default_affiliate_link || '',
+        market: market,
+      };
+    });
 
     return (
       <MerchantIndex 

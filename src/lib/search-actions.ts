@@ -1,6 +1,6 @@
 'use server';
 
-import { strapiFetch, absolutizeMedia, qs } from "@/lib/strapi.server";
+import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from "@/lib/strapi.server";
 
 export interface MerchantSearchData {
   id: string | number;
@@ -51,11 +51,15 @@ export async function getAllMerchantsForSearch(market: string = 'tw'): Promise<M
     });
     
     const merchants = (merchantsData?.data || []).map((merchant: any) => {
+      const logo = merchant.logo?.url
+        ? rewriteImageUrl(absolutizeMedia(merchant.logo.url))
+        : "";
+
       const mapped = {
         id: merchant.id,
         name: merchant.merchant_name, // Map merchant_name to name
         slug: merchant.page_slug,
-        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "",
+        logo,
         website: merchant.website || merchant.affiliate_link || "",
       };
       

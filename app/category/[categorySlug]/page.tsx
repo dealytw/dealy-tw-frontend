@@ -1,7 +1,7 @@
 // app/category/[categorySlug]/page.tsx - Server Component with ISR
 import { notFound } from 'next/navigation';
 import { pageMeta } from '@/seo/meta';
-import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams, rewriteImageUrl } from '@/lib/strapi.server';
 import CategoryView from './category-view';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
@@ -167,12 +167,17 @@ export default async function CategoryPage({
           });
           
           const firstCoupon = couponData?.data?.[0] || null;
-          
+
+          // Rewrite merchant logo to custom /upload domain
+          const merchantLogoUrl = merchant.logo?.url
+            ? rewriteImageUrl(absolutizeMedia(merchant.logo.url))
+            : "/api/placeholder/120/120";
+
           return {
             id: merchant.id.toString(),
             name: merchant.merchant_name || merchant.name,
             slug: merchant.page_slug,
-            logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+            logo: merchantLogoUrl,
             description: merchant.summary || "",
             firstCouponTitle: firstCoupon?.coupon_title || null,
             firstCoupon: firstCoupon ? {
@@ -188,11 +193,16 @@ export default async function CategoryPage({
           };
         } catch (error) {
           console.error(`[CategoryPage] Error fetching coupon for merchant ${merchant.page_slug}:`, error);
+
+          const merchantLogoUrl = merchant.logo?.url
+            ? rewriteImageUrl(absolutizeMedia(merchant.logo.url))
+            : "/api/placeholder/120/120";
+
           return {
             id: merchant.id.toString(),
             name: merchant.merchant_name || merchant.name,
             slug: merchant.page_slug,
-            logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
+            logo: merchantLogoUrl,
             description: merchant.summary || "",
             firstCouponTitle: null,
             firstCoupon: null

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams } from "@/lib/strapi.server";
+import { strapiFetch, absolutizeMedia, qs, getStartsAtFilterParams, rewriteImageUrl } from "@/lib/strapi.server";
 
 export const runtime = 'nodejs';
 
@@ -61,17 +61,23 @@ export async function GET(request: NextRequest) {
         return name.includes(query) || slug.includes(query) || summary.includes(query);
       })
       .slice(0, 20)
-      .map((merchant: any) => ({
-        id: merchant.id,
-        name: merchant.merchant_name,
-        slug: merchant.page_slug,
-        logo: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "/api/placeholder/120/120",
-        description: merchant.summary || "",
-        website: merchant.website || "",
-        affiliateLink: merchant.affiliate_link || "",
-        market: merchant.market?.key || market.toUpperCase(),
-        type: 'merchant'
-      }));
+      .map((merchant: any) => {
+        const logo = merchant.logo?.url
+          ? rewriteImageUrl(absolutizeMedia(merchant.logo.url))
+          : "/api/placeholder/120/120";
+
+        return {
+          id: merchant.id,
+          name: merchant.merchant_name,
+          slug: merchant.page_slug,
+          logo,
+          description: merchant.summary || "",
+          website: merchant.website || "",
+          affiliateLink: merchant.affiliate_link || "",
+          market: merchant.market?.key || market.toUpperCase(),
+          type: 'merchant'
+        };
+      });
 
     // Search coupons with explicit fields and minimal populate
     let coupons: any[] = [];
@@ -118,24 +124,30 @@ export async function GET(request: NextRequest) {
                  tips.includes(query) || merchantName.includes(query);
         })
         .slice(0, 20)
-        .map((coupon: any) => ({
-          id: coupon.id,
-          title: coupon.coupon_title || 'Untitled Coupon',
-          description: coupon.description || "",
-          value: coupon.value || "",
-          code: coupon.code || "",
-          coupon_type: coupon.coupon_type || "promo_code",
-          expires_at: coupon.expires_at || "長期有效",
-          user_count: coupon.user_count || 0,
-          affiliate_link: coupon.affiliate_link || "#",
-          merchant: {
-            id: coupon.merchant?.id,
-            name: coupon.merchant?.merchant_name || 'Unknown Merchant',
-            slug: coupon.merchant?.page_slug || '',
-            logo: coupon.merchant?.logo?.url ? absolutizeMedia(coupon.merchant.logo.url) : "/api/placeholder/120/120",
-          },
-          type: 'coupon'
-        }));
+        .map((coupon: any) => {
+          const merchantLogo = coupon.merchant?.logo?.url
+            ? rewriteImageUrl(absolutizeMedia(coupon.merchant.logo.url))
+            : "/api/placeholder/120/120";
+
+          return {
+            id: coupon.id,
+            title: coupon.coupon_title || 'Untitled Coupon',
+            description: coupon.description || "",
+            value: coupon.value || "",
+            code: coupon.code || "",
+            coupon_type: coupon.coupon_type || "promo_code",
+            expires_at: coupon.expires_at || "長期有效",
+            user_count: coupon.user_count || 0,
+            affiliate_link: coupon.affiliate_link || "#",
+            merchant: {
+              id: coupon.merchant?.id,
+              name: coupon.merchant?.merchant_name || 'Unknown Merchant',
+              slug: coupon.merchant?.page_slug || '',
+              logo: merchantLogo,
+            },
+            type: 'coupon'
+          };
+        });
     } catch (couponError) {
       console.error('Coupon search error:', couponError);
       coupons = [];
