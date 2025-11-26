@@ -822,30 +822,37 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     }
 
     // Transform coupons data
-    const transformedCoupons = allCoupons.map((coupon: any) => ({
-      id: (coupon.id?.toString() || coupon.documentId?.toString() || '').toString(),
-      coupon_title: coupon.coupon_title,
-      coupon_type: coupon.coupon_type,
-      coupon_status: coupon.coupon_status || 'active',
-      priority: coupon.priority || 0, // Include priority for sorting
-      value: coupon.value,
-      code: coupon.code,
-      expires_at: coupon.expires_at,
-      user_count: coupon.user_count || 0,
-      display_count: coupon.display_count || 0, // Add display_count for usage tracking
-      description: coupon.description || "",
-      editor_tips: coupon.editor_tips,
-      affiliate_link: coupon.affiliate_link,
-      merchant: {
-        id: coupon.merchant?.id || coupon.merchant,
-        name: coupon.merchant?.merchant_name || coupon.merchant?.name || "",
-        slug: coupon.merchant?.page_slug || "",
-        logo: coupon.merchant?.logo?.url || "",
-      },
-      market: {
-        key: coupon.market?.key || marketKey.toUpperCase(),
-      },
-    }));
+    const transformedCoupons = allCoupons.map((coupon: any) => {
+      // Rewrite merchant logo to custom /upload domain for all coupon cards & modal
+      const merchantLogoUrl = coupon.merchant?.logo?.url
+        ? rewriteImageUrl(absolutizeMedia(coupon.merchant.logo.url), siteUrl)
+        : "";
+
+      return {
+        id: (coupon.id?.toString() || coupon.documentId?.toString() || '').toString(),
+        coupon_title: coupon.coupon_title,
+        coupon_type: coupon.coupon_type,
+        coupon_status: coupon.coupon_status || 'active',
+        priority: coupon.priority || 0, // Include priority for sorting
+        value: coupon.value,
+        code: coupon.code,
+        expires_at: coupon.expires_at,
+        user_count: coupon.user_count || 0,
+        display_count: coupon.display_count || 0, // Add display_count for usage tracking
+        description: coupon.description || "",
+        editor_tips: coupon.editor_tips,
+        affiliate_link: coupon.affiliate_link,
+        merchant: {
+          id: coupon.merchant?.id || coupon.merchant,
+          name: coupon.merchant?.merchant_name || coupon.merchant?.name || "",
+          slug: coupon.merchant?.page_slug || "",
+          logo: merchantLogoUrl,
+        },
+        market: {
+          key: coupon.market?.key || marketKey.toUpperCase(),
+        },
+      };
+    });
 
     // Separate active and expired coupons on server, then sort by priority within each group
     // Note: CMS middleware automatically changes coupon_status to 'expired' after 3 days

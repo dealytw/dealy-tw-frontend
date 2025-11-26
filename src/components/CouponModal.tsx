@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, ShoppingBag, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Image from "next/image";
 
 interface CouponModalProps {
   open: boolean;
@@ -120,14 +119,13 @@ const CouponModal = ({ open, onOpenChange, coupon }: CouponModalProps) => {
           {/* Merchant Logo */}
           <div className="flex justify-center">
             <div className="w-[110px] h-[110px] sm:w-[150px] sm:h-[150px] flex items-center justify-center">
-              <Image 
-                src={coupon.merchant.logo} 
+              <img
+                src={coupon.merchant.logo}
                 alt={coupon.merchant.name}
                 width={150}
                 height={150}
-                className="max-w-full max-h-full w-auto h-auto object-contain"
-                sizes="150px"
                 loading="lazy"
+                className="max-w-full max-h-full w-auto h-auto object-contain"
               />
             </div>
           </div>

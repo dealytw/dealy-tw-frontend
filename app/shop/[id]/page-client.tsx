@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DealyCouponCard from "@/components/DealyCouponCard";
@@ -584,12 +583,13 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center lg:hidden relative">
                 {merchant.logo && (
-                  <Image 
-                    src={merchant.logo} 
-                    alt={merchant.name} 
-                    fill
-                    className="object-contain"
-                    sizes="48px"
+                  <img
+                    src={merchant.logo}
+                    alt={merchant.name}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    className="object-contain max-w-full max-h-full"
                   />
                 )}
               </div>
@@ -914,14 +914,15 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           return (
                             <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
                               <div className="flex items-start gap-4">
-                                <div className="text-center min-w-[80px]">
+                                  <div className="text-center min-w-[80px]">
                                   <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center relative">
-                                    <Image 
-                                      src={transformedCoupon.merchant?.logo || merchant.logo} 
-                                      alt={transformedCoupon.merchant?.name || merchant.name} 
-                                      fill
-                                      className="object-contain"
-                                      sizes="48px"
+                                    <img
+                                      src={transformedCoupon.merchant?.logo || merchant.logo}
+                                      alt={transformedCoupon.merchant?.name || merchant.name}
+                                      width={48}
+                                      height={48}
+                                      loading="lazy"
+                                      className="object-contain max-w-full max-h-full"
                                     />
                                   </div>
                                   <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
