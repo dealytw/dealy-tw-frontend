@@ -102,11 +102,11 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
   };
 
   return (
-    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[280px] flex flex-col">
+    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[220px] flex flex-col">
       {/* Main Content */}
-      <div className="p-4 pb-0 flex-1 flex flex-col">
-        {/* Merchant Logo - Bigger */}
-        <div className="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="p-3 pb-0 flex-1 flex flex-col">
+        {/* Merchant Logo - Smaller */}
+        <div className="w-12 h-12 mx-auto mb-2 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
           {relatedMerchant.logo ? (
             <img
               src={relatedMerchant.logo}
@@ -117,25 +117,25 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
               {relatedMerchant.name.charAt(0)}
             </div>
           )}
         </div>
 
         {/* Coupon Title */}
-        <h3 className="text-sm font-medium text-gray-900 mb-2 text-center">
+        <h3 className="text-xs font-medium text-gray-900 mb-1.5 text-center leading-tight">
           {couponTitle}
         </h3>
 
         {/* View More Button - Below title, pale grey background, with shadow */}
         {relatedMerchant.slug && (
-          <Link href={`/shop/${relatedMerchant.slug}`} className="mb-3 flex justify-center">
+          <Link href={`/shop/${relatedMerchant.slug}`} className="mb-2 flex justify-center">
             <Button 
               className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow"
               style={{
-                fontSize: '0.7rem',
-                padding: '0.25rem 0.75rem',
+                fontSize: '0.65rem',
+                padding: '0.2rem 0.6rem',
                 lineHeight: '1.2',
                 whiteSpace: 'nowrap',
               }}
@@ -147,13 +147,13 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
       </div>
 
       {/* Pink Footer */}
-      <div className="bg-pink-500 px-4 py-3 flex items-center justify-between">
+      <div className="bg-pink-500 px-3 py-2 flex items-center justify-between">
         <div className="text-white">
-          <div className="text-lg font-bold">{discountValue} 折扣</div>
+          <div className="text-base font-bold">{discountValue} 折扣</div>
         </div>
         
         <Button 
-          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-4 py-2"
+          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-3 py-1.5 text-sm"
           size="sm"
           onClick={handleButtonClick}
         >
