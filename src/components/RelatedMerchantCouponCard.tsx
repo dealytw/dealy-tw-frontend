@@ -130,7 +130,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
 
         {/* View More Button - Below title, pale grey background, with shadow */}
         {relatedMerchant.slug && (
-          <Link href={`/shop/${relatedMerchant.slug}`} className="mb-2 flex justify-center">
+          <Link href={`/shop/${relatedMerchant.slug}`} className="mb-0 flex justify-center">
             <Button 
               className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow"
               style={{
@@ -147,7 +147,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
       </div>
 
       {/* Pink Footer */}
-      <div className="bg-pink-500 px-3 py-2 flex items-center justify-between">
+      <div className="bg-pink-500 px-3 py-2 flex items-center justify-between mt-0">
         <div className="text-white">
           <div className="text-base font-bold">{discountValue} 折扣</div>
         </div>
