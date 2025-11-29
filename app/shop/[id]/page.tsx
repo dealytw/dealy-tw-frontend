@@ -616,46 +616,29 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       }
       
       if (relatedFromCMS.length > 0) {
-        // Fetch priority 1 coupon for each related merchant (same approach as homepage)
+        // Fetch priority 1 coupon for each related merchant
         const relatedMerchantsWithCoupons = await Promise.all(
           relatedFromCMS.map(async (relatedMerchant: any) => {
             try {
-              // Use same query structure as getTopCouponForMerchant (homepage approach)
               const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs({
                 "filters[merchant][id][$eq]": relatedMerchant.id.toString(),
                 "filters[market][key][$eq]": marketKey,
                 "filters[coupon_status][$eq]": "active",
-                ...getStartsAtFilterParams(), // Filter out scheduled coupons (starts_at in the future)
-                "fields[0]": "id",
-                "fields[1]": "coupon_title",
-                "fields[2]": "coupon_type",
-                "fields[3]": "value",
-                "fields[4]": "code",
-                "fields[5]": "affiliate_link",
-                "fields[6]": "priority",
-                "sort": "priority:asc", // Priority 1 (lowest number) comes first
-                "pagination[pageSize]": "1", // Only get the first (priority 1) coupon
+                "sort": "priority:asc",
+                "pagination[pageSize]": "1",
               })}`, { 
                 revalidate: 300, 
-                tag: `merchant-priority1-coupon:${relatedMerchant.id}:${marketKey}` 
+                tag: `merchant:${relatedMerchant.page_slug}` 
               });
               
               const firstCoupon = couponData?.data?.[0] || null;
               
-              // Only return merchant if coupon exists (same as homepage - only show merchants with coupons)
-              if (!firstCoupon) {
-                return null;
-              }
-              
-              const originalLogoUrl = relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null;
-              const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
-
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
                 slug: relatedMerchant.page_slug,
-                logo: rewrittenLogoUrl,
-                firstCoupon: {
+                logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
+                firstCoupon: firstCoupon ? {
                   id: firstCoupon.id.toString(),
                   title: firstCoupon.coupon_title,
                   value: firstCoupon.value?.replace('$$', '$') || firstCoupon.value,
@@ -663,18 +646,22 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
                   coupon_type: firstCoupon.coupon_type,
                   affiliate_link: firstCoupon.affiliate_link,
                   priority: firstCoupon.priority
-                }
+                } : null
               };
             } catch (error) {
               console.error(`Error fetching coupon for merchant ${relatedMerchant.page_slug}:`, error);
-              // Return null if error (will be filtered out)
-              return null;
+              return {
+                id: relatedMerchant.id.toString(),
+                name: relatedMerchant.merchant_name || relatedMerchant.name,
+                slug: relatedMerchant.page_slug,
+                logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
+                firstCoupon: null
+              };
             }
           })
         );
         
-        // Filter out null values (merchants without coupons)
-        relatedMerchants = relatedMerchantsWithCoupons.filter((merchant: any) => merchant !== null);
+        relatedMerchants = relatedMerchantsWithCoupons;
       }
       } catch (error) {
       console.warn('Failed to fetch related merchants, continuing without them:', error);
