@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 
 interface RelatedMerchantCouponCardProps {
   relatedMerchant: {
@@ -21,53 +20,9 @@ interface RelatedMerchantCouponCardProps {
 }
 
 const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCardProps) => {
-  const [coupon, setCoupon] = useState(relatedMerchant.firstCoupon);
-  const [loading, setLoading] = useState(false);
-
-  // Fetch coupon data if not already available
-  useEffect(() => {
-    if (!coupon && relatedMerchant.slug) {
-      setLoading(true);
-      fetch(`/api/merchant-coupon?merchant=${relatedMerchant.slug}&market=tw`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.coupon) {
-            setCoupon(data.coupon);
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching coupon:', error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [coupon, relatedMerchant.slug]);
-
-  if (!coupon && !loading) {
-    return null;
-  }
-
-  if (loading) {
-    return (
-      <article className="relative overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200 min-h-[280px] flex flex-col">
-        <div className="p-4 pb-0 flex-1">
-          <div className="animate-pulse">
-            <div className="h-16 w-16 mx-auto mb-3 bg-gray-200 rounded-full"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-          </div>
-        </div>
-        <div className="bg-pink-500 px-4 py-3 flex items-center justify-between">
-          <div className="animate-pulse">
-            <div className="h-6 bg-pink-300 rounded w-16"></div>
-          </div>
-          <div className="animate-pulse">
-            <div className="h-8 bg-pink-300 rounded w-16"></div>
-          </div>
-        </div>
-      </article>
-    );
-  }
+  // Coupon is now guaranteed from server (merchants without coupons are filtered out)
+  // Keep safety check for defensive programming
+  const coupon = relatedMerchant.firstCoupon;
 
   if (!coupon) {
     return null;
