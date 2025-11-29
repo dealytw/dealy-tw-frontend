@@ -520,6 +520,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
   
   const marketKey = (market as string) || process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
+  // Get siteUrl early for use in related merchants section
+  const domainConfig = getDomainConfigServer();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+
   try {
     // Use server-only Strapi fetch with ISR
     const [merchantRes, couponsRes, hotstoreRes] = await Promise.all([
@@ -633,11 +637,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
               
               const firstCoupon = couponData?.data?.[0] || null;
               
+              const originalLogoUrl = relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null;
+              const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
+              
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
                 slug: relatedMerchant.page_slug,
-                logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
+                logo: rewrittenLogoUrl,
                 firstCoupon: firstCoupon ? {
                   id: firstCoupon.id.toString(),
                   title: firstCoupon.coupon_title,
@@ -650,11 +657,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
               };
             } catch (error) {
               console.error(`Error fetching coupon for merchant ${relatedMerchant.page_slug}:`, error);
+              const originalLogoUrl = relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null;
+              const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
               return {
                 id: relatedMerchant.id.toString(),
                 name: relatedMerchant.merchant_name || relatedMerchant.name,
                 slug: relatedMerchant.page_slug,
-                logo: relatedMerchant.logo?.url ? absolutizeMedia(relatedMerchant.logo.url) : null,
+                logo: rewrittenLogoUrl,
                 firstCoupon: null
               };
             }
@@ -709,8 +718,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     
     // Get market locale from merchant data or fetch separately
     const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
-    const domainConfig = getDomainConfigServer();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
     // Get Taiwan time (UTC+8) for server-side date generation
     const getTaiwanDate = () => {
