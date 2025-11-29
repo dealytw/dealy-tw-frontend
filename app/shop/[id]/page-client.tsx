@@ -360,6 +360,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
   const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
   const [expiredCouponDetails, setExpiredCouponDetails] = useState<Record<string, boolean>>({});
   const [showAllActiveCoupons, setShowAllActiveCoupons] = useState(false);
+  const [showAllExpiredCoupons, setShowAllExpiredCoupons] = useState(false);
   const [isRegionExpanded, setIsRegionExpanded] = useState(false);
   
   // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
@@ -904,15 +905,21 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   <div className="relative">
                     <Card className="shadow-md relative">
                       <CardContent className="space-y-4">
-                        {uniqueExpiredCoupons.map(coupon => {
+                        {uniqueExpiredCoupons.map((coupon, index) => {
                           const transformedCoupon = transformCoupon(coupon);
                           if (!transformedCoupon) {
                             console.error('Skipping invalid expired coupon:', coupon);
                             return null;
                           }
+                          // Hide coupons after the 5th if showAllExpiredCoupons is false
+                          const shouldHide = !showAllExpiredCoupons && index >= 5;
                           const showDetails = expiredCouponDetails[coupon.id] || false;
                           return (
-                            <div key={coupon.id} id={`coupon-${coupon.id}`} className="border border-gray-200 rounded-lg p-4">
+                            <div 
+                              key={coupon.id} 
+                              id={`coupon-${coupon.id}`} 
+                              className={`border border-gray-200 rounded-lg p-4 ${shouldHide ? 'hidden' : ''}`}
+                            >
                               <div className="flex items-start gap-4">
                                   <div className="text-center min-w-[80px]">
                                   <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center relative">
@@ -970,6 +977,18 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                             </div>
                           );
                         }).filter(Boolean)}
+                      
+                      {/* Show More Button - Only show if there are more than 5 expired coupons */}
+                      {uniqueExpiredCoupons.length > 5 && !showAllExpiredCoupons && (
+                        <div className="flex justify-center mt-4">
+                          <Button
+                            onClick={() => setShowAllExpiredCoupons(true)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2"
+                          >
+                            顯示更多
+                          </Button>
+                        </div>
+                      )}
                       </CardContent>
                       {/* Grey overlay on top to make all colors pale */}
                       <div className="absolute inset-0 bg-white/70 rounded-lg pointer-events-none z-10"></div>
