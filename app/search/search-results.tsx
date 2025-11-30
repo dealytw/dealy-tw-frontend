@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CouponCard from "@/components/CouponCard";
 import { Search, X, Store, Tag, ArrowLeft } from "lucide-react";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 
 type SearchResult = {
   merchants: Array<{
@@ -175,13 +175,12 @@ export default function SearchResults({ searchResults, query }: SearchResultsPro
                           <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                             <div className="p-6 text-center">
                               <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden bg-white p-2">
-                                <Image
+                                <img
                                   src={merchant.logo}
                                   alt={merchant.name}
                                   width={80}
                                   height={80}
                                   className="w-full h-full object-contain"
-                                  sizes="80px"
                                   loading="lazy"
                                 />
                               </div>

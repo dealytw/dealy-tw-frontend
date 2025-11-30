@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 import { Search, X } from "lucide-react";
 import { useSearchMerchants } from "./SearchProvider";
 
@@ -507,13 +507,12 @@ export default function SearchDropdown({
                     {/* Merchant Logo */}
                     {suggestion.logo && (
                       <div className="flex-shrink-0 w-10 h-10 rounded overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
-                        <Image
+                        <img
                           src={suggestion.logo}
                           alt={`${suggestion.name} logo`}
                           width={40}
                           height={40}
                           className="w-full h-full object-contain"
-                          sizes="40px"
                           loading="lazy"
                         />
                       </div>

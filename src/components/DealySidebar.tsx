@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 
 interface DealySidebarProps {
   popularMerchants?: {
@@ -40,13 +40,12 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
                   className="text-center group"
                 >
                   <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-lg group-hover:shadow-xl transition-shadow">
-                    <Image 
+                    <img 
                       src={merchant.logoUrl} 
                       alt={merchant.name}
                       width={64}
                       height={64}
                       className="w-full h-full object-cover"
-                      sizes="64px"
                       loading="lazy"
                     />
                   </div>

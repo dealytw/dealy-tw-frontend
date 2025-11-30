@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 import NavigationMenu from "@/components/NavigationMenu";
 import SearchDropdown from "@/components/SearchDropdown";
 
@@ -18,14 +18,13 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Image 
+              <img 
                 src="/dealytwlogo.svg"
                 alt="dealy logo"
                 width={120}
                 height={32}
                 className="h-8 w-auto"
-                priority
-                sizes="(max-width: 768px) 100px, 120px"
+                loading="eager"
               />
             </Link>
           </div>
@@ -70,14 +69,13 @@ const Header = () => {
           {/* Logo - Left */}
           <div className="flex items-center justify-start">
             <Link href="/" className="flex items-center">
-              <Image 
+              <img 
                 src="/dealytwlogo.svg"
                 alt="dealy logo"
                 width={100}
                 height={32}
                 className="h-8 w-auto"
-                priority
-                sizes="100px"
+                loading="eager"
               />
             </Link>
           </div>

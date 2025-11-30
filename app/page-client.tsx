@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 import Script from "next/script";
 import { Search } from "lucide-react";
 import Header from "@/components/Header";
@@ -158,13 +158,12 @@ const MerchantSlider = ({ merchants }: MerchantSliderProps) => {
             href={`/shop/${merchant.slug}`}
             className="merchant-item flex-shrink-0 text-center group cursor-pointer w-[180px] flex flex-col items-center"
           >
-            <Image
+            <img
               src={merchant.logoUrl}
               alt={merchant.name}
               width={96}
               height={96}
               className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg object-cover bg-white group-hover:shadow-xl transition-shadow"
-              sizes="96px"
               loading={index < 6 ? "eager" : "lazy"}
             />
             <span className="merchant-name font-semibold text-gray-800 text-sm mb-2">{merchant.name}</span>
@@ -382,18 +381,17 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       
       {/* CMS: hero.background - with fallback */}
       <section className="py-16 px-4 relative">
-        {/* Background Image using Next.js Image with fill */}
+        {/* Background Image - fixed resolution for performance */}
         {initialData.hero?.bgUrl && (
           <div className="absolute inset-0 z-0">
-            <Image
+            <img
               src={initialData.hero.bgUrl}
               alt=""
-              fill
-              className="object-cover"
-              priority
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover"
+              loading="eager"
               fetchPriority="high"
-              sizes="100vw"
-              quality={90}
             />
           </div>
         )}
@@ -485,13 +483,12 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                 >
                   <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                     {category.iconUrl ? (
-                      <Image
+                      <img
                         src={category.iconUrl}
                         alt={category.name}
                         width={96}
                         height={96}
                         className="w-full h-full object-cover"
-                        sizes="96px"
                         loading="lazy"
                       />
                     ) : (

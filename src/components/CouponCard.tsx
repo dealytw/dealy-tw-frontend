@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 import { useState } from "react";
 
 interface CouponCardProps {
@@ -60,13 +60,12 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
         <div className="md:w-48 p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="w-20 h-20 mb-4 flex items-center justify-center">
             {coupon.merchant.logo ? (
-              <Image 
+              <img 
                 src={coupon.merchant.logo} 
                 alt={coupon.merchant.name}
                 width={80}
                 height={80}
                 className="max-w-full max-h-full object-contain"
-                sizes="80px"
                 loading="lazy"
               />
             ) : (

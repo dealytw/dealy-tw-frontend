@@ -3,7 +3,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryCouponCard from "@/components/CategoryCouponCard";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 
 interface Merchant {
   id: string;
@@ -81,13 +81,12 @@ export default function CategoryView({
                   className="text-center group"
                 >
                   <div className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg overflow-hidden bg-white group-hover:shadow-xl transition-shadow">
-                    <Image 
+                    <img 
                       src={merchant.logo} 
                       alt={merchant.name}
                       width={96}
                       height={96}
                       className="w-full h-full object-cover"
-                      sizes="96px"
                       loading="lazy"
                     />
                   </div>

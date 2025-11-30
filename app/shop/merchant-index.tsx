@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 
 interface Merchant {
   id: string;
@@ -112,13 +112,12 @@ export default function MerchantIndex({
                   >
                     {/* Merchant Logo - Rounded */}
                     <div className="w-32 h-32 mx-auto mb-3 rounded-full overflow-hidden bg-white border border-gray-100 flex items-center justify-center group-hover:shadow-lg transition-shadow">
-                      <Image 
+                      <img 
                         src={merchant.logo}
                         alt={merchant.name}
                         width={128}
                         height={128}
                         className="w-full h-full object-cover"
-                        sizes="128px"
                         loading="lazy"
                       />
                     </div>

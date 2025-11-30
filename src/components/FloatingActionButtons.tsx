@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 import Link from "next/link";
 import { FloatingButton } from "@/lib/floating-buttons";
 
@@ -51,12 +51,13 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
             title={label || "Floating Action Button"}
           >
             {iconUrl ? (
-              <Image 
+              <img 
                 src={iconUrl} 
                 alt={label || "icon"} 
                 width={64} 
                 height={64} 
-                className="w-full h-full object-cover rounded-full" 
+                className="w-full h-full object-cover rounded-full"
+                loading="lazy"
               />
             ) : (
               <span className="text-sm font-semibold">{label?.charAt(0).toUpperCase()}</span>

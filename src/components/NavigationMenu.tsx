@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+// Removed Next.js Image import - using regular img tags for fixed resolution
 import { X } from "lucide-react";
 
 interface NavigationMenuProps {
@@ -84,13 +84,12 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold">
             <Link href="/" onClick={() => onOpenChange(false)} className="flex items-center">
-              <Image 
+              <img 
                 src="/dealytwlogo.svg"
                 alt="dealy logo"
                 width={120}
                 height={32}
                 className="h-8 w-auto"
-                sizes="(max-width: 768px) 100px, 120px"
                 loading="lazy"
               />
             </Link>
@@ -129,12 +128,13 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   {merchant.logoUrl ? (
-                    <Image
+                    <img
                       src={merchant.logoUrl}
                       alt={merchant.name}
                       width={48}
                       height={48}
                       className="w-12 h-12 object-contain"
+                      loading="lazy"
                       sizes="48px"
                       loading="lazy"
                     />
