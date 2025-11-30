@@ -56,6 +56,7 @@ export default async function HomePage() {
     });
     
     // Pass data to client component for interactivity
+    // Note: Hero image preload is handled automatically by Next.js Image component with priority prop
     return (
       <>
         <HomePageClient initialData={homepageData} />

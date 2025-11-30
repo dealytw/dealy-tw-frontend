@@ -158,15 +158,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.svg" />
         
-        {/* Preload hero background image for homepage LCP optimization */}
-        {heroBgUrl && (
-          <link
-            rel="preload"
-            as="image"
-            href={heroBgUrl}
-            fetchPriority="high"
-          />
-        )}
+        {/* Preload hero background image for homepage LCP optimization - Only on homepage */}
+        {/* Note: Preload is moved to homepage component to avoid warnings on other pages */}
       </head>
       <body suppressHydrationWarning itemScope itemType="https://schema.org/WebPage">
         {/* Google Tag Manager (noscript) */}
