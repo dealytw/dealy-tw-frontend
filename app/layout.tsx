@@ -67,6 +67,46 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     // This is just for preload optimization
   }
 
+  // Fetch hotstore merchants for NavigationMenu (server-side)
+  let hotstoreMerchants: Array<{ id: string; name: string; slug: string; logoUrl: string | null }> = [];
+  try {
+    const hotstoreRes = await strapiFetch<{ data: any[] }>(`/api/hotstores?${qs({
+      "filters[market][key][$eq]": marketKey,
+      "populate[merchants][fields][0]": "id",
+      "populate[merchants][fields][1]": "merchant_name",
+      "populate[merchants][fields][2]": "page_slug",
+      "populate[merchants][populate][logo][fields][0]": "url",
+    })}`, { 
+      revalidate: 3600, 
+      tag: `hotstore:${marketKey}` 
+    });
+
+    if (hotstoreRes.data && hotstoreRes.data.length > 0) {
+      const hotstore = hotstoreRes.data[0];
+      
+      let merchantsFromCMS = [];
+      if (Array.isArray(hotstore?.merchants)) {
+        if (hotstore.merchants[0]?.data) {
+          merchantsFromCMS = hotstore.merchants.map((item: any) => item.data || item);
+        } else {
+          merchantsFromCMS = hotstore.merchants;
+        }
+      } else if (hotstore?.merchants?.data) {
+        merchantsFromCMS = hotstore.merchants.data;
+      }
+
+      hotstoreMerchants = merchantsFromCMS.map((merchant: any) => ({
+        id: merchant.id.toString(),
+        name: merchant.merchant_name || merchant.name || '',
+        slug: merchant.page_slug || '',
+        logoUrl: merchant.logo?.url ? rewriteImageUrl(absolutizeMedia(merchant.logo.url)) : null,
+      }));
+    }
+  } catch (error) {
+    console.error('Error fetching hotstore merchants in layout:', error);
+    // Silently fail - NavigationMenu will show empty state
+  }
+
   // Fetch merchants for search - EXACT same approach as /shop page
   // Using market relation filter: filters[market][key][$eq] to get all merchants for this market
   let searchMerchants: Array<{ id: string | number; name: string; slug: string; logo: string; website: string }> = [];
@@ -174,7 +214,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* End Google Tag Manager (noscript) */}
         
         <Providers>
-          <SearchProvider initialMerchants={searchMerchants}>
+          <SearchProvider initialMerchants={searchMerchants} hotstoreMerchants={hotstoreMerchants}>
             {/* Site-wide JSON-LD: WebSite + Organization */}
             <script
               type="application/ld+json"

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 // Removed Next.js Image import - using regular img tags for fixed resolution
 import { X } from "lucide-react";
+import { useSearchMerchants } from "@/components/SearchProvider";
 
 interface NavigationMenuProps {
   open: boolean;
@@ -15,29 +16,9 @@ interface NavigationMenuProps {
 export default function NavigationMenu({ open, onOpenChange }: NavigationMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [popularMerchants, setPopularMerchants] = useState<Array<{
-    id: string;
-    name: string;
-    slug: string;
-    logoUrl: string | null;
-  }>>([]);
-
-  // Fetch hotstore merchants when menu opens
-  useEffect(() => {
-    if (open) {
-      const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
-      fetch(`/api/hotstore?market=${marketKey}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.merchants) {
-            setPopularMerchants(data.merchants);
-          }
-        })
-        .catch(err => {
-          console.error('Error fetching hotstore merchants:', err);
-        });
-    }
-  }, [open]);
+  // Get hotstore merchants from context (fetched server-side in layout.tsx)
+  const { hotstoreMerchants } = useSearchMerchants();
+  const popularMerchants = hotstoreMerchants || [];
 
   const navigationLinks = [
     { href: "/", label: "主頁" },
@@ -134,8 +115,6 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                       width={48}
                       height={48}
                       className="w-12 h-12 object-contain"
-                      loading="lazy"
-                      sizes="48px"
                       loading="lazy"
                     />
                   ) : (

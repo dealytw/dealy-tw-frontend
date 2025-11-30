@@ -10,22 +10,32 @@ interface MerchantSearchData {
   website: string;
 }
 
+interface HotstoreMerchant {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
 interface SearchContextType {
   merchants: MerchantSearchData[];
   isLoading: boolean;
+  hotstoreMerchants: HotstoreMerchant[];
 }
 
 const SearchContext = createContext<SearchContextType>({
   merchants: [],
   isLoading: false, // Changed to false since we're getting data from server
+  hotstoreMerchants: [],
 });
 
 interface SearchProviderProps {
   children: React.ReactNode;
   initialMerchants?: MerchantSearchData[]; // Merchants fetched server-side
+  hotstoreMerchants?: HotstoreMerchant[]; // Hotstore merchants fetched server-side
 }
 
-export function SearchProvider({ children, initialMerchants = [] }: SearchProviderProps) {
+export function SearchProvider({ children, initialMerchants = [], hotstoreMerchants = [] }: SearchProviderProps) {
   const [merchants, setMerchants] = useState<MerchantSearchData[]>(initialMerchants);
   const [isLoading, setIsLoading] = useState(false); // No loading needed since data comes from server
 
@@ -52,7 +62,7 @@ export function SearchProvider({ children, initialMerchants = [] }: SearchProvid
   }, [initialMerchants]);
 
   return (
-    <SearchContext.Provider value={{ merchants, isLoading }}>
+    <SearchContext.Provider value={{ merchants, isLoading, hotstoreMerchants }}>
       {children}
     </SearchContext.Provider>
   );
