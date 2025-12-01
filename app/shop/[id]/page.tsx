@@ -432,6 +432,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     const name = merchant.merchant_name || id;
     
+    // Debug: Log the merchant name we're searching for
+    console.log(`[generateMetadata] Looking for alternate merchant for: "${name}" (slug: ${id})`);
+    
     // Find alternate merchant in other market for hreflang
     let alternateMerchantSlug: string | null = null;
     try {
@@ -441,15 +444,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         alternateMarket,
         300 // Cache for 5 minutes
       );
-      // Debug logging (remove in production if needed)
+      // Debug logging
       if (alternateMerchantSlug) {
-        console.log(`[generateMetadata] Found alternate merchant for ${name}: ${alternateMerchantSlug}`);
+        console.log(`[generateMetadata] ✅ Found alternate merchant for "${name}": ${alternateMerchantSlug}`);
       } else {
-        console.log(`[generateMetadata] No alternate merchant found for ${name} (TW->HK)`);
+        console.log(`[generateMetadata] ❌ No alternate merchant found for "${name}" (TW->HK)`);
       }
     } catch (error) {
       // Log error for debugging
-      console.error(`[generateMetadata] Failed to find alternate merchant for ${name}:`, error);
+      console.error(`[generateMetadata] ❌ Failed to find alternate merchant for "${name}":`, error);
     }
     let title: string;
     let description: string;

@@ -338,20 +338,41 @@ export async function findAlternateMerchant(
   alternateMarket: string,
   revalidate = 300
 ): Promise<string | null> {
+  console.log(`[findAlternateMerchant] Called with: merchantName="${merchantName}", currentMarket="${currentMarket}", alternateMarket="${alternateMarket}"`);
+  
   if (!merchantName || currentMarket === alternateMarket) {
+    console.log(`[findAlternateMerchant] Early return: merchantName=${!!merchantName}, markets match=${currentMarket === alternateMarket}`);
     return null;
   }
 
   // TW -> HK: Use sitemap + mapping
   if (currentMarket === 'tw' && alternateMarket === 'hk') {
+    console.log(`[findAlternateMerchant] Processing TW->HK lookup for "${merchantName}"`);
     try {
-      // First, check hardcoded mapping
-      if (MERCHANT_NAME_TO_HK_SLUG_MAPPING[merchantName]) {
-        const hkSlug = MERCHANT_NAME_TO_HK_SLUG_MAPPING[merchantName];
+      // Normalize merchant name for matching (trim whitespace)
+      const normalizedMerchantName = merchantName.trim();
+      
+      // First, check hardcoded mapping (exact match)
+      let hkSlug: string | undefined = MERCHANT_NAME_TO_HK_SLUG_MAPPING[normalizedMerchantName];
+      
+      // If no exact match, try case-insensitive lookup
+      if (!hkSlug) {
+        const merchantNameLower = normalizedMerchantName.toLowerCase();
+        for (const [key, value] of Object.entries(MERCHANT_NAME_TO_HK_SLUG_MAPPING)) {
+          if (key.toLowerCase() === merchantNameLower) {
+            hkSlug = value;
+            console.log(`[findAlternateMerchant] Found case-insensitive match: "${key}" -> "${hkSlug}"`);
+            break;
+          }
+        }
+      }
+      
+      if (hkSlug) {
         // Verify slug exists in sitemap (but don't fail if sitemap fetch fails)
         try {
           const hkSlugs = await parseHKMerchantSitemap();
           if (hkSlugs.has(hkSlug)) {
+            console.log(`[findAlternateMerchant] Found HK slug for "${normalizedMerchantName}": ${hkSlug}`);
             return hkSlug;
           } else {
             // If mapping exists but not in sitemap, still return it (sitemap might be outdated)
@@ -360,10 +381,12 @@ export async function findAlternateMerchant(
           }
         } catch (sitemapError) {
           // If sitemap fetch fails, still use the mapping (trust the hardcoded mapping)
-          console.warn(`[findAlternateMerchant] Sitemap verification failed for ${merchantName}, using mapping anyway:`, sitemapError);
+          console.warn(`[findAlternateMerchant] Sitemap verification failed for ${normalizedMerchantName}, using mapping anyway:`, sitemapError);
           return hkSlug;
         }
       }
+      
+      console.log(`[findAlternateMerchant] No mapping found for "${normalizedMerchantName}", trying fallback methods...`);
 
       // If no mapping, try to find by merchant_name normalization
       // This is a fallback - ideally all merchants should be in the mapping
