@@ -441,9 +441,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         alternateMarket,
         300 // Cache for 5 minutes
       );
+      // Debug logging (remove in production if needed)
+      if (alternateMerchantSlug) {
+        console.log(`[generateMetadata] Found alternate merchant for ${name}: ${alternateMerchantSlug}`);
+      } else {
+        console.log(`[generateMetadata] No alternate merchant found for ${name} (TW->HK)`);
+      }
     } catch (error) {
-      // Silently fail - hreflang will still work with self reference only
-      console.warn(`[generateMetadata] Failed to find alternate merchant for ${name}:`, error);
+      // Log error for debugging
+      console.error(`[generateMetadata] Failed to find alternate merchant for ${name}:`, error);
     }
     let title: string;
     let description: string;

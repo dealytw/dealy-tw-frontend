@@ -348,9 +348,19 @@ export async function findAlternateMerchant(
       // First, check hardcoded mapping
       if (MERCHANT_NAME_TO_HK_SLUG_MAPPING[merchantName]) {
         const hkSlug = MERCHANT_NAME_TO_HK_SLUG_MAPPING[merchantName];
-        // Verify slug exists in sitemap
-        const hkSlugs = await parseHKMerchantSitemap();
-        if (hkSlugs.has(hkSlug)) {
+        // Verify slug exists in sitemap (but don't fail if sitemap fetch fails)
+        try {
+          const hkSlugs = await parseHKMerchantSitemap();
+          if (hkSlugs.has(hkSlug)) {
+            return hkSlug;
+          } else {
+            // If mapping exists but not in sitemap, still return it (sitemap might be outdated)
+            console.warn(`[findAlternateMerchant] HK slug "${hkSlug}" from mapping not found in sitemap, using mapping anyway`);
+            return hkSlug;
+          }
+        } catch (sitemapError) {
+          // If sitemap fetch fails, still use the mapping (trust the hardcoded mapping)
+          console.warn(`[findAlternateMerchant] Sitemap verification failed for ${merchantName}, using mapping anyway:`, sitemapError);
           return hkSlug;
         }
       }
