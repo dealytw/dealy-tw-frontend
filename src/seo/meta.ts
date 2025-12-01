@@ -57,6 +57,9 @@ export function getHreflangLinks(
       hreflang: config.alternateHreflang,
       href: `${alternateUrl}${alternatePath}`
     });
+    console.log(`[getHreflangLinks] Added HK hreflang for merchant page: ${config.alternateHreflang} -> ${alternateUrl}${alternatePath}`);
+  } else if (isMerchantPage && !alternateMerchantSlug) {
+    console.log(`[getHreflangLinks] Merchant page but no alternateMerchantSlug provided (path: ${currentPath})`);
   }
   
   return links;
@@ -90,8 +93,12 @@ export function pageMeta({
   const url = canonical(canonicalOverride ?? path);
   const robots = noindex ? { index: false, follow: false, nocache: true } : undefined;
   
+  // Debug: Log hreflang generation
+  console.log(`[pageMeta] Generating metadata for path: ${path}, alternateMerchantSlug: ${alternateMerchantSlug || 'null'}, includeHreflang: ${includeHreflang}`);
+  
   // Generate hreflang links (with alternate merchant slug if provided)
   const hreflangLinks = includeHreflang && path ? getHreflangLinks(path, alternateMerchantSlug) : [];
+  console.log(`[pageMeta] Generated ${hreflangLinks.length} hreflang links:`, hreflangLinks);
   const alternates: { canonical?: string; languages?: Record<string, string> } = {};
   
   if (url) {
