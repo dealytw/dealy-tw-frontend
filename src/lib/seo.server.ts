@@ -322,15 +322,111 @@ const MERCHANT_NAME_TO_HK_SLUG_MAPPING: Record<string, string> = {
 };
 
 /**
- * Find alternate merchant in different market
- * For TW -> HK: Uses sitemap parsing + merchant_name mapping
- * For HK -> TW: Queries Strapi CMS by merchant_name
+ * Find alternate merchant by page_slug (simplified matching)
+ * Matches TW page_slug to HK sitemap slugs using flexible name-based matching
  * 
- * @param merchantName - The merchant_name to search for
+ * @param pageSlug - The page_slug to search for (e.g., "adidas", "booking.com")
  * @param currentMarket - Current market key (e.g., 'tw' or 'hk')
  * @param alternateMarket - Alternate market key (e.g., 'hk' or 'tw')
  * @param revalidate - Cache revalidation time in seconds
  * @returns The page_slug of the alternate merchant, or null if not found
+ */
+export async function findAlternateMerchantBySlug(
+  pageSlug: string,
+  currentMarket: string,
+  alternateMarket: string,
+  revalidate = 300
+): Promise<string | null> {
+  if (!pageSlug || currentMarket === alternateMarket) {
+    return null;
+  }
+
+  // TW -> HK: Match page_slug to HK sitemap slugs
+  if (currentMarket === 'tw' && alternateMarket === 'hk') {
+    try {
+      const hkSlugs = await parseHKMerchantSitemap();
+      
+      // Normalize TW slug for matching
+      const normalizedSlug = pageSlug
+        .toLowerCase()
+        .replace(/\./g, '-') // Convert dots to hyphens (e.g., "booking.com" -> "booking-com")
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      // Strategy 1: Exact match (e.g., "adidas" -> "adidas")
+      if (hkSlugs.has(normalizedSlug)) {
+        return normalizedSlug;
+      }
+      
+      // Strategy 2: With "-hk" suffix (e.g., "adidas" -> "adidas-hk")
+      const withHkSuffix = `${normalizedSlug}-hk`;
+      if (hkSlugs.has(withHkSuffix)) {
+        return withHkSuffix;
+      }
+      
+      // Strategy 3: Without "-hk" suffix (e.g., "adidas-hk" -> "adidas")
+      if (normalizedSlug.endsWith('-hk')) {
+        const withoutHkSuffix = normalizedSlug.slice(0, -3); // Remove "-hk"
+        if (hkSlugs.has(withoutHkSuffix)) {
+          return withoutHkSuffix;
+        }
+      }
+      
+      // Strategy 4: Partial match - find HK slug that contains TW slug or vice versa
+      // This handles cases like "booking.com" -> "booking-com"
+      for (const hkSlug of hkSlugs) {
+        // Remove common suffixes/prefixes for comparison
+        const hkBase = hkSlug.replace(/-hk$/, '').replace(/^hk-/, '');
+        const twBase = normalizedSlug.replace(/-hk$/, '').replace(/^hk-/, '');
+        
+        if (hkBase === twBase || hkSlug.includes(normalizedSlug) || normalizedSlug.includes(hkBase)) {
+          return hkSlug;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`[findAlternateMerchantBySlug] Error finding HK merchant for slug "${pageSlug}":`, error);
+      return null;
+    }
+  }
+
+  // HK -> TW: Query Strapi CMS by page_slug
+  if (currentMarket === 'hk' && alternateMarket === 'tw') {
+    try {
+      // Normalize HK slug to TW format (remove -hk suffix, convert hyphens back to dots if needed)
+      let twSlug = pageSlug.replace(/-hk$/, '').replace(/^hk-/, '');
+      
+      // Try to find TW merchant with this slug
+      const params = {
+        'filters[page_slug][$eq]': twSlug,
+        'filters[market][key][$eq]': alternateMarket,
+        'fields[0]': 'page_slug',
+        'pagination[pageSize]': '1',
+      };
+
+      const response = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(params)}`, {
+        revalidate,
+        tag: `alternate-merchant:${pageSlug}:${alternateMarket}`
+      });
+
+      if (response?.data && response.data.length > 0) {
+        return response.data[0].page_slug || null;
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`[findAlternateMerchantBySlug] Error finding TW merchant for slug "${pageSlug}":`, error);
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find alternate merchant in different market (DEPRECATED - use findAlternateMerchantBySlug)
+ * Kept for backward compatibility
  */
 export async function findAlternateMerchant(
   merchantName: string,
@@ -338,81 +434,54 @@ export async function findAlternateMerchant(
   alternateMarket: string,
   revalidate = 300
 ): Promise<string | null> {
-  console.log(`[findAlternateMerchant] Called with: merchantName="${merchantName}", currentMarket="${currentMarket}", alternateMarket="${alternateMarket}"`);
+  // For now, delegate to slug-based matching if we have a way to get slug from name
+  // This is a fallback - prefer using findAlternateMerchantBySlug with page_slug directly
+  console.warn('[findAlternateMerchant] Deprecated - use findAlternateMerchantBySlug with page_slug instead');
   
   if (!merchantName || currentMarket === alternateMarket) {
-    console.log(`[findAlternateMerchant] Early return: merchantName=${!!merchantName}, markets match=${currentMarket === alternateMarket}`);
     return null;
   }
 
-  // TW -> HK: Use sitemap + mapping
+  // TW -> HK: Try hardcoded mapping first, then fallback to slug matching
   if (currentMarket === 'tw' && alternateMarket === 'hk') {
-    console.log(`[findAlternateMerchant] Processing TW->HK lookup for "${merchantName}"`);
     try {
-      // Normalize merchant name for matching (trim whitespace)
-      const normalizedMerchantName = merchantName.trim();
+      // Check hardcoded mapping first (for special cases)
+      const normalizedName = merchantName.trim();
+      let hkSlug: string | undefined = MERCHANT_NAME_TO_HK_SLUG_MAPPING[normalizedName];
       
-      // First, check hardcoded mapping (exact match)
-      let hkSlug: string | undefined = MERCHANT_NAME_TO_HK_SLUG_MAPPING[normalizedMerchantName];
-      
-      // If no exact match, try case-insensitive lookup
       if (!hkSlug) {
-        const merchantNameLower = normalizedMerchantName.toLowerCase();
+        const nameLower = normalizedName.toLowerCase();
         for (const [key, value] of Object.entries(MERCHANT_NAME_TO_HK_SLUG_MAPPING)) {
-          if (key.toLowerCase() === merchantNameLower) {
+          if (key.toLowerCase() === nameLower) {
             hkSlug = value;
-            console.log(`[findAlternateMerchant] Found case-insensitive match: "${key}" -> "${hkSlug}"`);
             break;
           }
         }
       }
       
       if (hkSlug) {
-        // Verify slug exists in sitemap (but don't fail if sitemap fetch fails)
+        // Verify in sitemap
         try {
           const hkSlugs = await parseHKMerchantSitemap();
           if (hkSlugs.has(hkSlug)) {
-            console.log(`[findAlternateMerchant] Found HK slug for "${normalizedMerchantName}": ${hkSlug}`);
-            return hkSlug;
-          } else {
-            // If mapping exists but not in sitemap, still return it (sitemap might be outdated)
-            console.warn(`[findAlternateMerchant] HK slug "${hkSlug}" from mapping not found in sitemap, using mapping anyway`);
             return hkSlug;
           }
-        } catch (sitemapError) {
-          // If sitemap fetch fails, still use the mapping (trust the hardcoded mapping)
-          console.warn(`[findAlternateMerchant] Sitemap verification failed for ${normalizedMerchantName}, using mapping anyway:`, sitemapError);
-          return hkSlug;
+        } catch (e) {
+          // Use mapping anyway if sitemap fails
         }
+        return hkSlug;
       }
       
-      console.log(`[findAlternateMerchant] No mapping found for "${normalizedMerchantName}", trying fallback methods...`);
-
-      // If no mapping, try to find by merchant_name normalization
-      // This is a fallback - ideally all merchants should be in the mapping
-      const hkSlugs = await parseHKMerchantSitemap();
-      
-      // Try to match by normalizing merchant name to slug format
-      const normalizedName = merchantName
+      // Fallback: Try to normalize name to slug and match
+      const normalizedSlug = normalizedName
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/\./g, '-')
+        .replace(/[^a-z0-9-]+/g, '-')
         .replace(/^-|-$/g, '');
       
-      // Check if normalized name matches any HK slug
-      if (hkSlugs.has(normalizedName)) {
-        return normalizedName;
-      }
-
-      // Try partial match (e.g., "Farfetch" -> "farfetch")
-      for (const slug of hkSlugs) {
-        if (slug.includes(normalizedName) || normalizedName.includes(slug)) {
-          return slug;
-        }
-      }
-
-      return null;
+      return await findAlternateMerchantBySlug(normalizedSlug, currentMarket, alternateMarket, revalidate);
     } catch (error) {
-      console.error(`[findAlternateMerchant] Error finding HK merchant for ${merchantName}:`, error);
+      console.error(`[findAlternateMerchant] Error:`, error);
       return null;
     }
   }

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterParams } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
-import { getMerchantSEO, findAlternateMerchant } from '@/lib/seo.server';
+import { getMerchantSEO, findAlternateMerchantBySlug } from '@/lib/seo.server';
 import Merchant from './page-client';
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
@@ -432,27 +432,25 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     const name = merchant.merchant_name || id;
     
-    // Debug: Log the merchant name we're searching for
-    console.log(`[generateMetadata] Looking for alternate merchant for: "${name}" (slug: ${id})`);
-    
-    // Find alternate merchant in other market for hreflang
+    // Use page_slug (id) for matching instead of merchant_name
+    // This matches TW page_slug to HK sitemap slugs (e.g., "adidas" -> "adidas-hk", "booking.com" -> "booking-com")
     let alternateMerchantSlug: string | null = null;
     try {
-      alternateMerchantSlug = await findAlternateMerchant(
-        name,
+      alternateMerchantSlug = await findAlternateMerchantBySlug(
+        id, // Use page_slug directly
         marketKey,
         alternateMarket,
         300 // Cache for 5 minutes
       );
       // Debug logging
       if (alternateMerchantSlug) {
-        console.log(`[generateMetadata] ✅ Found alternate merchant for "${name}": ${alternateMerchantSlug}`);
+        console.log(`[generateMetadata] ✅ Found alternate merchant for slug "${id}": ${alternateMerchantSlug}`);
       } else {
-        console.log(`[generateMetadata] ❌ No alternate merchant found for "${name}" (TW->HK)`);
+        console.log(`[generateMetadata] ❌ No alternate merchant found for slug "${id}" (TW->HK)`);
       }
     } catch (error) {
       // Log error for debugging
-      console.error(`[generateMetadata] ❌ Failed to find alternate merchant for "${name}":`, error);
+      console.error(`[generateMetadata] ❌ Failed to find alternate merchant for slug "${id}":`, error);
     }
     let title: string;
     let description: string;
