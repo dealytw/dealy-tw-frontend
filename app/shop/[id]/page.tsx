@@ -490,13 +490,30 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     const noindex = merchant.robots === 'noindex,nofollow' || merchant.robots === 'noindex';
 
+    // Get site URL for image rewriting
+    const domainConfig = getDomainConfigServer();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+
+    // Process OG image: use ogImage if available, otherwise fallback to logo (hero image)
+    let ogImageUrl: string | undefined = undefined;
+    if (merchant.ogImage?.url) {
+      const absoluteOgImage = absolutizeMedia(merchant.ogImage.url);
+      ogImageUrl = rewriteImageUrl(absoluteOgImage, siteUrl);
+    } else if (merchant.logo?.url) {
+      // Fallback to logo (hero image) if ogImage is not available
+      const absoluteLogo = absolutizeMedia(merchant.logo.url);
+      ogImageUrl = rewriteImageUrl(absoluteLogo, siteUrl);
+    }
+
     return pageMeta({
       title,
       description,
       path: `/shop/${id}`,
       canonicalOverride: merchant.canonical_url || undefined,
       noindex,
-      ogImageUrl: merchant.ogImage?.url || undefined,
+      ogImageUrl,
+      ogImageAlt: name, // Merchant name as alt text for OG image
+      ogType: 'article', // Change from 'website' to 'article' for merchant pages
       alternateMerchantSlug, // Pass alternate merchant slug for hreflang
     });
       } catch (error) {

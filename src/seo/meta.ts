@@ -69,6 +69,8 @@ type PageMetaInput = {
   canonicalOverride?: string; // absolute or path
   noindex?: boolean;
   ogImageUrl?: string;
+  ogImageAlt?: string;        // Alt text for og:image (e.g., merchant name)
+  ogType?: 'website' | 'article'; // Open Graph type (default: 'website')
   includeHreflang?: boolean; // Whether to include hreflang tags (default: true)
   alternateMerchantSlug?: string | null; // Optional: slug of alternate merchant in other market for hreflang
 };
@@ -80,6 +82,8 @@ export function pageMeta({
   canonicalOverride,
   noindex,
   ogImageUrl,
+  ogImageAlt,
+  ogType = 'website',
   includeHreflang = true,
   alternateMerchantSlug,
 }: PageMetaInput) {
@@ -112,6 +116,12 @@ export function pageMeta({
     ogLocale = 'zh_TW';
   }
 
+  // Build Open Graph image object with alt text if provided
+  const ogImages = ogImageUrl ? [{
+    url: ogImageUrl,
+    ...(ogImageAlt && { alt: ogImageAlt }),
+  }] : undefined;
+
   return {
     title,
     description,
@@ -129,12 +139,12 @@ export function pageMeta({
     },
     openGraph: {
       url,
-      type: 'website',
+      type: ogType,
       title,
       description,
       siteName,
       locale: ogLocale,
-      images: ogImageUrl ? [{ url: ogImageUrl }] : undefined,
+      images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',

@@ -2,7 +2,7 @@
 import 'server-only';
 import { strapiFetch, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 
-// MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex)
+// MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex, ogImage, logo)
 export async function getMerchantSEO(slug: string, revalidate = 300) {
   const params = {
     'filters[page_slug][$eq]': slug,
@@ -14,6 +14,8 @@ export async function getMerchantSEO(slug: string, revalidate = 300) {
     'fields[5]': 'seo_description',
     'fields[6]': 'canonical_url',
     'fields[7]': 'robots',
+    'populate[ogImage][fields][0]': 'url',
+    'populate[logo][fields][0]': 'url',
   };
 
   return strapiFetch<{ data: any[] }>(`/api/merchants?${qs(params)}`, {
@@ -141,7 +143,12 @@ async function parseHKMerchantSitemap(): Promise<Set<string>> {
  * This mapping is used for hreflang tags to link TW and HK versions of same merchant.
  * If a merchant is not in this mapping, the system will try to match by normalized name.
  * 
+ * ⚠️ TEMPORARY SOLUTION: This is a temporary hardcoded mapping.
+ * When HK site migrates to Next.js, this should be replaced with a dynamic solution
+ * (e.g., shared database query or API endpoint). See docs/HK_MERCHANT_HREFLANG_MAPPING.md
+ * 
  * To update: When new merchants are added, match TW merchant_name to HK slug and add here.
+ * Note: HK slugs may differ from TW slugs (e.g., "booking.com" → "booking-com").
  */
 const MERCHANT_NAME_TO_HK_SLUG_MAPPING: Record<string, string> = {
   // Travel & Booking
