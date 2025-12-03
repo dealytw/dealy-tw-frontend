@@ -411,11 +411,11 @@ export const dynamic = 'force-static'; // Force static ISR to ensure cacheable H
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
-  const marketKey = market.toLowerCase();
+  const market = 'tw'; // Hardcoded for TW market
+  const marketKey = 'tw';
   
   // Determine alternate market (tw <-> hk)
-  const alternateMarket = marketKey === 'tw' ? 'hk' : 'tw';
+  const alternateMarket = 'hk';
   
   try {
     // Fetch merchant with SEO fields
