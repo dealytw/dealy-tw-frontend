@@ -430,7 +430,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       });
     }
 
-    const name = merchant.merchant_name || id;
+    // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
+    const name = (merchant.attributes?.merchant_name || merchant.merchant_name || id).trim();
     
     // Use page_slug (id) for matching instead of merchant_name
     // This matches TW page_slug to HK sitemap slugs (e.g., "adidas" -> "adidas-hk", "booking.com" -> "booking-com")
