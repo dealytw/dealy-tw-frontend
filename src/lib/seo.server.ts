@@ -2,7 +2,7 @@
 import 'server-only';
 import { strapiFetch, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 
-// MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex, ogImage, logo)
+// MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex)
 export async function getMerchantSEO(slug: string, revalidate = 300) {
   const params = {
     'filters[page_slug][$eq]': slug,
@@ -14,52 +14,12 @@ export async function getMerchantSEO(slug: string, revalidate = 300) {
     'fields[5]': 'seo_description',
     'fields[6]': 'canonical_url',
     'fields[7]': 'robots',
-    'populate[ogImage][fields][0]': 'url',
-    'populate[logo][fields][0]': 'url',
   };
 
-  const response = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(params)}`, {
+  return strapiFetch<{ data: any[] }>(`/api/merchants?${qs(params)}`, {
     revalidate,
     tag: `merchant:${slug}`
   });
-
-  // Transform Strapi v5 attributes format to flat structure (supports Chinese characters)
-  // This ensures merchant_name works regardless of whether populate is used
-  if (response?.data) {
-    response.data = response.data.map((item: any) => {
-      // Handle populated fields (ogImage, logo) - check nested structures
-      const getPopulatedField = (fieldName: string) => {
-        const attrField = item.attributes?.[fieldName];
-        const rootField = item[fieldName];
-        
-        // Handle nested data structure: { data: { attributes: { url: ... } } }
-        if (attrField?.data) {
-          return Array.isArray(attrField.data) ? attrField.data[0] : attrField.data;
-        }
-        if (attrField) return attrField;
-        
-        if (rootField?.data) {
-          return Array.isArray(rootField.data) ? rootField.data[0] : rootField.data;
-        }
-        return rootField || null;
-      };
-
-      return {
-        id: item.id || item.documentId,
-        documentId: item.documentId,
-        merchant_name: item.attributes?.merchant_name || item.merchant_name || '',
-        page_slug: item.attributes?.page_slug || item.page_slug,
-        seo_title: item.attributes?.seo_title || item.seo_title,
-        seo_description: item.attributes?.seo_description || item.seo_description,
-        canonical_url: item.attributes?.canonical_url || item.canonical_url,
-        robots: item.attributes?.robots || item.robots,
-        ogImage: getPopulatedField('ogImage'),
-        logo: getPopulatedField('logo'),
-      };
-    });
-  }
-
-  return response;
 }
 
 // Get coupons for merchant (for SEO generation)
