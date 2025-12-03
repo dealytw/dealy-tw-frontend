@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterParams } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
 import { getMerchantSEO, findAlternateMerchantBySlug } from '@/lib/seo.server';
-import Merchant from './page-client';
+import Merchant from './page-client'; // Merchant page component
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
