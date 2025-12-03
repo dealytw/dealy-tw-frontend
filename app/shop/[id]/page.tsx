@@ -418,7 +418,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const alternateMarket = 'hk';
   
   try {
-    // Fetch merchant with SEO fields
+    // Fetch merchant with SEO fields (without populate to keep flat format)
     const res = await getMerchantSEO(id, 300);
     const merchant = res.data?.[0];
 
@@ -428,6 +428,46 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         description: `精選 ${id} 最新優惠碼與折扣，限時優惠一鍵領取。`,
         path: `/shop/${id}`,
       });
+    }
+
+    // Fetch ogImage and logo separately (with populate) and inject into merchant object
+    // This keeps getMerchantSEO response in flat format while still getting images
+    try {
+      const imageRes = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
+        'filters[page_slug][$eq]': id,
+        'fields[0]': 'id',
+        'populate[ogImage][fields][0]': 'url',
+        'populate[logo][fields][0]': 'url',
+      })}`, {
+        revalidate: 300,
+        tag: `merchant-images:${id}`
+      });
+      
+      const imageMerchant = imageRes.data?.[0];
+      if (imageMerchant) {
+        // Extract ogImage and logo from populated response
+        const getPopulatedField = (fieldName: string) => {
+          const attrField = imageMerchant.attributes?.[fieldName];
+          const rootField = imageMerchant[fieldName];
+          
+          if (attrField?.data) {
+            return Array.isArray(attrField.data) ? attrField.data[0] : attrField.data;
+          }
+          if (attrField) return attrField;
+          
+          if (rootField?.data) {
+            return Array.isArray(rootField.data) ? rootField.data[0] : rootField.data;
+          }
+          return rootField || null;
+        };
+        
+        // Inject ogImage and logo into merchant object
+        merchant.ogImage = getPopulatedField('ogImage');
+        merchant.logo = getPopulatedField('logo');
+      }
+    } catch (imageError) {
+      // If image fetch fails, continue without images (non-critical)
+      console.warn(`[generateMetadata] Failed to fetch images for ${id}:`, imageError);
     }
 
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
