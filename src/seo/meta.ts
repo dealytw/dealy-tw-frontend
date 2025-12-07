@@ -149,11 +149,39 @@ type PageMetaInput = {
   canonicalOverride?: string; // absolute or path
   noindex?: boolean;
   ogImageUrl?: string;
-  ogImageAlt?: string;        // Alt text for og:image (e.g., merchant name)
+  ogImageAlt?: string;        // Alt text for og:image (e.g., "{merchant name}優惠碼")
   ogType?: 'website' | 'article'; // Open Graph type (default: 'website')
   includeHreflang?: boolean; // Whether to include hreflang tags (default: true)
   alternateUrl?: string | null; // Optional: direct URL from CMS hreflang_alternate field (e.g., "https://dealy.hk/shop/trip-com")
+  ogUpdatedTime?: string; // Optional: ISO 8601 date string for og:updated_time (e.g., "2025-09-05T16:34:48+08:00")
+  articleSection?: string; // Optional: category name for article:section (e.g., "旅遊")
 };
+
+/**
+ * Format date to HK format: 2025-09-05T16:34:48+08:00
+ * Converts UTC date to Taiwan time (UTC+8)
+ */
+function formatUpdatedTime(dateString: string): string {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    // Convert to Taiwan time (UTC+8)
+    const taiwanTime = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+    
+    // Format as: YYYY-MM-DDTHH:mm:ss+08:00
+    const year = taiwanTime.getFullYear();
+    const month = String(taiwanTime.getMonth() + 1).padStart(2, '0');
+    const day = String(taiwanTime.getDate()).padStart(2, '0');
+    const hours = String(taiwanTime.getHours()).padStart(2, '0');
+    const minutes = String(taiwanTime.getMinutes()).padStart(2, '0');
+    const seconds = String(taiwanTime.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+08:00`;
+  } catch {
+    return '';
+  }
+}
 
 export function pageMeta({
   title,
@@ -166,6 +194,8 @@ export function pageMeta({
   ogType = 'website',
   includeHreflang = true,
   alternateUrl,
+  ogUpdatedTime,
+  articleSection,
 }: PageMetaInput) {
   const url = canonical(canonicalOverride ?? path);
   const robots = noindex ? { index: false, follow: false, nocache: true } : undefined;
@@ -201,10 +231,36 @@ export function pageMeta({
   }
 
   // Build Open Graph image object with alt text if provided
+  // Format ogImageAlt as "{merchant name}優惠碼" if provided
   const ogImages = ogImageUrl ? [{
     url: ogImageUrl,
+    secureUrl: ogImageUrl, // og:image:secure_url (same as og:image)
     ...(ogImageAlt && { alt: ogImageAlt }),
   }] : undefined;
+
+  // Build Open Graph metadata with additional fields
+  const openGraph: any = {
+    url,
+    type: ogType,
+    title,
+    description,
+    siteName,
+    locale: ogLocale,
+    images: ogImages,
+  };
+
+  // Add og:updated_time if provided (via modifiedTime)
+  if (ogUpdatedTime) {
+    const formattedTime = formatUpdatedTime(ogUpdatedTime);
+    if (formattedTime) {
+      openGraph.modifiedTime = formattedTime; // Next.js uses modifiedTime for og:updated_time
+    }
+  }
+
+  // Add article:section if provided and type is article
+  if (ogType === 'article' && articleSection) {
+    openGraph.section = articleSection;
+  }
 
   return {
     title,
@@ -221,20 +277,12 @@ export function pageMeta({
         'max-video-preview': -1,
       },
     },
-    openGraph: {
-      url,
-      type: ogType,
-      title,
-      description,
-      siteName,
-      locale: ogLocale,
-      images: ogImages,
-    },
+    openGraph,
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: ogImageUrl ? [ogImageUrl] : undefined,
+      images: ogImageUrl ? [ogImageUrl] : undefined, // twitter:image (same as og:image)
     },
   };
 }

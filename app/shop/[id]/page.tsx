@@ -427,8 +427,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       });
     }
 
-    // Fetch ogImage and logo separately (with populate) and inject into merchant object
+    // Fetch ogImage and logo separately (with populate) - keep this separate to avoid breaking title/description
     // This keeps getMerchantSEO response in flat format while still getting images
+    let merchantLogo: any = null;
+    let merchantOgImage: any = null;
+    
     try {
       const imageRes = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
         'filters[page_slug][$eq]': id,
@@ -459,12 +462,63 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         };
         
         // Inject ogImage and logo into merchant object
-        merchant.ogImage = getPopulatedField('ogImage');
-        merchant.logo = getPopulatedField('logo');
+        merchantOgImage = getPopulatedField('ogImage');
+        merchantLogo = getPopulatedField('logo');
       }
     } catch (imageError) {
       // If image fetch fails, continue without images (non-critical)
       console.warn(`[generateMetadata] Failed to fetch images for ${id}:`, imageError);
+    }
+    
+    // Fetch categories and updatedAt separately (with populate) - keep this separate to avoid breaking title/description
+    let firstCategoryName: string | null = null;
+    let merchantUpdatedAt: string | null = null;
+    
+    try {
+      const categoryRes = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
+        'filters[page_slug][$eq]': id,
+        'fields[0]': 'id',
+        'fields[1]': 'updatedAt',
+        'populate[categories][fields][0]': 'name',
+        'populate[categories][fields][1]': 'page_slug',
+      })}`, {
+        revalidate: 300,
+        tag: `merchant-categories:${id}`
+      });
+      
+      const categoryMerchant = categoryRes.data?.[0];
+      if (categoryMerchant) {
+        // Extract categories
+        const getCategories = () => {
+          const attrCategories = categoryMerchant.attributes?.categories;
+          const rootCategories = categoryMerchant.categories;
+          
+          let categories = null;
+          if (attrCategories?.data) {
+            categories = Array.isArray(attrCategories.data) ? attrCategories.data : [attrCategories.data];
+          } else if (rootCategories?.data) {
+            categories = Array.isArray(rootCategories.data) ? rootCategories.data : [rootCategories.data];
+          } else if (Array.isArray(attrCategories)) {
+            categories = attrCategories;
+          } else if (Array.isArray(rootCategories)) {
+            categories = rootCategories;
+          }
+          
+          return categories || [];
+        };
+        
+        // Get first category name for article:section
+        const categories = getCategories();
+        if (categories.length > 0) {
+          firstCategoryName = categories[0]?.name || categories[0]?.attributes?.name || null;
+        }
+        
+        // Get updatedAt
+        merchantUpdatedAt = categoryMerchant.attributes?.updatedAt || categoryMerchant.updatedAt || null;
+      }
+    } catch (categoryError) {
+      // If category fetch fails, continue without category (non-critical)
+      console.warn(`[generateMetadata] Failed to fetch categories for ${id}:`, categoryError);
     }
 
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
@@ -529,16 +583,23 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const domainConfig = getDomainConfigServer();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
-    // Process OG image: use ogImage if available, otherwise fallback to logo (hero image)
+    // Process OG image: use logo (for trip.com, use specific URL, otherwise use merchant logo)
     let ogImageUrl: string | undefined = undefined;
-    if (merchant.ogImage?.url) {
-      const absoluteOgImage = absolutizeMedia(merchant.ogImage.url);
-      ogImageUrl = rewriteImageUrl(absoluteOgImage, siteUrl);
-    } else if (merchant.logo?.url) {
-      // Fallback to logo (hero image) if ogImage is not available
-      const absoluteLogo = absolutizeMedia(merchant.logo.url);
+    if (id.toLowerCase() === 'trip.com' || id.toLowerCase() === 'tripcom') {
+      // Special case for trip.com
+      ogImageUrl = 'https://dealy.tw/upload/tripcom_5eff0330bd.webp';
+    } else if (merchantLogo?.url) {
+      // Use merchant logo for og:image
+      const absoluteLogo = absolutizeMedia(merchantLogo.url);
       ogImageUrl = rewriteImageUrl(absoluteLogo, siteUrl);
+    } else if (merchantOgImage?.url) {
+      // Fallback to ogImage if logo is not available
+      const absoluteOgImage = absolutizeMedia(merchantOgImage.url);
+      ogImageUrl = rewriteImageUrl(absoluteOgImage, siteUrl);
     }
+
+    // Format ogImageAlt as "{merchant name}優惠碼"
+    const ogImageAlt = `${name}優惠碼`;
 
     return pageMeta({
       title,
@@ -547,9 +608,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       canonicalOverride: merchant.canonical_url || undefined,
       noindex,
       ogImageUrl,
-      ogImageAlt: name, // Merchant name as alt text for OG image
+      ogImageAlt,
       ogType: 'article', // Change from 'website' to 'article' for merchant pages
       alternateUrl, // Pass alternate URL from CMS hreflang_alternate field
+      ogUpdatedTime: merchantUpdatedAt || undefined, // Pass updatedAt for og:updated_time
+      articleSection: firstCategoryName || undefined, // Pass first category name for article:section
     });
       } catch (error) {
     console.error('Error generating metadata:', error);
