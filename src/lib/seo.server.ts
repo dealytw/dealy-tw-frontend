@@ -3,7 +3,7 @@ import 'server-only';
 import { strapiFetch, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 
 // MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex, hreflang_alternate)
-export async function getMerchantSEO(slug: string, revalidate = 300) {
+export async function getMerchantSEO(slug: string, revalidate = 21600) {
   const params = {
     'filters[page_slug][$eq]': slug,
     'fields[0]': 'id',
@@ -25,7 +25,7 @@ export async function getMerchantSEO(slug: string, revalidate = 300) {
 
 // Get coupons for merchant (for SEO generation)
 // Fetches ACTIVE coupons sorted by priority for SEO title/description generation
-export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw', revalidate = 300) {
+export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw', revalidate = 21600) {
   const params = {
     'filters[merchant][documentId][$eq]': merchantId,
     'filters[market][key][$eq]': market,

@@ -403,7 +403,7 @@ function parseHowToFromHTML(html: string): Array<{ step: string; descriptions: s
 }
 
 // ISR Configuration - Critical for SEO
-export const revalidate = 3600; // Revalidate every 60 minutes for stronger edge hit ratio
+export const revalidate = 21600; // Revalidate every 6 hours - merchant pages don't change frequently
 export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
 
 // Expected: max-age=0, must-revalidate, s-maxage=600, stale-while-revalidate=86400
@@ -439,7 +439,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         'populate[ogImage][fields][0]': 'url',
         'populate[logo][fields][0]': 'url',
       })}`, {
-        revalidate: 300,
+        revalidate: 21600, // Cache for 6 hours - merchant images don't change frequently
         tag: `merchant-images:${id}`
       });
       
@@ -482,7 +482,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         'populate[categories][fields][0]': 'name',
         'populate[categories][fields][1]': 'page_slug',
       })}`, {
-        revalidate: 300,
+        revalidate: 21600, // Cache for 6 hours - merchant categories don't change frequently
         tag: `merchant-categories:${id}`
       });
       
@@ -668,7 +668,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[market][fields][0]": "key",
         "populate[market][fields][1]": "defaultLocale",
       })}`, { 
-        revalidate: 300, 
+        revalidate: 21600, // Cache for 6 hours - merchant data doesn't change frequently
         tag: `merchant:${id}` 
       }),
       // Fetch coupons data with ISR (include display_count for usage tracking)
@@ -697,7 +697,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[market][fields][0]": "key",
         "populate[market][fields][1]": "defaultLocale",
       })}`, { 
-        revalidate: 300, 
+        revalidate: 21600, // Cache for 6 hours - merchant coupons don't change frequently
         tag: `merchant:${id}` 
       }),
       // Fetch hotstore data for popular merchants section
@@ -746,7 +746,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
                 "sort": "priority:asc",
                 "pagination[pageSize]": "1",
               })}`, { 
-                revalidate: 300, 
+                revalidate: 21600, // Cache for 6 hours - related merchant coupons don't change frequently
                 tag: `merchant:${relatedMerchant.page_slug}` 
               });
               

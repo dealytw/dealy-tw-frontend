@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     
     try {
       merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
-        revalidate: 60, // Cache for 60 seconds, then revalidate
+        revalidate: 86400, // Cache for 24 hours - search data doesn't change frequently
         tag: 'search:merchants'
       });
       allMerchants = merchantsData?.data || [];
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
       };
 
       const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(couponParams)}`, {
-        revalidate: 60, // Cache for 60 seconds, then revalidate
+        revalidate: 86400, // Cache for 24 hours - search data doesn't change frequently
         tag: 'search:coupons'
       });
       
