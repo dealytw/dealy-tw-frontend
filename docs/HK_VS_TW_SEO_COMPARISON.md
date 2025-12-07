@@ -549,35 +549,38 @@
 - ✅ `srcset` for responsive images
 - ✅ `sizes` attribute
 
-### TW Site ⚠️
+### TW Site ✅ (FIXED)
 ```html
 <img 
-  src="https://ingenious-charity-13f9502d24.media.strapiapp.com/tripcom_5eff0330bd.webp" 
+  src="https://dealy.tw/upload/tripcom_5eff0330bd.webp" 
   alt="Trip.com優惠碼" 
   width="48" 
   height="48" 
   loading="lazy" 
+  decoding="async"
   class="w-full h-full object-cover"
 />
 ```
 
 **Features:**
 - ✅ Width/height attributes
-- ⚠️ Less descriptive alt text
-- ✅ `loading="lazy"`
-- ❌ Missing `decoding="async"`
-- ❌ Missing `srcset`
-- ❌ Missing `sizes`
+- ⚠️ Less descriptive alt text (can be improved)
+- ✅ `loading="lazy"` (or `loading="eager"` with `fetchpriority="high"` for above-fold)
+- ✅ `decoding="async"` (FIXED)
+- ✅ Custom domain URLs (`/upload/`) instead of Strapi CDN (FIXED)
+- ⚠️ Missing `srcset` (optional optimization)
+- ⚠️ Missing `sizes` (optional optimization)
 
 **Impact:**
-- **LOW-MEDIUM** - Images load, but less optimized
-- Missing srcset = no responsive image optimization
-- Less descriptive alt text = less SEO value
+- **LOW** - Images are now optimized
+- ✅ All images use rewritten URLs (custom domain)
+- ✅ Async decoding for better performance
+- ⚠️ Could add srcset for responsive images (optional)
 
-**Why slower ranking:**
-- **Core Web Vitals:** Less optimized images = slower LCP
-- **Accessibility:** Less descriptive alt = lower accessibility score
-- **Mobile:** No responsive images = slower mobile load
+**Status:**
+- ✅ **FIXED** - All images use rewritten URLs (no Strapi CDN URLs in HTML)
+- ✅ **FIXED** - Added `decoding="async"` to all images
+- ✅ **FIXED** - Above-fold images use `fetchpriority="high"` and `loading="eager"`
 
 ---
 
