@@ -971,7 +971,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                                    </div>
                                 </div>
                               </div>
-                            </div>
+                            </article>
                           );
                         }).filter(Boolean)}
                       
