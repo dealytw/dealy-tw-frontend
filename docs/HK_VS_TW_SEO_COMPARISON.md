@@ -635,25 +635,30 @@
 - ✅ Clear internal links
 - ✅ Breadcrumb navigation
 
-### TW Site ✅
+### TW Site ✅ (FIXED)
 ```html
-<div class="flex items-center text-sm text-blue-600 mb-4">
-  <a href="/">Dealy.TW 最新優惠平台</a>
-  <svg>...</svg>
-  <a href="/shop">所有商店</a>
-  <svg>...</svg>
-  <span>Trip.com</span>
-</div>
+<nav class="mt-8 pt-6 border-t border-gray-200" aria-label="Breadcrumb">
+  <div class="flex items-center text-sm text-blue-600 mb-4">
+    <a href="/">Dealy.TW 最新優惠平台</a>
+    <svg>...</svg>
+    <a href="/shop">所有商店</a>
+    <svg>...</svg>
+    <span>Trip.com</span>
+  </div>
+</nav>
 ```
 
 **Features:**
-- ⚠️ Breadcrumb as div, not semantic `<nav>`
+- ✅ Semantic `<nav>` element for breadcrumb (FIXED)
+- ✅ `aria-label="Breadcrumb"` for accessibility
 - ✅ Clear internal links
 - ✅ Breadcrumb navigation
+- ✅ Header navigation also uses `<nav>` element
 
-**Impact:**
-- **LOW** - Both have good internal linking
-- Less semantic breadcrumb = slightly less clear structure
+**Status:**
+- ✅ **FIXED** - Breadcrumb now uses semantic `<nav>` element
+- ✅ **FIXED** - Added `aria-label="Breadcrumb"` for accessibility
+- ✅ Header navigation already uses `<nav>` element
 
 ---
 

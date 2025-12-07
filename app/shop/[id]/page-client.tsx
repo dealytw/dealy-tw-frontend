@@ -1201,7 +1201,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
         </div>
 
         {/* Breadcrumb */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <nav className="mt-8 pt-6 border-t border-gray-200" aria-label="Breadcrumb">
           <div className="flex items-center text-sm text-blue-600 mb-4">
             <Link href="/" className="cursor-pointer hover:underline">
               Dealy.TW 最新優惠平台
@@ -1211,7 +1211,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
             <ChevronRight className="w-4 h-4 mx-2" />
             <span className="text-gray-600">{merchant.name}</span>
           </div>
-        </div>
+        </nav>
       </main>
 
       {/* Coupon Modal */}
