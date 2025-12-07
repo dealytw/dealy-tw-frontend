@@ -41,7 +41,7 @@ export async function GET() {
   try {
     const legalParams = {
       "filters[market][key][$eq]": market,
-      "fields[0]": "slug",
+      "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "pagination[pageSize]": "100",
       "sort[0]": "title:asc",
@@ -53,11 +53,12 @@ export async function GET() {
     )
 
     legalPages = (legalsData?.data || []).map((legal: any) => ({
-      url: `${baseUrl}/${legal.slug}`,
+      url: `${baseUrl}/${legal.page_slug || legal.slug}`,
       lastmod: legal.updatedAt ? new Date(legal.updatedAt).toISOString() : currentDate.toISOString(),
     }))
   } catch (error) {
     console.error('Error fetching legal pages for sitemap:', error)
+    // Continue without legal pages if fetch fails (non-critical)
   }
 
   const allPages = [...staticPages, ...legalPages]
