@@ -589,7 +589,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     alt={merchant.name}
                     width={48}
                     height={48}
-                    loading="lazy"
+                    loading="eager"
+                    fetchPriority="high"
                     decoding="async"
                     className="object-contain max-w-full max-h-full"
                   />
