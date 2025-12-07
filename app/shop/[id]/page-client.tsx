@@ -912,7 +912,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                           const shouldHide = !showAllExpiredCoupons && index >= 5;
                           const showDetails = expiredCouponDetails[coupon.id] || false;
                           return (
-                            <div 
+                            <article 
                               key={coupon.id} 
                               id={`coupon-${coupon.id}`} 
                               className={`border border-gray-200 rounded-lg p-4 ${shouldHide ? 'hidden' : ''}`}
