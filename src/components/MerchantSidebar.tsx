@@ -81,6 +81,7 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
                 width={80}
                 height={80}
                 loading="lazy"
+                decoding="async"
                 className="max-w-full max-h-full object-contain"
               />
             </div>

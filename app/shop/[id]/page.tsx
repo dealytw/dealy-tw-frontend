@@ -946,7 +946,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         id: merchant.id.toString(),
         name: merchant.merchant_name || merchant.name || '',
         slug: merchant.page_slug || '',
-        logoUrl: merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : null,
+        logoUrl: merchant.logo?.url ? rewriteImageUrl(absolutizeMedia(merchant.logo.url), siteUrl) : null,
       }));
     }
 
