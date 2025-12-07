@@ -601,9 +601,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                   <h1 className="text-lg md:text-3xl font-bold text-gray-900">
                     {merchant.h1Title || merchant.page_title_h1 || '錯誤：無法載入標題'}
                   </h1>
-                  <p className="text-xs text-gray-600 sm:mb-1">
-                    最近更新： <time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate || '錯誤：無法載入日期'}</time> （每日更新）
-                  </p>
+                  <span className="text-xs text-gray-600 sm:mb-1">
+                    最近更新：<time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate || '錯誤：無法載入日期'}</time>（每日更新）
+                  </span>
                 </div>
               </div>
             </div>

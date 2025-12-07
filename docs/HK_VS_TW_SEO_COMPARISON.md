@@ -598,29 +598,24 @@
 - ✅ Semantic `<time>` tag with `datetime`
 - ✅ "每日更新" (daily updates) text
 
-### TW Site ⚠️
+### TW Site ✅ (FIXED)
 ```html
-<div class="flex items-center gap-2 mb-2">
-  <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
-  <span class="text-sm font-semibold">優惠碼有效期限</span>
-</div>
-<p class="text-xs text-gray-500">優惠到期日期：<!-- -->2025-12-07</p>
+<span class="text-xs text-gray-600 sm:mb-1">
+  最近更新：<time dateTime="2025-12-05T00:15:00+08:00">2025/12/05</time>（每日更新）
+</span>
 ```
 
 **Features:**
-- ⚠️ Shows coupon expiry, not page update date
-- ❌ No visible "last updated" date
-- ❌ No semantic `<time>` tag
+- ✅ Visible "last updated" date
+- ✅ Semantic `<time>` tag with `dateTime`
+- ✅ "每日更新" (daily updates) text
+- ✅ Matches HK site structure
 
-**Impact:**
-- **MEDIUM** - Users can't see when page was last updated
-- No freshness signal in visible content
-- Google relies on structured data dates (which are missing)
-
-**Why slower ranking:**
-- **User Trust:** No visible update date = users may think content is stale
-- **Freshness:** Google prioritizes fresh content - no visible signal = less priority
-- **Re-crawling:** Without dates, Google doesn't know when to re-crawl
+**Status:**
+- ✅ **FIXED** - Now shows page update date (not coupon expiry)
+- ✅ **FIXED** - Uses semantic `<time>` tag with `dateTime` attribute
+- ✅ **FIXED** - Displays "最近更新" with daily update text
+- ✅ **FIXED** - Date format matches HK site (YYYY/MM/DD)
 
 ---
 
