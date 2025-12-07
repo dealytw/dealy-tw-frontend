@@ -28,9 +28,9 @@ export function getDailyUpdatedTime(): Date {
   const seed = year * 10000 + month * 100 + day;
   const randomMinute = seed % 60; // 0-59 minutes
   
-  // Create date at midnight with random minute (00:00-00:59) in Taiwan timezone
-  // Create a date string in Taiwan timezone format and parse it
-  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(Math.floor(randomMinute / 60)).padStart(2, '0')}:${String(randomMinute % 60).padStart(2, '0')}:00+08:00`;
+  // Create date at midnight (00:00) with random minute (00:00-00:59) in Taiwan timezone
+  // Format: YYYY-MM-DDTHH:mm:ss+08:00
+  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:${String(randomMinute).padStart(2, '0')}:00+08:00`;
   const taiwanUpdatedDate = new Date(dateStr);
   
   return taiwanUpdatedDate;
