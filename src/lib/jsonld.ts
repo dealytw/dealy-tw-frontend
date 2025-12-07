@@ -11,6 +11,31 @@ function toTaipeiIso(dateStr?: string | null): string | undefined {
   return iso.replace(/Z$/, '+08:00');
 }
 
+/**
+ * Generate a consistent daily updated time (midnight 12-1am) that updates every day.
+ * This ensures all updated time references match throughout the day.
+ * The time is deterministic based on the date (same date = same time).
+ */
+export function getDailyUpdatedTime(): Date {
+  // Get current Taiwan time
+  const taiwanDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+  const year = taiwanDate.getFullYear();
+  const month = taiwanDate.getMonth();
+  const day = taiwanDate.getDate();
+  
+  // Use date as seed for consistent random minute (0-59) throughout the day
+  // This creates a deterministic "random" time between 00:00-00:59
+  const seed = year * 10000 + month * 100 + day;
+  const randomMinute = seed % 60; // 0-59 minutes
+  
+  // Create date at midnight with random minute (00:00-00:59) in Taiwan timezone
+  // Create a date string in Taiwan timezone format and parse it
+  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(Math.floor(randomMinute / 60)).padStart(2, '0')}:${String(randomMinute % 60).padStart(2, '0')}:00+08:00`;
+  const taiwanUpdatedDate = new Date(dateStr);
+  
+  return taiwanUpdatedDate;
+}
+
 export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; searchUrl?: UrlString; locale?: string }) {
   const { siteName, siteUrl, searchUrl, locale } = opts;
   

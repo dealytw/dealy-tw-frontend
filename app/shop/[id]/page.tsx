@@ -3,7 +3,7 @@ import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterPar
 import { pageMeta, extractUrlFromRichText } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
-import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
+import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
 /**
@@ -611,7 +611,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       ogImageAlt,
       ogType: 'article', // Change from 'website' to 'article' for merchant pages
       alternateUrl, // Pass alternate URL from CMS hreflang_alternate field
-      ogUpdatedTime: merchantUpdatedAt || undefined, // Pass updatedAt for og:updated_time
+      ogUpdatedTime: (() => {
+        // Use the same daily updated time function to ensure consistency
+        const dailyTime = getDailyUpdatedTime();
+        // Format as ISO string for og:updated_time
+        return dailyTime.toISOString();
+      })(),
       articleSection: firstCategoryName || undefined, // Pass first category name for article:section
     });
       } catch (error) {
@@ -841,6 +846,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
     };
     
+    
     // Generate H1 title on server-side
     const taiwanDate = getTaiwanDate();
     const currentYear = taiwanDate.getFullYear();
@@ -848,8 +854,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const generatedH1 = `${merchantData.merchant_name}折扣碼及優惠${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
     const h1Title = merchantData.page_title_h1 || generatedH1;
     
-    // Format last updated date for server-side
-    const lastUpdatedDate = taiwanDate.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
+    // Get daily updated time (consistent throughout the day)
+    const dailyUpdatedTime = getDailyUpdatedTime();
+    
+    // Format last updated date for server-side display
+    const lastUpdatedDate = dailyUpdatedTime.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
+    
+    // Format updated time as ISO string for schema and meta tags
+    const updatedTimeISO = dailyUpdatedTime.toISOString();
 
     // Rewrite logo URL to custom domain (for both client component and schema)
     const originalLogoUrl = merchantData.logo?.url ? absolutizeMedia(merchantData.logo.url) : null;
@@ -1053,7 +1065,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       url: merchantUrl,
       description: merchant.seoDescription || merchant.description || undefined,
       image: pageImage || undefined,
-      dateModified: merchant.updatedAt,
+      dateModified: updatedTimeISO, // Use daily updated time (midnight 12-1am) to match all updated time references
       datePublished: merchant.createdAt,
       locale: marketLocale,
       siteId: `${siteUrl}#website`,
