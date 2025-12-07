@@ -30,6 +30,8 @@ interface DealyCouponCardProps {
   isScrolledTo?: boolean; // New prop to indicate if this coupon is scrolled to
   merchantSlug?: string; // Merchant slug for building merchant page URL
   showViewMoreButton?: boolean; // Show "查看更多" button (only on homepage)
+  id?: string; // HTML id attribute for the article element
+  className?: string; // Additional CSS classes for the article element
 }
 
 const DealyCouponCard = ({
@@ -37,7 +39,9 @@ const DealyCouponCard = ({
   onClick,
   isScrolledTo = false,
   merchantSlug,
-  showViewMoreButton = false
+  showViewMoreButton = false,
+  id,
+  className = ''
 }: DealyCouponCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -231,7 +235,10 @@ const DealyCouponCard = ({
   };
 
   return (
-    <article className="overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground md:mx-0 -mx-3">
+    <article 
+      id={id}
+      className={`overflow-hidden mb-8 rounded-l-2xl rounded-r-3xl shadow-lg border-2 border-orange-100 bg-card text-card-foreground md:mx-0 -mx-3 ${className}`.trim()}
+    >
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-col md:flex-row">
         {/* Left: Logo and Badge */}

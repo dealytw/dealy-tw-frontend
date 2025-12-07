@@ -575,7 +575,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
         </div>
       </div>
       
-      <main id="main" className="container mx-auto md:px-4 px-2 py-4">
+      <main id="main" className="container mx-auto md:px-4 px-2 py-4" itemScope itemType="https://schema.org/CreativeWork">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Column - Content */}
@@ -600,7 +600,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     {merchant.h1Title || merchant.page_title_h1 || '錯誤：無法載入標題'}
                   </h1>
                   <p className="text-xs text-gray-600 sm:mb-1">
-                    最近更新： {merchant.lastUpdatedDate || '錯誤：無法載入日期'} （每日更新）
+                    最近更新： <time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate || '錯誤：無法載入日期'}</time> （每日更新）
                   </p>
                 </div>
               </div>
@@ -776,18 +776,15 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                       // Hide coupons after the 10th if showAllActiveCoupons is false
                       const shouldHide = !showAllActiveCoupons && index >= 10;
                       return (
-                        <div 
-                          key={coupon.id} 
+                        <DealyCouponCard 
+                          key={coupon.id}
                           id={`coupon-${coupon.id}`}
                           className={shouldHide ? 'hidden' : ''}
-                        >
-                          <DealyCouponCard 
-                            coupon={transformedCoupon} 
-                            onClick={() => handleCouponClick(coupon)}
-                            isScrolledTo={scrolledToCouponId === coupon.id}
-                            merchantSlug={merchant.slug}
-                          />
-                        </div>
+                          coupon={transformedCoupon} 
+                          onClick={() => handleCouponClick(coupon)}
+                          isScrolledTo={scrolledToCouponId === coupon.id}
+                          merchantSlug={merchant.slug}
+                        />
                       );
                     }).filter(Boolean)}
                   

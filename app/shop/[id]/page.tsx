@@ -901,6 +901,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       page_title_h1: merchantData.page_title_h1 || null,
       h1Title: h1Title, // Pre-generated H1 title from server
       lastUpdatedDate: lastUpdatedDate, // Pre-formatted date from server
+      lastUpdatedDateISO: updatedTimeISO, // ISO date string for <time datetime>
       special_offers: (() => {
         // Handle different formats for manyToMany relation (same as related_merchants)
         let specialOffersFromCMS = [];
