@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterParams } from '@/lib/strapi.server';
-import { pageMeta } from '@/seo/meta';
-import { getMerchantSEO, findAlternateMerchantBySlug } from '@/lib/seo.server';
+import { pageMeta, extractUrlFromRichText } from '@/seo/meta';
+import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
@@ -414,9 +414,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const market = 'tw'; // Hardcoded for TW market
   const marketKey = 'tw';
   
-  // Determine alternate market (tw <-> hk)
-  const alternateMarket = 'hk';
-  
   try {
     // Fetch merchant with SEO fields (without populate to keep flat format)
     const res = await getMerchantSEO(id, 300);
@@ -473,25 +470,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
     const name = (merchant.attributes?.merchant_name || merchant.merchant_name || id).trim();
     
-    // Use page_slug (id) for matching instead of merchant_name
-    // This matches TW page_slug to HK sitemap slugs (e.g., "adidas" -> "adidas-hk", "booking.com" -> "booking-com")
-    let alternateMerchantSlug: string | null = null;
-    try {
-      alternateMerchantSlug = await findAlternateMerchantBySlug(
-        id, // Use page_slug directly
-        marketKey,
-        alternateMarket,
-        300 // Cache for 5 minutes
-      );
-      // Debug logging
-      if (alternateMerchantSlug) {
-        console.log(`[generateMetadata] ✅ Found alternate merchant for slug "${id}": ${alternateMerchantSlug}`);
-      } else {
-        console.log(`[generateMetadata] ❌ No alternate merchant found for slug "${id}" (TW->HK)`);
-      }
-    } catch (error) {
-      // Log error for debugging
-      console.error(`[generateMetadata] ❌ Failed to find alternate merchant for slug "${id}":`, error);
+    // Extract alternate URL from hreflang_alternate field (rich text JSON)
+    // This field contains a direct URL like "https://dealy.hk/shop/trip-com"
+    const hreflangAlternateField = merchant.attributes?.hreflang_alternate || merchant.hreflang_alternate;
+    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
+    
+    if (alternateUrl) {
+      console.log(`[generateMetadata] ✅ Found alternate URL for merchant "${id}": ${alternateUrl}`);
+    } else {
+      console.log(`[generateMetadata] No alternate URL found for merchant "${id}" (hreflang_alternate field is empty or null)`);
     }
     let title: string;
     let description: string;
@@ -562,7 +549,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       ogImageUrl,
       ogImageAlt: name, // Merchant name as alt text for OG image
       ogType: 'article', // Change from 'website' to 'article' for merchant pages
-      alternateMerchantSlug, // Pass alternate merchant slug for hreflang
+      alternateUrl, // Pass alternate URL from CMS hreflang_alternate field
     });
       } catch (error) {
     console.error('Error generating metadata:', error);

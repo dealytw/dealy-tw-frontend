@@ -10,19 +10,94 @@ export function canonical(pathOrAbs?: string) {
 }
 
 /**
+ * Extract URL from Strapi rich text field (hreflang_alternate)
+ * Handles string, link blocks, and paragraph blocks with links
+ */
+export function extractUrlFromRichText(richText: any): string | null {
+  if (!richText) return null;
+  
+  // If it's already a string URL, return it
+  if (typeof richText === 'string') {
+    // Check if it's a valid URL
+    if (richText.startsWith('http://') || richText.startsWith('https://')) {
+      return richText.trim();
+    }
+    return null;
+  }
+  
+  // If it's an array of blocks (Strapi rich text format)
+  if (Array.isArray(richText)) {
+    for (const block of richText) {
+      // Check for link block
+      if (block.type === 'link' && block.url) {
+        return block.url;
+      }
+      
+      // Check for paragraph with link
+      if (block.type === 'paragraph' && block.children) {
+        for (const child of block.children) {
+          if (child.type === 'link' && child.url) {
+            return child.url;
+          }
+          // Also check nested children
+          if (child.children) {
+            for (const nested of child.children) {
+              if (nested.type === 'link' && nested.url) {
+                return nested.url;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Determine hreflang code from URL domain
+ * Examples:
+ * - https://dealy.hk/... -> zh-HK
+ * - https://dealy.sg/... -> zh-SG
+ * - https://dealy.tw/... -> zh-TW
+ */
+function getHreflangFromUrl(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    
+    if (hostname.includes('dealy.hk')) return 'zh-HK';
+    if (hostname.includes('dealy.sg')) return 'zh-SG';
+    if (hostname.includes('dealy.tw')) return 'zh-TW';
+    
+    // Default: try to extract from domain pattern
+    const match = hostname.match(/dealy\.([a-z]{2})/);
+    if (match) {
+      const country = match[1].toUpperCase();
+      return `zh-${country}`;
+    }
+    
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Generate hreflang links for cross-domain SEO
- * Supports both main pages and merchant pages with alternate merchant matching
+ * Supports both main pages and merchant pages with alternate URL from CMS
  * 
  * @param currentPath - Current page path (e.g., "/shop/farfetch")
- * @param alternateMerchantSlug - Optional: slug of alternate merchant in other market (e.g., "farfetch" for HK when on TW)
+ * @param alternateUrl - Optional: direct URL from CMS hreflang_alternate field (e.g., "https://dealy.hk/shop/trip-com")
  */
 export function getHreflangLinks(
   currentPath: string,
-  alternateMerchantSlug?: string | null
+  alternateUrl?: string | null
 ): Array<{ hreflang: string; href: string }> {
   const config = getDomainConfig();
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${config.domain}`;
-  const alternateUrl = `https://${config.alternateDomain}`;
+  const alternateDomainUrl = `https://${config.alternateDomain}`;
   
   // Main pages that exist on both domains
   const mainPages = ['/', '/shop', '/special-offers', '/blog'];
@@ -46,20 +121,22 @@ export function getHreflangLinks(
   if (isMainPage) {
     links.push({
       hreflang: config.alternateHreflang,
-      href: `${alternateUrl}${currentPath}`
+      href: `${alternateDomainUrl}${currentPath}`
     });
   }
   
-  // For merchant pages, add alternate if we have the alternate merchant slug
-  if (isMerchantPage && alternateMerchantSlug) {
-    const alternatePath = `/shop/${alternateMerchantSlug}`;
-    links.push({
-      hreflang: config.alternateHreflang,
-      href: `${alternateUrl}${alternatePath}`
-    });
-    console.log(`[getHreflangLinks] Added HK hreflang for merchant page: ${config.alternateHreflang} -> ${alternateUrl}${alternatePath}`);
-  } else if (isMerchantPage && !alternateMerchantSlug) {
-    console.log(`[getHreflangLinks] Merchant page but no alternateMerchantSlug provided (path: ${currentPath})`);
+  // For merchant pages, use alternate URL from CMS if provided
+  if (isMerchantPage && alternateUrl) {
+    const hreflangCode = getHreflangFromUrl(alternateUrl);
+    if (hreflangCode) {
+      links.push({
+        hreflang: hreflangCode,
+        href: alternateUrl
+      });
+      console.log(`[getHreflangLinks] Added alternate hreflang for merchant page: ${hreflangCode} -> ${alternateUrl}`);
+    } else {
+      console.warn(`[getHreflangLinks] Could not determine hreflang code from URL: ${alternateUrl}`);
+    }
   }
   
   return links;
@@ -75,7 +152,7 @@ type PageMetaInput = {
   ogImageAlt?: string;        // Alt text for og:image (e.g., merchant name)
   ogType?: 'website' | 'article'; // Open Graph type (default: 'website')
   includeHreflang?: boolean; // Whether to include hreflang tags (default: true)
-  alternateMerchantSlug?: string | null; // Optional: slug of alternate merchant in other market for hreflang
+  alternateUrl?: string | null; // Optional: direct URL from CMS hreflang_alternate field (e.g., "https://dealy.hk/shop/trip-com")
 };
 
 export function pageMeta({
@@ -88,16 +165,16 @@ export function pageMeta({
   ogImageAlt,
   ogType = 'website',
   includeHreflang = true,
-  alternateMerchantSlug,
+  alternateUrl,
 }: PageMetaInput) {
   const url = canonical(canonicalOverride ?? path);
   const robots = noindex ? { index: false, follow: false, nocache: true } : undefined;
   
   // Debug: Log hreflang generation
-  console.log(`[pageMeta] Generating metadata for path: ${path}, alternateMerchantSlug: ${alternateMerchantSlug || 'null'}, includeHreflang: ${includeHreflang}`);
+  console.log(`[pageMeta] Generating metadata for path: ${path}, alternateUrl: ${alternateUrl || 'null'}, includeHreflang: ${includeHreflang}`);
   
-  // Generate hreflang links (with alternate merchant slug if provided)
-  const hreflangLinks = includeHreflang && path ? getHreflangLinks(path, alternateMerchantSlug) : [];
+  // Generate hreflang links (with alternate URL from CMS if provided)
+  const hreflangLinks = includeHreflang && path ? getHreflangLinks(path, alternateUrl) : [];
   console.log(`[pageMeta] Generated ${hreflangLinks.length} hreflang links:`, hreflangLinks);
   const alternates: { canonical?: string; languages?: Record<string, string> } = {};
   
