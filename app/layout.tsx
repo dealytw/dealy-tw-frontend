@@ -17,9 +17,23 @@ export const metadata: Metadata = {
   description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
   authors: [{ name: "Dealy TW" }],
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    // Primary ICO for Google Search Results and maximum compatibility
+    // Note: favicon.ico should be created from favicon.png (see docs/FAVICON_SETUP.md)
+    icon: [
+      { url: "/favicon.ico", sizes: "any" }, // Primary - Google Search Results looks for this first
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }, // Available size
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" }, // Optional (ICO contains this)
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" }, // Optional (ICO contains this)
+      { url: "/favicon1-01.png", sizes: "any", type: "image/png" }, // Source file fallback
+      { url: "/favicon.png", sizes: "any", type: "image/png" }, // Legacy fallback
+      { url: "/favicon.svg", type: "image/svg+xml" }, // Modern browsers
+    ],
+    shortcut: "/favicon.ico", // Legacy support
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }, // iOS devices
+      { url: "/favicon1-01.png", sizes: "180x180", type: "image/png" }, // Source file fallback
+      { url: "/favicon.png", sizes: "180x180", type: "image/png" }, // Legacy fallback
+    ],
   },
   openGraph: {
     title: "Dealy TW 台灣最新優惠平台",
@@ -193,10 +207,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
         <link rel="dns-prefetch" href="//cms.dealy.tw" />
         
-        {/* Favicon links - minimal set for best SEO and browser compatibility */}
+        {/* Favicon links - comprehensive set for Google Search Results and browser compatibility */}
+        {/* Primary ICO - Google Search Results primarily looks for this (MUST EXIST) */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        {/* PNG fallbacks for different sizes */}
+        {/* Note: favicon.ico contains 16x16, 32x32, 48x48 internally, so separate PNGs are optional */}
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        {/* Source file fallback */}
+        <link rel="icon" type="image/png" href="/favicon1-01.png" />
+        {/* Legacy fallback */}
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        {/* SVG for modern browsers */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.svg" />
+        {/* Apple touch icon for iOS devices */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        {/* Source file fallback for Apple touch icon */}
+        <link rel="apple-touch-icon" href="/favicon1-01.png" />
+        {/* Legacy fallback */}
+        <link rel="apple-touch-icon" href="/favicon.png" />
+        {/* Legacy shortcut icon */}
+        <link rel="shortcut icon" href="/favicon.ico" />
         
         {/* Preload hero background image for homepage LCP optimization - Only on homepage */}
         {/* Note: Preload is moved to homepage component to avoid warnings on other pages */}
