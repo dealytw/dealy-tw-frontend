@@ -597,6 +597,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       const absoluteOgImage = absolutizeMedia(merchantOgImage.url);
       ogImageUrl = rewriteImageUrl(absoluteOgImage, siteUrl);
     }
+    
+    // Fallback to default OG image if no merchant image available
+    if (!ogImageUrl) {
+      ogImageUrl = `${siteUrl}/favicon.svg`; // Use favicon as last resort
+      console.warn(`[generateMetadata] No OG image found for ${id}, using fallback`);
+    } else {
+      console.log(`[generateMetadata] OG image for ${id}:`, ogImageUrl);
+    }
 
     // Format ogImageAlt as "{merchant name}優惠碼"
     const ogImageAlt = `${name}優惠碼`;

@@ -232,9 +232,9 @@ export function pageMeta({
 
   // Build Open Graph image object with alt text if provided
   // Format ogImageAlt as "{merchant name}優惠碼" if provided
+  // Note: Next.js automatically generates og:image:secure_url for HTTPS URLs
   const ogImages = ogImageUrl ? [{
     url: ogImageUrl,
-    secureUrl: ogImageUrl, // og:image:secure_url (same as og:image)
     ...(ogImageAlt && { alt: ogImageAlt }),
   }] : undefined;
 
