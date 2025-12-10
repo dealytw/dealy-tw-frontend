@@ -13,9 +13,9 @@ import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
 export async function GET() {
   const domainConfig = getDomainConfigServer()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
-  const alternateDomain = domainConfig.alternateDomain
 
   // Clean robots.txt content (NO Content-signal directive)
+  // Domain-specific: Only include sitemap for current domain
   const robotsTxt = `# Block admin and API routes from crawling
 User-agent: *
 Disallow: /api/admin/
@@ -29,10 +29,7 @@ Disallow: /api/media-test/
 Allow: /
 
 # Sitemap (canonical - use /sitemap.xml, not /sitemap_index.xml)
-# Both domains share this robots.txt, so list both sitemaps
-# Google will use the appropriate one for each domain
-Sitemap: https://dealy.tw/sitemap.xml
-Sitemap: https://dealy.hk/sitemap.xml
+Sitemap: ${baseUrl}/sitemap.xml
 `
 
   return new NextResponse(robotsTxt, {

@@ -11,7 +11,6 @@ Disallow: /api/media-test/
 Allow: /
 
 # Sitemap (canonical - use /sitemap.xml, not /sitemap_index.xml)
-# Both domains share this robots.txt, so list both sitemaps
-# Google will use the appropriate one for each domain
+# Note: Dynamic route app/robots.txt/route.ts will override this file
+# and provide domain-specific sitemap reference
 Sitemap: https://dealy.tw/sitemap.xml
-Sitemap: https://dealy.hk/sitemap.xml
