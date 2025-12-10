@@ -128,7 +128,30 @@ Content-Signal: search=yes,ai-train=no
 ### Step 1: Verify Local File is Clean ✅
 Your local `public/robots.txt` is already clean (no `Content-signal` line).
 
-### Step 2: Deploy the Clean File
+### Step 2: Disable Cloudflare AI Crawl Control (CRITICAL)
+
+**Issue Found**: Cloudflare's "AI Crawl Control" is managing your robots.txt files, even with the toggle OFF.
+
+**Evidence**:
+- All hostnames show "Cloudflare Managed" status
+- All hostnames show "Content Signals: Declared"
+- This is likely injecting `Content-signal: search=yes, ai-train=no` into your robots.txt
+
+**Action Required**:
+
+1. **In Cloudflare Dashboard**:
+   - Go to: **AI Crawl Control** → **Robots.txt** tab
+   - Ensure "Use Cloudflare managed robots.txt" toggle is **OFF** (already done ✅)
+   - **Check if there's a way to disable "Cloudflare Managed" status**:
+     - Look for settings to "Disable Cloudflare robots.txt management"
+     - Or "Use custom robots.txt" option
+     - Or remove hostnames from Cloudflare management
+
+2. **Alternative: Use Dynamic robots.txt Route** (Recommended):
+   - Create `app/robots.txt/route.ts` to override Cloudflare's managed version
+   - This ensures your code controls robots.txt, not Cloudflare
+
+### Step 3: Deploy the Clean File
 **Action**: Push and deploy the current clean `robots.txt` file to production.
 
 ```bash
@@ -137,13 +160,14 @@ git commit -m "Fix robots.txt: Remove Content-signal directive for SEO score 100
 git push origin master
 ```
 
-### Step 3: Check CDN/Server Configuration
+### Step 4: Check CDN/Server Configuration
 After deploying, if the error persists, check:
 
-1. **Vercel/Netlify Edge Functions**: Check if any edge middleware is modifying robots.txt
-2. **CDN Configuration**: Check Cloudflare/Vercel CDN settings for robots.txt modifications
-3. **Hosting Panel**: Check if your hosting provider has a robots.txt editor that added this line
-4. **Build Scripts**: Check `package.json` build scripts or deployment hooks
+1. **Cloudflare AI Crawl Control**: Ensure it's completely disabled (see Step 2)
+2. **Vercel/Netlify Edge Functions**: Check if any edge middleware is modifying robots.txt
+3. **CDN Configuration**: Check Cloudflare/Vercel CDN settings for robots.txt modifications
+4. **Hosting Panel**: Check if your hosting provider has a robots.txt editor that added this line
+5. **Build Scripts**: Check `package.json` build scripts or deployment hooks
 
 ### Step 4: Verify Fix
 1. Wait 5-10 minutes after deployment
