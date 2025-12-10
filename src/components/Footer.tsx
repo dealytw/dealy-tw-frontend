@@ -59,7 +59,7 @@ const Footer = () => {
             {/* Language Switcher */}
             <LanguageSwitcher />
             <p className="text-xs text-gray-400">
-              透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。
+              透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。 We may earn a small affiliate commission when you make a purchase using the links on our site.
             </p>
           </div>
         </div>
