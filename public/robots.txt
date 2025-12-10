@@ -9,3 +9,9 @@ Disallow: /api/media-test/
 
 # Allow everything else
 Allow: /
+
+# Sitemap (canonical - use /sitemap.xml, not /sitemap_index.xml)
+# Both domains share this robots.txt, so list both sitemaps
+# Google will use the appropriate one for each domain
+Sitemap: https://dealy.tw/sitemap.xml
+Sitemap: https://dealy.hk/sitemap.xml
