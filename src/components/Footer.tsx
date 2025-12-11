@@ -58,10 +58,17 @@ const Footer = () => {
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             {/* Language Switcher */}
             <LanguageSwitcher />
-            <p className="text-xs text-gray-400">
-              透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。 We may earn a small affiliate commission when you make a purchase using the links on our site.
-            </p>
           </div>
+        </div>
+        
+        {/* Affiliate Disclaimer - Centered, Two Lines */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-400">
+            透過本站鏈接完成購物，我們可能會因此獲得佣金，而您無需額外付費。
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            We may earn a small affiliate commission when you make a purchase using the links on our site.
+          </p>
         </div>
       </div>
     </footer>
