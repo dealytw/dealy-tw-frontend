@@ -22,8 +22,7 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.ico", sizes: "any" }, // Primary - Google Search Results looks for this first
       { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }, // Available size
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" }, // Optional (ICO contains this)
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" }, // Optional (ICO contains this)
+      // Note: favicon-32x32.png and favicon-16x16.png not needed - ICO contains these sizes internally
       { url: "/favicon1-01.png", sizes: "any", type: "image/png" }, // Source file fallback
       { url: "/favicon.png", sizes: "any", type: "image/png" }, // Legacy fallback
       { url: "/favicon.svg", type: "image/svg+xml" }, // Modern browsers
@@ -213,8 +212,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* PNG fallbacks for different sizes */}
         {/* Note: favicon.ico contains 16x16, 32x32, 48x48 internally, so separate PNGs are optional */}
         <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        {/* Note: favicon-32x32.png and favicon-16x16.png not needed - ICO contains these sizes */}
         {/* Source file fallback */}
         <link rel="icon" type="image/png" href="/favicon1-01.png" />
         {/* Legacy fallback */}
