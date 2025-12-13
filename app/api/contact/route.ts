@@ -92,9 +92,11 @@ ${message}
         throw new Error('Resend client is not initialized');
       }
 
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'Dealy TW Team <info@dealy.tw>';
+
       console.log('Sending contact form email:', {
         to: 'info@dealy.tw',
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@dealy.tw',
+        from: fromEmail,
         subject: emailSubject,
         hasName: !!name,
         hasEmail: !!email,
@@ -103,7 +105,7 @@ ${message}
       });
 
       const emailResult = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@dealy.tw',
+        from: fromEmail,
         to: 'info@dealy.tw',
         replyTo: email,
         subject: emailSubject,
