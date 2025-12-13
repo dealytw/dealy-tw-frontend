@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+// Blog page implementation reverted - will be re-implemented with proper approach
 import { Providers } from "@/components/providers";
 import { SearchProvider } from "@/components/SearchProvider";
 import { websiteJsonLd, organizationJsonLd, siteNavigationJsonLd } from "@/lib/jsonld";
