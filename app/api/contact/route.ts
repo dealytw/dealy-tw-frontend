@@ -7,11 +7,22 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
+      return NextResponse.json(
+        { error: '無效的請求格式' },
+        { status: 400 }
+      );
+    }
+
     const { name, email, message, merchantName } = body;
 
     // Validate required fields
     if (!name || !email || !message) {
+      console.error('Missing required fields:', { name: !!name, email: !!email, message: !!message });
       return NextResponse.json(
         { error: '姓名、電郵地址和訊息為必填項' },
         { status: 400 }
@@ -34,6 +45,16 @@ export async function POST(request: Request) {
       );
     }
 
+    // Escape HTML to prevent XSS in email template
+    const escapeHtml = (text: string) => {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    };
+
     // Send email to info@dealy.tw
     const emailSubject = `[Dealy.TW] 聯絡我們${merchantName ? ` - ${merchantName}` : ''} - ${name}`;
     const emailText = `
@@ -53,13 +74,13 @@ ${message}
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">新的聯絡訊息來自 Dealy.TW</h2>
         <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>姓名：</strong>${name}</p>
-          <p><strong>電郵：</strong><a href="mailto:${email}">${email}</a></p>
-          ${merchantName ? `<p><strong>商家：</strong>${merchantName}</p>` : ''}
+          <p><strong>姓名：</strong>${escapeHtml(name)}</p>
+          <p><strong>電郵：</strong><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
+          ${merchantName ? `<p><strong>商家：</strong>${escapeHtml(merchantName)}</p>` : ''}
         </div>
         <div style="margin: 20px 0;">
           <h3 style="color: #333;">訊息：</h3>
-          <p style="white-space: pre-wrap; background: #fff; padding: 15px; border-left: 4px solid #0066cc;">${message}</p>
+          <p style="white-space: pre-wrap; background: #fff; padding: 15px; border-left: 4px solid #0066cc;">${escapeHtml(message)}</p>
         </div>
         <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
         <p style="color: #666; font-size: 12px;">此訊息來自 Dealy.TW 聯絡我們表單</p>
@@ -71,7 +92,17 @@ ${message}
         throw new Error('Resend client is not initialized');
       }
 
-      await resend.emails.send({
+      console.log('Sending contact form email:', {
+        to: 'info@dealy.tw',
+        from: process.env.RESEND_FROM_EMAIL || 'noreply@dealy.tw',
+        subject: emailSubject,
+        hasName: !!name,
+        hasEmail: !!email,
+        hasMessage: !!message,
+        hasMerchantName: !!merchantName,
+      });
+
+      const emailResult = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'noreply@dealy.tw',
         to: 'info@dealy.tw',
         replyTo: email,
@@ -80,13 +111,21 @@ ${message}
         html: emailHtml,
       });
 
+      console.log('Email sent successfully:', emailResult);
+
       return NextResponse.json(
         { message: '提交成功！我們會盡快回覆您的訊息。' },
         { status: 200 }
       );
     } catch (emailError: any) {
-      console.error('Error sending email:', emailError);
-      // Still return success to user even if email fails
+      console.error('Error sending email:', {
+        error: emailError,
+        message: emailError?.message,
+        stack: emailError?.stack,
+        name: emailError?.name,
+      });
+      // Still return success to user even if email fails (to prevent user confusion)
+      // But log the error for debugging
       return NextResponse.json(
         { message: '提交成功！我們會盡快回覆您的訊息。' },
         { status: 200 }

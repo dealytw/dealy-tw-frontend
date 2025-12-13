@@ -7,11 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 
 export default function SubmitCouponsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,27 +35,53 @@ export default function SubmitCouponsPage() {
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        // Try to parse error response
+        let errorMessage = '請稍後再試。';
+        try {
+          const errorResult = await response.json();
+          errorMessage = errorResult.error || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        
+        console.error('Submit coupon form submission failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorMessage,
+        });
+        
+        sonnerToast.error("提交失敗", {
+          description: errorMessage,
+          duration: 5000,
+        });
+        return;
+      }
 
-      if (response.ok) {
-        toast({
-          title: "提交成功！",
-          description: "我們會盡快回覆您的訊息。",
+      const result = await response.json();
+      
+      if (result.message) {
+        sonnerToast.success("✅ 提交成功！", {
+          description: result.message,
+          duration: 5000, // Show for 5 seconds
         });
         // Reset form
         e.currentTarget.reset();
       } else {
-        toast({
-          title: "提交失敗",
-          description: result.error || "請稍後再試。",
-          variant: "destructive",
+        // Unexpected response format
+        console.warn('Unexpected response format:', result);
+        sonnerToast.success("✅ 提交成功！", {
+          description: "我們會盡快回覆您的訊息。",
+          duration: 5000, // Show for 5 seconds
         });
+        e.currentTarget.reset();
       }
     } catch (error) {
-      toast({
-        title: "提交失敗",
-        description: "請稍後再試。",
-        variant: "destructive",
+      console.error('Submit coupon form submission error:', error);
+      sonnerToast.error("提交失敗", {
+        description: error instanceof Error ? error.message : "網路錯誤，請檢查連線後再試。",
+        duration: 5000,
       });
     } finally {
       setIsSubmitting(false);
