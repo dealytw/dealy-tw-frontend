@@ -3,7 +3,7 @@ import { getHomePageData } from "@/lib/homepage-loader";
 import { HOME_REVALIDATE, HOME_TAG } from "@/lib/constants";
 import { pageMeta } from "@/seo/meta";
 import HomePageClient from "./page-client";
-import { webPageJsonLd } from "@/lib/jsonld";
+import { webPageJsonLd, popularMerchantsItemListJsonLd, getDailyUpdatedTime } from "@/lib/jsonld";
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from "@/lib/domain-config";
 
 // Enable ISR for this page
@@ -46,14 +46,31 @@ export default async function HomePage() {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
     const marketLocale = await getMarketLocale(MARKET);
     
-    // Generate WebPage JSON-LD for homepage
+    // Get daily updated time for freshness signal (matches merchant pages)
+    const dailyUpdatedTime = getDailyUpdatedTime();
+    const dateModified = dailyUpdatedTime.toISOString().replace('Z', '+08:00');
+    // Use a fixed date for datePublished (when site was launched or homepage was first created)
+    // For now, use a date 6 months ago as placeholder - should be replaced with actual creation date from CMS
+    const datePublished = '2025-06-17T21:57:37+08:00'; // TODO: Get from CMS if available
+    
+    // Generate WebPage JSON-LD for homepage with dates
     const webPageSchema = webPageJsonLd({
       name: homepageData.seo.title,
       url: siteUrl,
       description: homepageData.seo.description,
       locale: marketLocale,
       siteId: `${siteUrl}#website`,
+      datePublished: datePublished,
+      dateModified: dateModified,
     });
+    
+    // Generate ItemList schema for popular merchants (matching HK format)
+    const popularMerchantsList = homepageData.popularMerchants?.items || [];
+    const itemListSchema = popularMerchantsItemListJsonLd(
+      popularMerchantsList.map(m => ({ name: m.name, slug: m.slug })),
+      homepageData.popularMerchants?.heading || '熱門商店',
+      siteUrl
+    );
     
     // Pass data to client component for interactivity
     // Note: Hero image preload is handled automatically by Next.js Image component with priority prop
@@ -67,6 +84,15 @@ export default async function HomePage() {
             __html: JSON.stringify(webPageSchema, null, 0),
           }}
         />
+        {/* ItemList JSON-LD for popular merchants (matching HK format) */}
+        {itemListSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(itemListSchema, null, 0),
+            }}
+          />
+        )}
       </>
     );
   } catch (error) {

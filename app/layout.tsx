@@ -206,6 +206,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
         <link rel="dns-prefetch" href="//cms.dealy.tw" />
         
+        {/* Preload primary favicon for faster loading (critical for first paint) */}
+        <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
+        
         {/* Favicon links - comprehensive set for Google Search Results and browser compatibility */}
         {/* Primary ICO - Google Search Results primarily looks for this (MUST EXIST) */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -227,6 +230,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="apple-touch-icon" href="/favicon.png" />
         {/* Legacy shortcut icon */}
         <link rel="shortcut icon" href="/favicon.ico" />
+        
+        {/* Web Manifest for PWA support */}
+        <link rel="manifest" href="/site.webmanifest" />
+        
+        {/* Theme Color for mobile browser address bar */}
+        <meta name="theme-color" content="#ffffff" />
         
         {/* Preload hero background image for homepage LCP optimization - Only on homepage */}
         {/* Note: Preload is moved to homepage component to avoid warnings on other pages */}
@@ -254,7 +263,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     siteName: domainConfig.name, 
                     siteUrl: siteUrl, 
                     searchUrl: `${siteUrl}/search`,
-                    locale: marketLocale
+                    locale: marketLocale,
+                    image: `${siteUrl}/favicon.svg`,
+                    logo: `${siteUrl}/favicon.svg`,
+                    description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
+                    publisher: domainConfig.name
                   })
                 ),
               }}

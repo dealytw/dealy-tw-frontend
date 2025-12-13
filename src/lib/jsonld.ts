@@ -36,8 +36,17 @@ export function getDailyUpdatedTime(): Date {
   return taiwanUpdatedDate;
 }
 
-export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; searchUrl?: UrlString; locale?: string }) {
-  const { siteName, siteUrl, searchUrl, locale } = opts;
+export function websiteJsonLd(opts: { 
+  siteName: string; 
+  siteUrl: UrlString; 
+  searchUrl?: UrlString; 
+  locale?: string;
+  image?: UrlString;
+  logo?: UrlString;
+  description?: string;
+  publisher?: string;
+}) {
+  const { siteName, siteUrl, searchUrl, locale, image, logo, description, publisher } = opts;
   
   // Convert Market.defaultLocale to schema.org format
   // "zh-Hant-HK" -> "zh-HK", "zh-Hant-TW" -> "zh-TW"
@@ -64,6 +73,19 @@ export function websiteJsonLd(opts: { siteName: string; siteUrl: UrlString; sear
       target: `${searchUrl}?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
     };
+  }
+  // Enhanced fields (matching EverySaving format)
+  if (image) {
+    obj.image = image;
+  }
+  if (logo) {
+    obj.logo = logo;
+  }
+  if (description) {
+    obj.description = description;
+  }
+  if (publisher) {
+    obj.publisher = publisher;
   }
   return obj;
 }
@@ -142,6 +164,37 @@ export function offersItemListJsonLd(coupons: Array<{
     list['@id'] = `${listId}#coupons`; // Use #coupons for proper referencing
   }
   return list;
+}
+
+/**
+ * Generate ItemList schema for popular merchants (homepage)
+ * Matches HK format exactly
+ */
+export function popularMerchantsItemListJsonLd(
+  merchants: Array<{ name: string; slug: string }>,
+  listName: string,
+  siteUrl: UrlString
+) {
+  if (!merchants || merchants.length === 0) return undefined;
+  
+  const items = merchants.map((merchant, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'WebPage',
+      name: merchant.name,
+      url: `${siteUrl}/shop/${merchant.slug}`,
+    },
+  }));
+  
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: listName,
+    itemListOrder: 'ItemListOrderDescending',
+    numberOfItems: items.length,
+    itemListElement: items,
+  };
 }
 
 export function faqPageJsonLd(faqs: Array<{ question: string; answer: string }>, faqId?: UrlString) {
