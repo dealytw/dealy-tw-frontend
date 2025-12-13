@@ -15,7 +15,7 @@ export async function GET() {
   try {
     const blogParams = {
       "filters[publishedAt][$notNull]": true, // Only published posts
-      "fields[0]": "slug",
+      "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "fields[2]": "publishedAt",
       "pagination[pageSize]": "500",
@@ -23,14 +23,14 @@ export async function GET() {
     }
 
     const blogData = await strapiFetch<{ data: any[] }>(
-      `/api/posts?${qs(blogParams)}`,
+      `/api/blogs?${qs(blogParams)}`,
       { revalidate: 86400, tag: 'sitemap:blog' }
     )
 
     blogPages = (blogData?.data || [])
       .filter((post: any) => post.publishedAt) // Double-check published status
       .map((post: any) => ({
-        url: `${baseUrl}/blog/${post.slug}`,
+        url: `${baseUrl}/blog/${post.page_slug}`,
         lastmod: post.updatedAt 
           ? new Date(post.updatedAt).toISOString() 
           : (post.publishedAt ? new Date(post.publishedAt).toISOString() : currentDate.toISOString()),
