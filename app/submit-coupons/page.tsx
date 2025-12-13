@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,12 +11,14 @@ import { toast as sonnerToast } from "sonner";
 
 export default function SubmitCouponsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const data = {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
@@ -66,8 +68,10 @@ export default function SubmitCouponsPage() {
           description: result.message,
           duration: 5000, // Show for 5 seconds
         });
-        // Reset form
-        e.currentTarget.reset();
+        // Reset form safely
+        if (formRef.current) {
+          formRef.current.reset();
+        }
       } else {
         // Unexpected response format
         console.warn('Unexpected response format:', result);
@@ -75,7 +79,9 @@ export default function SubmitCouponsPage() {
           description: "我們會盡快回覆您的訊息。",
           duration: 5000, // Show for 5 seconds
         });
-        e.currentTarget.reset();
+        if (formRef.current) {
+          formRef.current.reset();
+        }
       }
     } catch (error) {
       console.error('Submit coupon form submission error:', error);
@@ -120,7 +126,7 @@ export default function SubmitCouponsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
                     ✍️ 您的姓名 *

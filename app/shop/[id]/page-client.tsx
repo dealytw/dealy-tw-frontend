@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -30,12 +30,14 @@ function getTaiwanDate() {
 // Contact Form Component
 function ContactForm({ merchantName }: { merchantName: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const data = {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
@@ -83,8 +85,10 @@ function ContactForm({ merchantName }: { merchantName: string }) {
           description: result.message,
           duration: 5000, // Show for 5 seconds
         });
-        // Reset form
-        e.currentTarget.reset();
+        // Reset form safely
+        if (formRef.current) {
+          formRef.current.reset();
+        }
       } else {
         // Unexpected response format
         console.warn('Unexpected response format:', result);
@@ -92,7 +96,9 @@ function ContactForm({ merchantName }: { merchantName: string }) {
           description: "我們會盡快回覆您的訊息。",
           duration: 5000, // Show for 5 seconds
         });
-        e.currentTarget.reset();
+        if (formRef.current) {
+          formRef.current.reset();
+        }
       }
     } catch (error) {
       console.error('Contact form submission error:', error);
@@ -106,7 +112,7 @@ function ContactForm({ merchantName }: { merchantName: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="contact-name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
           ✍️ 你的名字 *
