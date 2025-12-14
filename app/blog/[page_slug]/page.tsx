@@ -153,35 +153,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }
     }
 
-    // Fetch blog_coupon merchant/logo separately (nested populate causes route 404)
-    let blogCouponsWithMerchant: any[] = [];
-    if (blogId) {
-      try {
-        const couponsRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
-          "filters[id][$eq]": blogId,
-          "populate[blog_coupon][populate][merchant][fields][0]": "id",
-          "populate[blog_coupon][populate][merchant][fields][1]": "merchant_name",
-          "populate[blog_coupon][populate][merchant][fields][2]": "page_slug",
-          "populate[blog_coupon][populate][merchant][populate][logo][fields][0]": "url",
-        })}`, { 
-          revalidate: 60,
-          tag: `blog-coupons-merchant:${page_slug}` 
-        });
-        
-        const blogWithCoupons = couponsRes?.data?.[0];
-        if (blogWithCoupons) {
-          const couponsData = blogWithCoupons.blog_coupon || blogWithCoupons.attributes?.blog_coupon || [];
-          // Handle array or data wrapper format
-          blogCouponsWithMerchant = Array.isArray(couponsData) 
-            ? couponsData 
-            : (couponsData?.data || []);
-        }
-      } catch (couponsError) {
-        console.error('Error fetching blog_coupon merchant/logo:', couponsError);
-        // Continue without merchant data rather than failing the page
-      }
-    }
-
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
     const blogData = {
       id: blog.id || blog.attributes?.id,
@@ -190,8 +161,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       createdAt: blog.attributes?.createdAt || blog.createdAt,
       updatedAt: blog.attributes?.updatedAt || blog.updatedAt,
       blog_sections: blogSections, // Use separately fetched sections
-      blog_table: blog.blog_table || blog.attributes?.blog_table,
-      blog_coupon: blog.blog_coupon || blog.attributes?.blog_coupon,
       related_merchants: blog.related_merchants || blog.attributes?.related_merchants,
       related_blogs: blog.related_blogs || blog.attributes?.related_blogs,
     };
@@ -252,74 +221,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
         updatedAt: relatedBlog.updatedAt || relatedBlog.attributes?.updatedAt || '',
         thumbnail: null,
       }));
-    }
-
-    // Extract blog_table - handle repeatable component format (same pattern as blog_sections)
-    let blogTable: any[] = [];
-    if (blogData.blog_table) {
-      const tableData = Array.isArray(blogData.blog_table) 
-        ? blogData.blog_table 
-        : (blogData.blog_table?.data || []);
-      
-      blogTable = tableData.map((table: any) => {
-        const tableItem = table.attributes || table;
-        return {
-          id: tableItem.id || table.id || 0,
-          table_h3: tableItem.table_h3 || '',
-          table_title: tableItem.table_title || '',
-          table_description: tableItem.table_description || '',
-          table_promo_code: tableItem.table_promo_code || '',
-          landingpage: tableItem.landingpage || '',
-          table_date: tableItem.table_date || '',
-        };
-      });
-    }
-
-    // Extract blog_coupon - handle relation format (same pattern as related_merchants)
-    let blogCoupons: any[] = [];
-    if (blogData.blog_coupon) {
-      let couponsFromCMS = [];
-      if (Array.isArray(blogData.blog_coupon)) {
-        if (blogData.blog_coupon[0]?.data) {
-          couponsFromCMS = blogData.blog_coupon.map((item: any) => item.data || item);
-        } else {
-          couponsFromCMS = blogData.blog_coupon;
-        }
-      } else if (blogData.blog_coupon?.data) {
-        couponsFromCMS = blogData.blog_coupon.data;
-      }
-      
-      // Merge merchant/logo data from separate fetch
-      blogCoupons = couponsFromCMS.map((coupon: any, index: number) => {
-        const couponData = coupon.attributes || coupon;
-        // Get merchant data from separate fetch (if available)
-        const couponWithMerchant = blogCouponsWithMerchant[index];
-        const merchantData = couponWithMerchant?.merchant?.data || couponWithMerchant?.merchant || couponData.merchant?.data || couponData.merchant;
-        const merchant = merchantData?.attributes || merchantData;
-        const logoUrl = merchant?.logo?.url || merchant?.logo?.attributes?.url || merchant?.attributes?.logo?.url;
-        
-        return {
-          id: couponData.id || coupon.id,
-          coupon_title: couponData.coupon_title || '',
-          value: couponData.value || '',
-          code: couponData.code || '',
-          affiliate_link: couponData.affiliate_link || '',
-          coupon_type: couponData.coupon_type || '',
-          expires_at: couponData.expires_at || '',
-          priority: couponData.priority || 0,
-          display_count: couponData.display_count || 0,
-          coupon_status: couponData.coupon_status || 'active',
-          description: couponData.description || [],
-          editor_tips: couponData.editor_tips || [],
-          merchant: merchant ? {
-            id: merchant.id || merchantData.id,
-            name: merchant.merchant_name || merchantData.merchant_name || '',
-            slug: merchant.page_slug || merchantData.page_slug || '',
-            logo: logoUrl ? absolutizeMedia(logoUrl) : null,
-          } : null,
-          market: couponData.market?.key || couponData.market?.attributes?.key || null,
-        };
-      });
     }
 
     const transformedBlog = {
