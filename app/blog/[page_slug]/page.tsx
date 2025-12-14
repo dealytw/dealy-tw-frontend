@@ -101,6 +101,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
       // Step 1: Add blog_sections text fields only (like useful_links in merchant page)
       "populate[blog_sections][fields][0]": "h2_blog_section_title",
       "populate[blog_sections][fields][1]": "blog_texts",
+      // Step 2: Add blog_table text fields only (repeatable component, text only)
+      "populate[blog_table][fields][0]": "table_h3",
+      "populate[blog_table][fields][1]": "table_title",
+      "populate[blog_table][fields][2]": "table_description",
+      "populate[blog_table][fields][3]": "table_promo_code",
+      "populate[blog_table][fields][4]": "landingpage",
+      "populate[blog_table][fields][5]": "table_date",
     })}`, { 
       revalidate: 60, // 1 minute for development
       tag: `blog:${page_slug}` 
