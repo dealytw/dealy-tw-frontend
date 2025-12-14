@@ -397,12 +397,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                             }}
                           />
                         )}
-                      </div>
-                    );
-                  })}
 
-                  {/* Comparison Table - Render after all sections */}
-                  {blog.blog_table && blog.blog_table.length > 0 && (
+                        {/* Comparison Table - Render after this section's blog_texts */}
+                        {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
                           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 overflow-hidden">
                             <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-4">
