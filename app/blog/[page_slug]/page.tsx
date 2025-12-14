@@ -119,14 +119,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
     let blogTable: any[] = [];
     if (blogId) {
       try {
+        // Try populating blog_table without fields restriction first
         const tableRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
           "filters[id][$eq]": blogId,
-          "populate[blog_table][fields][0]": "table_h3",
-          "populate[blog_table][fields][1]": "table_title",
-          "populate[blog_table][fields][2]": "table_description",
-          "populate[blog_table][fields][3]": "table_promo_code",
-          "populate[blog_table][fields][4]": "landingpage",
-          "populate[blog_table][fields][5]": "table_date",
+          "populate[blog_table]": "*",  // Populate all fields first to see if data exists
         })}`, { 
           revalidate: 60,
           tag: `blog-table:${page_slug}` 
