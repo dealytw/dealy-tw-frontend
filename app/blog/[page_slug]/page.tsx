@@ -114,8 +114,47 @@ export default async function BlogPage({ params }: BlogPageProps) {
       notFound();
     }
 
+    // Step 2: Fetch blog_table separately (repeatable component causes 404 in main query)
+    const blogId = blog.id || blog.attributes?.id;
+    let blogTable: any[] = [];
+    if (blogId) {
+      try {
+        const tableRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
+          "filters[id][$eq]": blogId,
+          "populate[blog_table][fields][0]": "table_h3",
+          "populate[blog_table][fields][1]": "table_title",
+          "populate[blog_table][fields][2]": "table_description",
+          "populate[blog_table][fields][3]": "table_promo_code",
+          "populate[blog_table][fields][4]": "landingpage",
+          "populate[blog_table][fields][5]": "table_date",
+        })}`, { 
+          revalidate: 60,
+          tag: `blog-table:${page_slug}` 
+        });
+        
+        const blogWithTable = tableRes?.data?.[0];
+        if (blogWithTable) {
+          const tableData = blogWithTable.blog_table || blogWithTable.attributes?.blog_table || [];
+          blogTable = (Array.isArray(tableData) ? tableData : (tableData?.data || [])).map((table: any) => {
+            const tableItem = table.attributes || table;
+            return {
+              id: tableItem.id || table.id || 0,
+              table_h3: tableItem.table_h3 || '',
+              table_title: tableItem.table_title || '',
+              table_description: tableItem.table_description || '',
+              table_promo_code: tableItem.table_promo_code || '',
+              landingpage: tableItem.landingpage || '',
+              table_date: tableItem.table_date || '',
+            };
+          });
+        }
+      } catch (tableError) {
+        console.error('Error fetching blog_table:', tableError);
+        // Continue without table rather than failing the page
+      }
+    }
+
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
-    // TEST: With force-dynamic, nested populate should work in main query (no separate fetch needed)
     const blogData = {
       id: blog.id || blog.attributes?.id,
       blog_title: blog.attributes?.blog_title || blog.blog_title,
