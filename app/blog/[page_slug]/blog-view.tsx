@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Facebook, Twitter, Share2, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Blog {
   id: number;
@@ -401,60 +402,70 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Comparison Table - Render after this section's blog_texts */}
                         {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
-                          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-4">
+                          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 overflow-hidden">
+                            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-4">
                               <h3 className="font-bold text-lg text-white">📊 比較表格</h3>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto bg-white">
                               <table className="w-full border-collapse">
                                 <thead>
-                                  <tr className="bg-blue-100">
-                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">類型</th>
-                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">標題</th>
-                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">說明</th>
-                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">優惠碼</th>
-                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">操作</th>
+                                  <tr className="bg-yellow-100">
+                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠標題</th>
+                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠門檻及內容</th>
+                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠期限</th>
+                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">專屬頁面或優惠碼</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {section.blog_table.map((tableRow, index) => (
-                                    <tr key={tableRow.id || index} className="hover:bg-blue-50 transition-colors">
-                                      <td className="border border-blue-200 px-4 py-3 text-foreground font-medium">
-                                        {tableRow.table_h3 || '-'}
-                                      </td>
-                                      <td className="border border-blue-200 px-4 py-3 text-foreground">
-                                        {tableRow.table_title || '-'}
-                                      </td>
-                                      <td className="border border-blue-200 px-4 py-3 text-foreground">
-                                        {tableRow.table_description || '-'}
-                                      </td>
-                                      <td className="border border-blue-200 px-4 py-3">
-                                        {tableRow.table_promo_code ? (
-                                          <Badge variant="secondary" className="font-mono">
-                                            {tableRow.table_promo_code}
-                                          </Badge>
-                                        ) : (
-                                          <span className="text-muted-foreground">-</span>
-                                        )}
-                                      </td>
-                                      <td className="border border-blue-200 px-4 py-3">
-                                        {tableRow.landingpage ? (
-                                          <Link href={tableRow.landingpage} target="_blank" rel="noopener noreferrer">
-                                            <Button size="sm" variant="outline">
-                                              獲取優惠
-                                            </Button>
-                                          </Link>
-                                        ) : (
-                                          <span className="text-muted-foreground">-</span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                  {section.blog_table.map((tableRow, rowIndex) => {
+                                    const buttonId = `promo-${sectionIndex}-${rowIndex}`;
+                                    const isRevealed = revealedPromoCodes[buttonId];
+                                    const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
+                                    
+                                    return (
+                                      <tr key={tableRow.id || rowIndex} className="hover:bg-yellow-50 transition-colors">
+                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground font-medium">
+                                          {tableRow.table_h3 || '-'}
+                                        </td>
+                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground">
+                                          {tableRow.table_title || '-'}
+                                        </td>
+                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground">
+                                          {tableRow.table_date || '-'}
+                                        </td>
+                                        <td className="border border-yellow-200 px-3 py-2">
+                                          <div 
+                                            id={buttonId}
+                                            ref={(el) => { buttonRefs.current[buttonId] = el; }}
+                                            className="flex items-center gap-2"
+                                          >
+                                            {tableRow.landingpage ? (
+                                              <Button 
+                                                size="sm" 
+                                                variant="outline"
+                                                className="text-xs"
+                                                onClick={() => handleGetPromoClick(tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
+                                              >
+                                                獲取優惠
+                                              </Button>
+                                            ) : (
+                                              <span className="text-muted-foreground text-sm">-</span>
+                                            )}
+                                            {isRevealed && hasPromoCode && (
+                                              <Badge variant="secondary" className="font-mono text-xs">
+                                                {tableRow.table_promo_code}
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>
                             {section.blog_table[0]?.table_date && (
-                              <div className="px-6 py-3 bg-blue-50 text-sm text-muted-foreground border-t border-blue-200">
+                              <div className="px-6 py-3 bg-yellow-50 text-xs text-muted-foreground border-t border-yellow-200">
                                 最後更新：{section.blog_table[0].table_date}
                               </div>
                             )}
