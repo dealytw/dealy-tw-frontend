@@ -116,52 +116,68 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
     // Step 2: Fetch blog_table separately (causes 404 even when alone in main query - specific to blog_table)
     const blogId = blog.id || blog.attributes?.id;
+    console.log('[BLOG_TABLE_FETCH] Starting fetch, blogId:', blogId);
     let blogTable: any[] = [];
     if (blogId) {
       try {
-        // Try populating blog_table without fields restriction first
-        const tableRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
+        const queryString = qs({
           "filters[id][$eq]": blogId,
           "populate[blog_table]": "*",  // Populate all fields first to see if data exists
-        })}`, { 
+        });
+        const fetchUrl = `/api/blogs?${queryString}`;
+        console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
+        
+        const tableRes = await strapiFetch<{ data: any[] }>(fetchUrl, { 
           revalidate: 60,
           tag: `blog-table:${page_slug}` 
         });
         
-        console.log('Table fetch response:', JSON.stringify(tableRes, null, 2));
+        console.log('[BLOG_TABLE_FETCH] Response received:', tableRes ? 'exists' : 'null');
+        console.log('[BLOG_TABLE_FETCH] Response data:', tableRes?.data);
+        console.log('[BLOG_TABLE_FETCH] Response data length:', tableRes?.data?.length);
+        
         const blogWithTable = tableRes?.data?.[0];
-        console.log('blogWithTable:', blogWithTable);
-        console.log('blogWithTable.blog_table:', blogWithTable?.blog_table);
-        console.log('blogWithTable.attributes?.blog_table:', blogWithTable?.attributes?.blog_table);
+        console.log('[BLOG_TABLE_FETCH] blogWithTable:', blogWithTable ? 'exists' : 'null');
         
         if (blogWithTable) {
-          const tableData = blogWithTable.blog_table || blogWithTable.attributes?.blog_table || [];
-          console.log('Raw tableData:', tableData);
-          console.log('tableData is array?', Array.isArray(tableData));
+          console.log('[BLOG_TABLE_FETCH] blogWithTable keys:', Object.keys(blogWithTable));
+          console.log('[BLOG_TABLE_FETCH] blogWithTable.attributes keys:', blogWithTable.attributes ? Object.keys(blogWithTable.attributes) : 'no attributes');
           
-          blogTable = (Array.isArray(tableData) ? tableData : (tableData?.data || [])).map((table: any) => {
-            const tableItem = table.attributes || table;
-            console.log('Processing table item:', tableItem);
-            return {
-              id: tableItem.id || table.id || 0,
-              table_h3: tableItem.table_h3 || '',
-              table_title: tableItem.table_title || '',
-              table_description: tableItem.table_description || '',
-              table_promo_code: tableItem.table_promo_code || '',
-              landingpage: tableItem.landingpage || '',
-              table_date: tableItem.table_date || '',
-            };
-          });
-          console.log('Final blogTable:', blogTable);
+          const tableData = blogWithTable.blog_table || blogWithTable.attributes?.blog_table || [];
+          console.log('[BLOG_TABLE_FETCH] Raw tableData:', tableData);
+          console.log('[BLOG_TABLE_FETCH] tableData type:', typeof tableData);
+          console.log('[BLOG_TABLE_FETCH] tableData is array?', Array.isArray(tableData));
+          console.log('[BLOG_TABLE_FETCH] tableData length:', Array.isArray(tableData) ? tableData.length : 'not array');
+          
+          if (Array.isArray(tableData) && tableData.length > 0) {
+            blogTable = tableData.map((table: any, index: number) => {
+              const tableItem = table.attributes || table;
+              console.log(`[BLOG_TABLE_FETCH] Processing table item ${index}:`, tableItem);
+              return {
+                id: tableItem.id || table.id || index,
+                table_h3: tableItem.table_h3 || '',
+                table_title: tableItem.table_title || '',
+                table_description: tableItem.table_description || '',
+                table_promo_code: tableItem.table_promo_code || '',
+                landingpage: tableItem.landingpage || '',
+                table_date: tableItem.table_date || '',
+              };
+            });
+            console.log('[BLOG_TABLE_FETCH] Final blogTable length:', blogTable.length);
+            console.log('[BLOG_TABLE_FETCH] Final blogTable:', blogTable);
+          } else {
+            console.log('[BLOG_TABLE_FETCH] tableData is empty or not an array');
+          }
         } else {
-          console.log('blogWithTable is null or undefined');
+          console.log('[BLOG_TABLE_FETCH] blogWithTable is null or undefined');
         }
       } catch (tableError) {
-        console.error('Error fetching blog_table:', tableError);
+        console.error('[BLOG_TABLE_FETCH] Error fetching blog_table:', tableError);
+        console.error('[BLOG_TABLE_FETCH] Error stack:', tableError instanceof Error ? tableError.stack : 'no stack');
         // Continue without table rather than failing the page
       }
     } else {
-      console.log('blogId is null or undefined:', blogId);
+      console.log('[BLOG_TABLE_FETCH] blogId is null or undefined:', blogId);
     }
 
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
