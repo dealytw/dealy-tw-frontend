@@ -270,13 +270,21 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
-      sections: (blogData.blog_sections || []).map((section: any) => {
+      sections: (blogData.blog_sections || []).map((section: any, index: number) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
         
-        // Extract blog_table from this section (blog_table is nested inside each section)
-        const sectionTableData = sectionData.blog_table || [];
-        const sectionTable = Array.isArray(sectionTableData) ? sectionTableData : (sectionTableData?.data || []);
+        // Merge blog_table from separate fetch (sectionsWithTables) if available
+        // Match sections by index
+        let sectionTable: any[] = [];
+        if (sectionsWithTables.length > index) {
+          const sectionWithTable = sectionsWithTables[index];
+          const sectionWithTableData = sectionWithTable.attributes || sectionWithTable;
+          const sectionTableData = sectionWithTableData.blog_table || [];
+          sectionTable = Array.isArray(sectionTableData) ? sectionTableData : (sectionTableData?.data || []);
+        }
+        
+        // Extract and transform blog_table
         const blogTable = sectionTable.map((table: any) => {
           const tableItem = table.attributes || table;
           return {
