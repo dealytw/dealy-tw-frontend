@@ -448,9 +448,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Comparison Table - Render after this section's blog_texts */}
                         {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
-                          {section.blog_table[0]?.table_h3 && (
+                          {section.table_h3 && (
                             <h3 className="font-bold text-lg text-foreground mb-4">
-                              {section.blog_table[0].table_h3}
+                              {section.table_h3}
                             </h3>
                           )}
                           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 overflow-hidden">
