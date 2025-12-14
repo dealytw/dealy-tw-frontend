@@ -183,33 +183,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }));
     }
 
-    // Extract blog sections - handle repeatable component format
-    let blogSections: any[] = [];
-    if (blogData.blog_sections) {
-      let sectionsFromCMS = [];
-      if (Array.isArray(blogData.blog_sections)) {
-        if (blogData.blog_sections[0]?.data) {
-          sectionsFromCMS = blogData.blog_sections.map((item: any) => item.data || item);
-        } else {
-          sectionsFromCMS = blogData.blog_sections;
-        }
-      } else if (blogData.blog_sections?.data) {
-        sectionsFromCMS = blogData.blog_sections.data;
-      }
-      
-      blogSections = sectionsFromCMS.map((section: any) => {
-        const sectionImage = section.blog_image || section.attributes?.blog_image;
-        const imageUrl = sectionImage?.url || sectionImage?.attributes?.url || sectionImage?.data?.url || sectionImage?.data?.attributes?.url;
-        
-        return {
-          id: section.id || section.attributes?.id,
-          h2_title: section.h2_blog_section_title || section.attributes?.h2_blog_section_title || '',
-          banner_image: imageUrl ? absolutizeMedia(imageUrl) : null,
-          blog_texts: section.blog_texts || section.attributes?.blog_texts || null,
-        };
-      });
-    }
-
     const transformedBlog = {
       id: blogData.id,
       // CMS Field Mapping: blog_title -> title (mapped from /api/blogs collection)
@@ -217,7 +190,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
-      sections: blogSections,
+      sections: [], // Will be populated separately to avoid route 404 issues
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };
