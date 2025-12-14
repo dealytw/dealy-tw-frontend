@@ -95,7 +95,12 @@ function blocksToHTML(blocks: any): string {
   return blocks.map((block: any) => {
     if (block.type === 'paragraph') {
       const content = processChildren(block.children || []);
-      return `<p>${content || '<br>'}</p>`;
+      // If paragraph is empty or just whitespace, treat as line break
+      if (!content || content.trim() === '') {
+        return '<br>';
+      }
+      // Use span instead of p to avoid paragraph spacing, or use p with no margin
+      return `<p style="margin: 0; margin-bottom: 0.5em;">${content}</p>`;
     }
     
     if (block.type === 'heading') {
@@ -436,12 +441,12 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Section Blog Texts - Rich Text Content */}
                         {section.blog_texts && (
                           <div 
-                            className="prose prose-lg max-w-none text-foreground leading-relaxed"
+                            className="text-base text-foreground leading-normal"
                             dangerouslySetInnerHTML={{ 
                               __html: blocksToHTML(section.blog_texts) 
                             }}
                             style={{
-                              whiteSpace: 'pre-wrap', // Preserve line breaks
+                              lineHeight: '1.5',
                             }}
                           />
                         )}
