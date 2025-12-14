@@ -233,8 +233,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
       sections: (blogData.blog_sections || []).map((section: any) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
-        const imageData = sectionData.blog_image?.data || sectionData.blog_image;
-        const imageUrl = imageData?.attributes?.url || imageData?.url;
+        // Use blog_image_url from separate fetch, or try to get from section data
+        const imageUrl = section.blog_image_url || sectionData.blog_image?.data?.attributes?.url || sectionData.blog_image?.attributes?.url || sectionData.blog_image?.url;
         
         return {
           id: sectionData.id || section.id || 0,
