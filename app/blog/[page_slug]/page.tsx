@@ -98,9 +98,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      // For repeatable components in Strapi v5, try populating without fields first, then nested
-      "populate[blog_sections]": "*",  // Populate all fields in repeatable component
-      "populate[blog_sections][populate][blog_image]": "*",  // Then populate nested media
+      // For repeatable components in Strapi v5: can't use fields + nested populate together
+      // Try: populate without fields, then add nested populate
+      "populate[blog_sections][populate][blog_image][fields][0]": "url",  // Nested populate only
       // blog_table - all text fields (repeatable component)
       "populate[blog_table][fields][0]": "table_h3",
       "populate[blog_table][fields][1]": "table_title",
