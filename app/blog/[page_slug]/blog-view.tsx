@@ -110,6 +110,14 @@ function blocksToHTML(blocks: any): string {
 export default function BlogView({ blog }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
 
+  // Debug: Log blog_table data
+  useEffect(() => {
+    console.log('Blog object:', blog);
+    console.log('Blog table data:', blog.blog_table);
+    console.log('Blog table length:', blog.blog_table?.length);
+    console.log('Blog table exists?', !!blog.blog_table);
+  }, [blog]);
+
   // Dummy data for design - will be replaced with actual CMS data later
   const dummyCategories = ["旅遊", "優惠", "折扣碼", "日本"];
   
