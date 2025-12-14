@@ -86,6 +86,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
   try {
     // Use server-only Strapi fetch with ISR (same pattern as merchant pages)
+    // Fetch blog data first WITHOUT blog_sections to avoid route 404 issues
     const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
       "filters[page_slug][$eq]": page_slug,
       "fields[0]": "id",
@@ -93,7 +94,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      "populate[blog_sections][populate][blog_image][fields][0]": "url",
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
       "populate[related_merchants][fields][2]": "page_slug",
@@ -113,6 +113,31 @@ export default async function BlogPage({ params }: BlogPageProps) {
     if (!blog) {
       console.error('Error fetching blog data:', blogRes);
       notFound();
+    }
+
+    // Fetch blog_sections separately (repeatable component) - same pattern as coupons in merchant page
+    const blogId = blog.id || blog.attributes?.id;
+    let blogSections: any[] = [];
+    if (blogId) {
+      try {
+        const sectionsRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
+          "filters[id][$eq]": blogId,
+          "populate[blog_sections][fields][0]": "h2_blog_section_title",
+          "populate[blog_sections][fields][1]": "blog_texts",
+          "populate[blog_sections][populate][blog_image][fields][0]": "url",
+        })}`, { 
+          revalidate: 60,
+          tag: `blog-sections:${page_slug}` 
+        });
+        
+        const blogWithSections = sectionsRes?.data?.[0];
+        if (blogWithSections) {
+          blogSections = blogWithSections.blog_sections || blogWithSections.attributes?.blog_sections || [];
+        }
+      } catch (sectionsError) {
+        console.error('Error fetching blog_sections:', sectionsError);
+        // Continue without sections rather than failing the page
+      }
     }
 
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
