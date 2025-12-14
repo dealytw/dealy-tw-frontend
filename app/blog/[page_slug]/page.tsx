@@ -101,6 +101,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       // Step 1: Add blog_sections text fields only (works in main query)
       "populate[blog_sections][fields][0]": "h2_blog_section_title",
       "populate[blog_sections][fields][1]": "blog_texts",
+      "populate[blog_sections][fields][2]": "table_h3",
       // Step 2: blog_table will be fetched separately (causes 404 even when alone in main query)
     })}`, { 
       revalidate: 60, // 1 minute for development
@@ -301,6 +302,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         return {
           id: sectionData.id || section.id || 0,
           h2_title: sectionData.h2_blog_section_title || '',
+          table_h3: sectionData.table_h3 || '', // Table title above the table
           banner_image: '', // Will be populated in Step 6 with separate fetch
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
           blog_table: blogTable, // Each section has its own blog_table array

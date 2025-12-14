@@ -19,6 +19,7 @@ interface Blog {
   sections: Array<{
     id: number;
     h2_title: string;
+    table_h3?: string; // Table title above the table (at section level)
     banner_image: string | null;
     blog_texts: any; // Rich text blocks JSON
     blog_table?: Array<{  // Each section has its own blog_table
