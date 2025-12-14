@@ -447,10 +447,12 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Comparison Table - Render after this section's blog_texts */}
                         {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
+                          {section.blog_table[0]?.table_h3 && (
+                            <h3 className="font-bold text-lg text-foreground mb-4">
+                              {section.blog_table[0].table_h3}
+                            </h3>
+                          )}
                           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 overflow-hidden">
-                            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-4">
-                              <h3 className="font-bold text-lg text-white">📊 比較表格</h3>
-                            </div>
                             <div className="overflow-x-auto bg-white">
                               <table className="w-full border-collapse">
                                 <thead>
@@ -470,10 +472,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     return (
                                       <tr key={tableRow.id || rowIndex} className="hover:bg-yellow-50 transition-colors">
                                         <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground font-medium">
-                                          {tableRow.table_h3 || '-'}
+                                          {tableRow.table_title || '-'}
                                         </td>
                                         <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground">
-                                          {tableRow.table_title || '-'}
+                                          {tableRow.table_description || '-'}
                                         </td>
                                         <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground">
                                           {tableRow.table_date || '-'}
