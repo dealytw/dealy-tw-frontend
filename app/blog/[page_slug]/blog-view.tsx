@@ -678,6 +678,69 @@ export default function BlogView({ blog }: BlogViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Mobile TOC Sticky Button - Bottom Right */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsTOCOpen(true)}
+          className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
+          size="lg"
+        >
+          <List className="w-6 h-6 text-white" />
+        </Button>
+      </div>
+
+      {/* Mobile TOC Drawer - Slides in from right */}
+      {isTOCOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="lg:hidden fixed inset-0 bg-black/50 z-50"
+            onClick={() => setIsTOCOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="lg:hidden fixed right-0 top-0 bottom-0 w-80 bg-background shadow-2xl z-50 overflow-y-auto transform transition-transform">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg text-foreground">📋 本文目錄</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsTOCOpen(false)}
+                  className="rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                最後更新：{formatDate(blog.updatedAt)}
+              </p>
+              
+              {/* TOC List */}
+              <div className="space-y-2">
+                {tableOfContents.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      scrollToSection(item.id);
+                      setIsTOCOpen(false);
+                    }}
+                    className="w-full text-left flex items-start gap-2 p-3 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <span className="text-primary font-bold text-sm mt-0.5 flex-shrink-0 bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center">
+                      {index + 1}
+                    </span>
+                    <span className="text-sm text-foreground font-medium leading-snug flex-1">
+                      {item.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       
       <Footer />
     </div>
