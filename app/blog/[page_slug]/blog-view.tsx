@@ -333,55 +333,59 @@ export default function BlogView({ blog }: BlogViewProps) {
 
               {/* Blog Sections - Mapped from CMS */}
               {blog.sections && blog.sections.length > 0 ? (
-                blog.sections.map((section, sectionIndex) => {
-                  const sectionId = `section-${section.id || sectionIndex}`;
-                  const sectionSlug = section.h2_title?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || sectionId;
-                  
-                  return (
-                    <div key={section.id || sectionIndex}>
-                      {/* Section Banner Image */}
-                      {section.banner_image && (
-                        <div className="my-8">
-                          <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
-                            <Image
-                              src={section.banner_image}
-                              alt={section.h2_title || 'Section banner'}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
+                <>
+                  {blog.sections.map((section, sectionIndex) => {
+                    const sectionId = `section-${section.id || sectionIndex}`;
+                    const sectionSlug = section.h2_title?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || sectionId;
+                    
+                    return (
+                      <div key={section.id || sectionIndex}>
+                        {/* Section Banner Image */}
+                        {section.banner_image && (
+                          <div className="my-8">
+                            <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
+                              <Image
+                                src={section.banner_image}
+                                alt={section.h2_title || 'Section banner'}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* Section h2 Heading */}
-                      {section.h2_title && (
-                        <h2 
-                          id={sectionSlug}
-                          className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
-                        >
-                          {section.h2_title}
-                        </h2>
-                      )}
+                        {/* Section h2 Heading */}
+                        {section.h2_title && (
+                          <h2 
+                            id={sectionSlug}
+                            className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
+                          >
+                            {section.h2_title}
+                          </h2>
+                        )}
 
-                      {/* Section Blog Texts - Rich Text Content */}
-                      {section.blog_texts && (
-                        <div 
-                          className="prose prose-lg max-w-none text-foreground leading-relaxed"
-                          dangerouslySetInnerHTML={{ 
-                            __html: blocksToHTML(section.blog_texts) 
-                          }}
-                          style={{
-                            whiteSpace: 'pre-wrap', // Preserve line breaks
-                          }}
-                        />
-                      )}
+                        {/* Section Blog Texts - Rich Text Content */}
+                        {section.blog_texts && (
+                          <div 
+                            className="prose prose-lg max-w-none text-foreground leading-relaxed"
+                            dangerouslySetInnerHTML={{ 
+                              __html: blocksToHTML(section.blog_texts) 
+                            }}
+                            style={{
+                              whiteSpace: 'pre-wrap', // Preserve line breaks
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
 
-                      {/* Comparison Table - Render after first section's blog_texts */}
-                      {sectionIndex === 0 && blog.blog_table && blog.blog_table.length > 0 && (
+                  {/* Comparison Table - Render after all sections */}
+                  {blog.blog_table && blog.blog_table.length > 0 && (
                         <div className="my-8">
                           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 overflow-hidden">
                             <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-4">
