@@ -214,7 +214,26 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }));
     }
 
-    // blog_table is already fetched separately above (Step 2)
+    // Extract blog_table from main query (TEST: see if it works when alone, without blog_sections)
+    let blogTable: any[] = [];
+    if (blogData.blog_table) {
+      const tableData = Array.isArray(blogData.blog_table) 
+        ? blogData.blog_table 
+        : (blogData.blog_table?.data || []);
+      
+      blogTable = tableData.map((table: any) => {
+        const tableItem = table.attributes || table;
+        return {
+          id: tableItem.id || table.id || 0,
+          table_h3: tableItem.table_h3 || '',
+          table_title: tableItem.table_title || '',
+          table_description: tableItem.table_description || '',
+          table_promo_code: tableItem.table_promo_code || '',
+          landingpage: tableItem.landingpage || '',
+          table_date: tableItem.table_date || '',
+        };
+      });
+    }
 
     // Extract blog_coupon - handle relation format (same pattern as related_merchants)
     let blogCoupons: any[] = [];
