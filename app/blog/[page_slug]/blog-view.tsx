@@ -119,6 +119,8 @@ function blocksToHTML(blocks: any): string {
 
 export default function BlogView({ blog }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
+  const [revealedPromoCodes, setRevealedPromoCodes] = useState<Record<string, boolean>>({});
+  const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Debug: Log blog_table data
   useEffect(() => {
@@ -127,6 +129,50 @@ export default function BlogView({ blog }: BlogViewProps) {
     console.log('Blog table length:', blog.blog_table?.length);
     console.log('Blog table exists?', !!blog.blog_table);
   }, [blog]);
+
+  // Handle scroll to button and reveal promo code on page load (if hash exists)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash) {
+        const buttonId = hash.replace('#', '');
+        const buttonElement = buttonRefs.current[buttonId];
+        if (buttonElement) {
+          setTimeout(() => {
+            buttonElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setRevealedPromoCodes(prev => ({ ...prev, [buttonId]: true }));
+          }, 100);
+        }
+      }
+    }
+  }, []);
+
+  const handleGetPromoClick = (e: React.MouseEvent, tableRow: any, sectionIndex: number, rowIndex: number, landingpage: string) => {
+    e.preventDefault();
+    const buttonId = `promo-${sectionIndex}-${rowIndex}`;
+    const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
+    
+    if (hasPromoCode) {
+      // If promo code exists:
+      // 1. Open landing page in current tab
+      if (landingpage) {
+        window.location.href = landingpage;
+      }
+      
+      // 2. Open new tab to same blog page with hash, scroll to button, reveal promo code
+      const currentUrl = window.location.href.split('#')[0];
+      const newTabUrl = `${currentUrl}#${buttonId}`;
+      window.open(newTabUrl, '_blank');
+      
+      // Also reveal in current tab before navigation
+      setRevealedPromoCodes(prev => ({ ...prev, [buttonId]: true }));
+    } else {
+      // If no promo code: open link in new tab
+      if (landingpage) {
+        window.open(landingpage, '_blank');
+      }
+    }
+  };
 
   // Dummy data for design - will be replaced with actual CMS data later
   const dummyCategories = ["旅遊", "優惠", "折扣碼", "日本"];
