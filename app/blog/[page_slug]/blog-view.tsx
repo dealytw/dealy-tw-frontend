@@ -437,14 +437,14 @@ export default function BlogView({ blog }: BlogViewProps) {
                                           <div 
                                             id={buttonId}
                                             ref={(el) => { buttonRefs.current[buttonId] = el; }}
-                                            className="flex items-center gap-2"
+                                            className="flex items-center gap-2 flex-wrap"
                                           >
                                             {tableRow.landingpage ? (
                                               <Button 
                                                 size="sm" 
                                                 variant="outline"
                                                 className="text-xs"
-                                                onClick={() => handleGetPromoClick(tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
+                                                onClick={(e) => handleGetPromoClick(e, tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
                                               >
                                                 獲取優惠
                                               </Button>
