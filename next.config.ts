@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
           "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: https: blob:",
-          "font-src 'self' data:", // Only allow self-hosted fonts and data URIs - use browser default fonts
+          "font-src 'self' data:", // Only allow self-hosted fonts and data URIs - use browser default fonts (blocks external font loading from extensions/third-party scripts)
           "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
           "frame-src 'self' https://www.googletagmanager.com",
           "object-src 'none'",
