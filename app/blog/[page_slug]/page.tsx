@@ -5,6 +5,25 @@ import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 import BlogView from './blog-view';
 
+/**
+ * Blog Page Route - Step 1 (Basic Implementation)
+ * 
+ * FAILURE LOG (for future reference):
+ * - Commit e2c0e43: Basic page works (no blog_sections populate)
+ * - Commit 78753f1+: Adding blog_sections populate causes 404 "non-existent route" error
+ * 
+ * Failure Analysis:
+ * - When blog_sections populate is added, Next.js route becomes unrecognized
+ * - Error: "User attempted to access non-existent route: /blog/{page_slug}"
+ * - Possible causes:
+ *   1. Populate query syntax causes Strapi timeout/error that breaks route generation
+ *   2. Deep nesting in populate causes build-time failure
+ *   3. Route file structure issue when complex queries are present
+ * 
+ * Current Status: Reverted to working version (e2c0e43) without blog_sections populate
+ * Next Steps: Add blog_sections populate incrementally with better error handling
+ */
+
 // Revalidate every 24 hours - blog posts don't change frequently
 export const revalidate = 86400;
 export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
@@ -90,6 +109,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
     const blog = blogRes?.data?.[0];
     
     if (!blog) {
+      // Log failure reason for better error handling
+      console.error(`[Blog Page] Blog not found: ${page_slug}`, {
+        response: blogRes,
+        hasData: !!blogRes?.data,
+        dataLength: blogRes?.data?.length || 0,
+        timestamp: new Date().toISOString(),
+      });
       notFound();
     }
 
@@ -164,7 +190,18 @@ export default async function BlogPage({ params }: BlogPageProps) {
     );
 
   } catch (error) {
-    console.error('Error fetching blog post:', error);
+    // Log failure reason for better error handling
+    console.error(`[Blog Page] Error fetching blog post: ${page_slug}`, {
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      } : error,
+      page_slug,
+      timestamp: new Date().toISOString(),
+      // Additional context
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+    });
     notFound();
   }
 }
