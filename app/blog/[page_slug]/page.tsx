@@ -98,10 +98,14 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      // Step 1: Add blog_sections text fields only (like useful_links in merchant page)
-      "populate[blog_sections][fields][0]": "h2_blog_section_title",
-      "populate[blog_sections][fields][1]": "blog_texts",
-      // Step 2: blog_table will be fetched separately (causes 404 in main query)
+      // TEST: Try blog_table alone (without blog_sections) to see if multiple repeatable components is the issue
+      "populate[blog_table][fields][0]": "table_h3",
+      "populate[blog_table][fields][1]": "table_title",
+      "populate[blog_table][fields][2]": "table_description",
+      "populate[blog_table][fields][3]": "table_promo_code",
+      "populate[blog_table][fields][4]": "landingpage",
+      "populate[blog_table][fields][5]": "table_date",
+      // Step 1: blog_sections will be fetched separately (test if multiple repeatable components cause 404)
     })}`, { 
       revalidate: 60, // 1 minute for development
       tag: `blog:${page_slug}` 
@@ -279,7 +283,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
-      sections: (blogData.blog_sections || []).map((section: any) => {
+      sections: (blogSections || []).map((section: any) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
         // Step 1: Only text fields populated (images will be added in Step 6 with separate fetch)
