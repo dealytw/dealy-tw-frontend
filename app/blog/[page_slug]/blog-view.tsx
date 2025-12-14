@@ -16,7 +16,12 @@ interface Blog {
   page_slug: string;
   createdAt: string;
   updatedAt: string;
-  sections: any[]; // Will be mapped later
+  sections: Array<{
+    id: number;
+    h2_title: string;
+    banner_image: string | null;
+    blog_texts: any; // Rich text blocks JSON
+  }>;
   related_merchants: Array<{
     id: number;
     name: string;
@@ -35,6 +40,62 @@ interface Blog {
 
 interface BlogViewProps {
   blog: Blog;
+}
+
+// Helper function to convert Strapi rich text blocks to HTML
+function blocksToHTML(blocks: any): string {
+  if (!blocks) return '';
+  if (!Array.isArray(blocks)) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text' || child.text !== undefined) {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  return blocks.map((block: any) => {
+    if (block.type === 'paragraph') {
+      const content = processChildren(block.children || []);
+      return `<p>${content || '<br>'}</p>`;
+    }
+    
+    if (block.type === 'heading') {
+      const level = block.level || 2;
+      const content = processChildren(block.children || []);
+      return `<h${level}>${content}</h${level}>`;
+    }
+    
+    if (block.type === 'list') {
+      const isOrdered = block.format === 'ordered';
+      const items = (block.children || []).map((item: any) => {
+        const content = processChildren(item.children || []);
+        return `<li>${content}</li>`;
+      }).join('');
+      return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+    }
+    
+    return '';
+  }).join('\n');
 }
 
 export default function BlogView({ blog }: BlogViewProps) {
@@ -103,9 +164,20 @@ export default function BlogView({ blog }: BlogViewProps) {
   ];
 
   useEffect(() => {
-    // Generate table of contents from dummy data (will be from actual content later)
-    setTableOfContents(dummyTableOfContents);
-  }, []);
+    // Generate table of contents from actual blog sections
+    if (blog.sections && blog.sections.length > 0) {
+      const toc = blog.sections
+        .filter((section) => section.h2_title)
+        .map((section, index) => ({
+          id: `section-${section.id || index}`,
+          title: section.h2_title,
+        }));
+      setTableOfContents(toc);
+    } else {
+      // Fallback to dummy data if no sections
+      setTableOfContents(dummyTableOfContents);
+    }
+  }, [blog.sections]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -250,202 +322,87 @@ export default function BlogView({ blog }: BlogViewProps) {
                 </div>
               </div>
 
-              {/* Section 1: Banner Image */}
-              {/* 
-                Banner Image Specifications:
-                - Width: 1200px (for retina displays, content area is ~75% of container max-width 1280px)
-                - Height: 300-400px (recommended: 300px for better performance)
-                - Aspect Ratio: 4:1 (1200x300px) or 3:1 (1200x400px)
-                - Format: WebP or JPG
-                - File Size: Keep under 200KB for optimal loading
-                - Full width of content area (lg:col-span-3)
-              */}
-              <div className="my-8">
-                <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
-                  {/* Banner image placeholder - will be mapped from CMS */}
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100">
-                    <p className="text-muted-foreground text-sm">Section Banner Image (1200x300px recommended)</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 1: h2 Heading */}
-              <h2 
-                id="intro"
-                className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
-              >
-                2025日本櫻花｜簡介
-              </h2>
-
-              {/* Section 1: Blog Paragraphs */}
-              <p className="text-foreground leading-relaxed mb-6">
-                2025日本櫻花季即將到來！近年因為氣溫上升，今年櫻花也比往年提早開花，賞櫻前掌握櫻花開花和滿開的時間，才能看見最美櫻花景色～計劃在2025日本櫻花季時到日本賞櫻嗎？旅行從Dealy開始，小編將持續更新2025日本櫻花滿開預測、日本賞櫻景點推薦、交通資訊等，一起來趟日本賞櫻之旅吧！
-              </p>
-
-              <p className="text-foreground leading-relaxed mb-6">
-                日本櫻花季通常從3月底開始，一直持續到5月初。每年的開花時間會因氣候變化而有所不同，因此掌握準確的櫻花前線預測非常重要。
-              </p>
-
-              {/* Section 1: Coupon Table */}
-              <div className="my-8">
-                <div className="overflow-x-auto rounded-lg border border-muted">
-                  <table className="w-full">
-                    <thead className="bg-yellow-400">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-bold text-foreground border border-yellow-500">內容</th>
-                        <th className="px-4 py-3 text-left font-bold text-foreground border border-yellow-500">例子（以當期為準）</th>
-                        <th className="px-4 py-3 text-left font-bold text-foreground border border-yellow-500">使用重點</th>
-                        <th className="px-4 py-3 text-left font-bold text-foreground border border-yellow-500">風險位</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-yellow-50">
-                      {dummyComparisonData.map((deal, index) => (
-                        <tr key={index} className="border-b border-yellow-200">
-                          <td className="px-4 py-3 font-medium text-foreground border border-yellow-200">{deal.type}</td>
-                          <td className="px-4 py-3 text-foreground border border-yellow-200">{deal.example}</td>
-                          <td className="px-4 py-3 text-foreground border border-yellow-200">{deal.usage}</td>
-                          <td className="px-4 py-3 text-foreground border border-yellow-200">{deal.risk}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Section 1: Coupons - 3 in a row */}
-              <div className="my-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Dummy Coupon 1 */}
-                  <div className="bg-white rounded-lg border-2 border-orange-200 shadow-md overflow-hidden">
-                    <div className="flex">
-                      {/* Left Panel - Offer Details */}
-                      <div className="flex-1 p-4 border-r-2 border-dashed border-orange-300">
-                        <div className="mb-2">
-                          <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">
-                            適用於全部活動
-                          </span>
+              {/* Blog Sections - Mapped from CMS */}
+              {blog.sections && blog.sections.length > 0 ? (
+                blog.sections.map((section, sectionIndex) => {
+                  const sectionId = `section-${section.id || sectionIndex}`;
+                  const sectionSlug = section.h2_title?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || sectionId;
+                  
+                  return (
+                    <div key={section.id || sectionIndex}>
+                      {/* Section Banner Image */}
+                      {section.banner_image && (
+                        <div className="my-8">
+                          <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
+                            <Image
+                              src={section.banner_image}
+                              alt={section.h2_title || 'Section banner'}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
                         </div>
-                        <h4 className="text-sm font-semibold text-foreground mb-2">
-                          [交通銀行]即減HK$30
-                        </h4>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <span>優惠碼:</span>
-                          <span className="font-mono font-semibold text-orange-600">BOCOM30</span>
-                        </div>
-                      </div>
-                      {/* Right Panel - Discount & Claim */}
-                      <div className="w-32 flex flex-col justify-between p-4 bg-orange-50">
-                        <div>
-                          <div className="text-2xl font-bold text-orange-600 mb-1">HKD 30 off</div>
-                          <div className="text-xs text-muted-foreground">最低消費:HKD 500</div>
-                        </div>
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm py-2">
-                          領取
-                        </Button>
+                      )}
+
+                      {/* Section h2 Heading */}
+                      {section.h2_title && (
+                        <h2 
+                          id={sectionSlug}
+                          className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
+                        >
+                          {section.h2_title}
+                        </h2>
+                      )}
+
+                      {/* Section Blog Texts - Rich Text Content */}
+                      {section.blog_texts && (
+                        <div 
+                          className="prose prose-lg max-w-none text-foreground leading-relaxed"
+                          dangerouslySetInnerHTML={{ 
+                            __html: blocksToHTML(section.blog_texts) 
+                          }}
+                          style={{
+                            whiteSpace: 'pre-wrap', // Preserve line breaks
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                // Fallback: Show dummy content if no sections
+                <>
+                  {/* Section 1: Banner Image */}
+                  <div className="my-8">
+                    <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100">
+                        <p className="text-muted-foreground text-sm">Section Banner Image (1200x300px recommended)</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Dummy Coupon 2 */}
-                  <div className="bg-white rounded-lg border-2 border-orange-200 shadow-md overflow-hidden">
-                    <div className="flex">
-                      {/* Left Panel - Offer Details */}
-                      <div className="flex-1 p-4 border-r-2 border-dashed border-orange-300">
-                        <div className="mb-2">
-                          <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">
-                            適用於全部活動
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-semibold text-foreground mb-2">
-                          [交通銀行]即減HK$150
-                        </h4>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <span>優惠碼:</span>
-                          <span className="font-mono font-semibold text-orange-600">BOCOM150</span>
-                        </div>
-                      </div>
-                      {/* Right Panel - Discount & Claim */}
-                      <div className="w-32 flex flex-col justify-between p-4 bg-orange-50">
-                        <div>
-                          <div className="text-2xl font-bold text-orange-600 mb-1">HKD 150 off</div>
-                          <div className="text-xs text-muted-foreground">最低消費:HKD 1,500</div>
-                        </div>
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm py-2">
-                          領取
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Section 1: h2 Heading */}
+                  <h2 
+                    id="intro"
+                    className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
+                  >
+                    2025日本櫻花｜簡介
+                  </h2>
 
-                  {/* Dummy Coupon 3 */}
-                  <div className="bg-white rounded-lg border-2 border-orange-200 shadow-md overflow-hidden">
-                    <div className="flex">
-                      {/* Left Panel - Offer Details */}
-                      <div className="flex-1 p-4 border-r-2 border-dashed border-orange-300">
-                        <h4 className="text-sm font-semibold text-foreground mb-2">
-                          [交通銀行]香港機場快綫單程車票買一送一
-                        </h4>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <span>優惠碼:</span>
-                          <span className="font-mono font-semibold text-orange-600">BOCOM25DEC</span>
-                        </div>
-                      </div>
-                      {/* Right Panel - Discount & Claim */}
-                      <div className="w-32 flex flex-col justify-between p-4 bg-orange-50">
-                        <div>
-                          <div className="text-2xl font-bold text-orange-600 mb-1">50%折扣</div>
-                          <div className="text-xs text-muted-foreground">最低消費:HKD 126</div>
-                        </div>
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm py-2">
-                          領取
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  {/* Section 1: Blog Paragraphs */}
+                  <p className="text-foreground leading-relaxed mb-6">
+                    2025日本櫻花季即將到來！近年因為氣溫上升，今年櫻花也比往年提早開花，賞櫻前掌握櫻花開花和滿開的時間，才能看見最美櫻花景色～計劃在2025日本櫻花季時到日本賞櫻嗎？旅行從Dealy開始，小編將持續更新2025日本櫻花滿開預測、日本賞櫻景點推薦、交通資訊等，一起來趟日本賞櫻之旅吧！
+                  </p>
 
-              {/* Section 1: Blog Paragraph 2 */}
-              <p className="text-foreground leading-relaxed mb-6">
-                除了掌握開花時間，選擇合適的賞櫻地點也非常重要。日本各地都有著名的櫻花景點，每個地方都有其獨特的魅力。
-              </p>
-
-              {/* Section 2: Banner Image */}
-              {/* Same specifications as Section 1 banner */}
-              <div className="my-8">
-                <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
-                  {/* Banner image placeholder - will be mapped from CMS */}
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-green-100 to-blue-100">
-                    <p className="text-muted-foreground text-sm">Section Banner Image (1200x300px recommended)</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Another h2 */}
-              <h2 
-                id="recommended-tours"
-                className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
-              >
-                🌸日本賞櫻推薦行程
-              </h2>
-
-              {/* Section 2: Blog Paragraphs */}
-              <p className="text-foreground leading-relaxed mb-6">
-                以下是我們精心挑選的日本賞櫻推薦行程，涵蓋了東京、大阪、京都、奈良等熱門賞櫻地點。
-              </p>
-
-              {/* Section 2: Blog List */}
-              <ul className="list-disc pl-6 mb-6">
-                <li className="text-foreground mb-2">東京櫻花必看｜日式屋形船遊船體驗</li>
-                <li className="text-foreground mb-2">大阪賞櫻勝地｜大阪城公園櫻花季</li>
-                <li className="text-foreground mb-2">京都櫻花名所｜清水寺夜間特別參拜</li>
-                <li className="text-foreground mb-2">奈良櫻花景點｜吉野山千本櫻</li>
-              </ul>
-
-              {/* Section 2: Blog Paragraph 2 */}
-              <p className="text-foreground leading-relaxed mb-6">
-                每個行程都經過精心規劃，確保您能在最佳時機欣賞到最美的櫻花景色。建議提前預訂，以免錯過最佳賞櫻時機。
-              </p>
+                  <p className="text-foreground leading-relaxed mb-6">
+                    日本櫻花季通常從3月底開始，一直持續到5月初。每年的開花時間會因氣候變化而有所不同，因此掌握準確的櫻花前線預測非常重要。
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Related Blog Posts */}
