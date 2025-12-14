@@ -148,42 +148,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
       notFound();
     }
 
-    // Fetch blog_image URLs separately (media fields need nested populate)
-    // Only fetch if blog_sections exist
-    const blogId = blog.id || blog.attributes?.id;
-    let blogSections: any[] = blog.blog_sections || blog.attributes?.blog_sections || [];
-    
-    if (blogSections.length > 0 && blogId) {
-      try {
-        const imagesRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
-          "filters[id][$eq]": blogId,
-          "populate[blog_sections][populate][blog_image][fields][0]": "url",
-        })}`, { 
-          revalidate: 60,
-          tag: `blog-images:${page_slug}` 
-        });
-        
-        const blogWithImages = imagesRes?.data?.[0];
-        if (blogWithImages) {
-          const imagesData = blogWithImages.blog_sections || blogWithImages.attributes?.blog_sections || [];
-          // Merge image URLs into existing sections
-          blogSections = blogSections.map((section: any, index: number) => {
-            const imageSection = imagesData[index];
-            const imageData = imageSection?.blog_image?.data || imageSection?.blog_image;
-            const imageUrl = imageData?.attributes?.url || imageData?.url;
-            return {
-              ...section,
-              blog_image_url: imageUrl || null,
-            };
-          });
-        }
-      } catch (imagesError) {
-        console.error('Error fetching blog_image URLs:', imagesError);
-        // Continue without images rather than failing the page
-      }
-    }
-
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
+    // TEST: With force-dynamic, nested populate should work in main query (no separate fetch needed)
     const blogData = {
       id: blog.id || blog.attributes?.id,
       blog_title: blog.attributes?.blog_title || blog.blog_title,
