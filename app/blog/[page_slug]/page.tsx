@@ -98,8 +98,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      // MINIMAL TEST: Remove all complex populate to test if route works
-      // Only keep basic fields to isolate the 404 issue
+      // Step 1: Add blog_sections text fields only (like useful_links in merchant page)
+      "populate[blog_sections][fields][0]": "h2_blog_section_title",
+      "populate[blog_sections][fields][1]": "blog_texts",
     })}`, { 
       revalidate: 60, // 1 minute for development
       tag: `blog:${page_slug}` 
