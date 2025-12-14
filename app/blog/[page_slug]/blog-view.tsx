@@ -238,41 +238,55 @@ export default function BlogView({ blog }: BlogViewProps) {
               </div>
             </div>
 
-            {/* Table of Contents - Content Start */}
-            <div className="mb-8">
-              <div className="bg-gradient-to-r from-orange-100 to-pink-100 rounded-lg border border-orange-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-400 to-pink-400 px-6 py-4">
-                  <h3 className="font-bold text-lg text-white">📋 本文目錄</h3>
-                  <p className="text-sm text-white/90 mt-1">最後更新：{formatDate(blog.updatedAt)}</p>
-                </div>
-                <div className="p-6 bg-white/80">
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {tableOfContents.map((item, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <span className="text-primary font-bold text-base mt-0.5 flex-shrink-0 bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                          {index + 1}
-                        </span>
-                        <button 
-                          onClick={() => scrollToSection(item.id)}
-                          className="text-sm text-primary hover:text-primary/80 cursor-pointer transition-colors text-left font-medium hover:underline flex-1"
-                        >
-                          {item.title}
-                        </button>
-                      </div>
-                    ))}
+            {/* Article Content - Dummy Content for Design */}
+            <div className="prose prose-lg max-w-none">
+              {/* Table of Contents - Generated from h2 headings */}
+              <div className="mb-8">
+                <div className="bg-gradient-to-r from-orange-100 to-pink-100 rounded-lg border border-orange-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-orange-400 to-pink-400 px-6 py-4">
+                    <h3 className="font-bold text-lg text-white">📋 本文目錄</h3>
+                    <p className="text-sm text-white/90 mt-1">最後更新：{formatDate(blog.updatedAt)}</p>
+                  </div>
+                  <div className="p-6 bg-white/80">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {tableOfContents.map((item, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <span className="text-primary font-bold text-base mt-0.5 flex-shrink-0 bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                            {index + 1}
+                          </span>
+                          <button 
+                            onClick={() => scrollToSection(item.id)}
+                            className="text-sm text-primary hover:text-primary/80 cursor-pointer transition-colors text-left font-medium hover:underline flex-1"
+                          >
+                            {item.title}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Article Content - Dummy Content for Design */}
-            <div className="prose prose-lg max-w-none">
-              {/* Dummy paragraph */}
-              <p className="text-foreground leading-relaxed mb-6">
-                2025日本櫻花季即將到來！近年因為氣溫上升，今年櫻花也比往年提早開花，賞櫻前掌握櫻花開花和滿開的時間，才能看見最美櫻花景色～計劃在2025日本櫻花季時到日本賞櫻嗎？旅行從Dealy開始，小編將持續更新2025日本櫻花滿開預測、日本賞櫻景點推薦、交通資訊等，一起來趟日本賞櫻之旅吧！
-              </p>
+              {/* Section 1: Banner Image */}
+              {/* 
+                Banner Image Specifications:
+                - Width: 1200px (for retina displays, content area is ~75% of container max-width 1280px)
+                - Height: 300-400px (recommended: 300px for better performance)
+                - Aspect Ratio: 4:1 (1200x300px) or 3:1 (1200x400px)
+                - Format: WebP or JPG
+                - File Size: Keep under 200KB for optimal loading
+                - Full width of content area (lg:col-span-3)
+              */}
+              <div className="my-8">
+                <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
+                  {/* Banner image placeholder - will be mapped from CMS */}
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100">
+                    <p className="text-muted-foreground text-sm">Section Banner Image (1200x300px recommended)</p>
+                  </div>
+                </div>
+              </div>
 
-              {/* Dummy heading */}
+              {/* Section 1: h2 Heading */}
               <h2 
                 id="intro"
                 className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
@@ -280,60 +294,16 @@ export default function BlogView({ blog }: BlogViewProps) {
                 2025日本櫻花｜簡介
               </h2>
 
+              {/* Section 1: Blog Paragraphs */}
+              <p className="text-foreground leading-relaxed mb-6">
+                2025日本櫻花季即將到來！近年因為氣溫上升，今年櫻花也比往年提早開花，賞櫻前掌握櫻花開花和滿開的時間，才能看見最美櫻花景色～計劃在2025日本櫻花季時到日本賞櫻嗎？旅行從Dealy開始，小編將持續更新2025日本櫻花滿開預測、日本賞櫻景點推薦、交通資訊等，一起來趟日本賞櫻之旅吧！
+              </p>
+
               <p className="text-foreground leading-relaxed mb-6">
                 日本櫻花季通常從3月底開始，一直持續到5月初。每年的開花時間會因氣候變化而有所不同，因此掌握準確的櫻花前線預測非常重要。
               </p>
 
-              {/* Dummy promotional section */}
-              <div className="my-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                <h3 className="text-xl font-bold text-primary mb-6 text-center">
-                  🌟日韓賞櫻1折起，跟Dealy一起去看滿天粉櫻🌟
-                </h3>
-                
-                <div className="mb-6">
-                  <h4 className="text-lg font-bold text-primary mb-3 flex items-center gap-2">
-                    🌸日本賞櫻推薦行程
-                  </h4>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary">•</span>
-                      <span className="text-foreground hover:text-primary cursor-pointer transition-colors">
-                        東京櫻花必看｜日式屋形船遊船體驗
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary">•</span>
-                      <span className="text-foreground hover:text-primary cursor-pointer transition-colors">
-                        東京近郊櫻花｜河津早櫻 & 河津七瀧 & 草莓無限吃一日遊
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-                
-                <div className="mt-6 text-center">
-                  <button className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-2 mx-auto">
-                    👉 更多日韓賞櫻1折起優惠
-                  </button>
-                </div>
-              </div>
-
-              {/* Dummy heading */}
-              <h2 
-                id="recommended-tours"
-                className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
-              >
-                🌸日本賞櫻推薦行程
-              </h2>
-
-              {/* Dummy list */}
-              <ul className="list-disc pl-6 mb-6">
-                <li className="text-foreground mb-2">東京櫻花必看｜日式屋形船遊船體驗</li>
-                <li className="text-foreground mb-2">大阪賞櫻勝地｜大阪城公園櫻花季</li>
-                <li className="text-foreground mb-2">京都櫻花名所｜清水寺夜間特別參拜</li>
-                <li className="text-foreground mb-2">奈良櫻花景點｜吉野山千本櫻</li>
-              </ul>
-
-              {/* Comparison Table */}
+              {/* Section 1: Coupon Table */}
               <div className="my-8">
                 <div className="overflow-x-auto rounded-lg border border-muted">
                   <table className="w-full">
@@ -359,7 +329,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                 </div>
               </div>
 
-              {/* Coupon Section - 3 in a row */}
+              {/* Section 1: Coupons - 3 in a row */}
               <div className="my-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Dummy Coupon 1 */}
@@ -452,18 +422,47 @@ export default function BlogView({ blog }: BlogViewProps) {
                 </div>
               </div>
 
-              {/* Promotional Banner */}
-              <div className="my-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
-                <h3 className="text-xl font-bold text-primary mb-2">
-                  🌟日韓賞櫻1折起，跟Dealy一起去看滿天粉櫻🌟
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  立即預訂最優惠的日本賞櫻行程，體驗不一樣的櫻花季節！
-                </p>
-                <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90">
-                  立即預訂優惠行程
-                </Button>
+              {/* Section 1: Blog Paragraph 2 */}
+              <p className="text-foreground leading-relaxed mb-6">
+                除了掌握開花時間，選擇合適的賞櫻地點也非常重要。日本各地都有著名的櫻花景點，每個地方都有其獨特的魅力。
+              </p>
+
+              {/* Section 2: Banner Image */}
+              {/* Same specifications as Section 1 banner */}
+              <div className="my-8">
+                <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
+                  {/* Banner image placeholder - will be mapped from CMS */}
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-green-100 to-blue-100">
+                    <p className="text-muted-foreground text-sm">Section Banner Image (1200x300px recommended)</p>
+                  </div>
+                </div>
               </div>
+
+              {/* Section 2: Another h2 */}
+              <h2 
+                id="recommended-tours"
+                className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
+              >
+                🌸日本賞櫻推薦行程
+              </h2>
+
+              {/* Section 2: Blog Paragraphs */}
+              <p className="text-foreground leading-relaxed mb-6">
+                以下是我們精心挑選的日本賞櫻推薦行程，涵蓋了東京、大阪、京都、奈良等熱門賞櫻地點。
+              </p>
+
+              {/* Section 2: Blog List */}
+              <ul className="list-disc pl-6 mb-6">
+                <li className="text-foreground mb-2">東京櫻花必看｜日式屋形船遊船體驗</li>
+                <li className="text-foreground mb-2">大阪賞櫻勝地｜大阪城公園櫻花季</li>
+                <li className="text-foreground mb-2">京都櫻花名所｜清水寺夜間特別參拜</li>
+                <li className="text-foreground mb-2">奈良櫻花景點｜吉野山千本櫻</li>
+              </ul>
+
+              {/* Section 2: Blog Paragraph 2 */}
+              <p className="text-foreground leading-relaxed mb-6">
+                每個行程都經過精心規劃，確保您能在最佳時機欣賞到最美的櫻花景色。建議提前預訂，以免錯過最佳賞櫻時機。
+              </p>
             </div>
 
             {/* Related Blog Posts */}
