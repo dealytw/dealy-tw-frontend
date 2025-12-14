@@ -21,8 +21,17 @@ interface Blog {
     h2_title: string;
     banner_image: string | null;
     blog_texts: any; // Rich text blocks JSON
+    blog_table?: Array<{  // Each section has its own blog_table
+      id: number;
+      table_h3: string;
+      table_title: string;
+      table_description: string;
+      table_promo_code: string;
+      landingpage: string;
+      table_date: string;
+    }>;
   }>;
-  blog_table?: Array<{
+  blog_table?: Array<{  // Keep for backward compatibility, but should use section.blog_table
     id: number;
     table_h3: string;
     table_title: string;
@@ -411,7 +420,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {blog.blog_table.map((tableRow, index) => (
+                                  {section.blog_table.map((tableRow, index) => (
                                     <tr key={tableRow.id || index} className="hover:bg-blue-50 transition-colors">
                                       <td className="border border-blue-200 px-4 py-3 text-foreground font-medium">
                                         {tableRow.table_h3 || '-'}
@@ -447,9 +456,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                                 </tbody>
                               </table>
                             </div>
-                            {blog.blog_table[0]?.table_date && (
+                            {section.blog_table[0]?.table_date && (
                               <div className="px-6 py-3 bg-blue-50 text-sm text-muted-foreground border-t border-blue-200">
-                                最後更新：{blog.blog_table[0].table_date}
+                                最後更新：{section.blog_table[0].table_date}
                               </div>
                             )}
                           </div>

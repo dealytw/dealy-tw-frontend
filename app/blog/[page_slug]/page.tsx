@@ -310,17 +310,31 @@ export default async function BlogPage({ params }: BlogPageProps) {
       sections: (blogData.blog_sections || []).map((section: any) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
-        // Step 1: Only text fields populated (images will be added in Step 6 with separate fetch)
-        // No blog_image data yet - will be empty string
+        
+        // Extract blog_table from this section (blog_table is nested inside each section)
+        const sectionTableData = sectionData.blog_table || [];
+        const sectionTable = Array.isArray(sectionTableData) ? sectionTableData : (sectionTableData?.data || []);
+        const blogTable = sectionTable.map((table: any) => {
+          const tableItem = table.attributes || table;
+          return {
+            id: tableItem.id || table.id || 0,
+            table_h3: tableItem.table_h3 || '',
+            table_title: tableItem.table_title || '',
+            table_description: tableItem.table_description || '',
+            table_promo_code: tableItem.table_promo_code || '',
+            landingpage: tableItem.landingpage || '',
+            table_date: tableItem.table_date || '',
+          };
+        });
         
         return {
           id: sectionData.id || section.id || 0,
           h2_title: sectionData.h2_blog_section_title || '',
           banner_image: '', // Will be populated in Step 6 with separate fetch
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
+          blog_table: blogTable, // Each section has its own blog_table array
         };
       }),
-      blog_table: blogTable,
       blog_coupons: blogCoupons,
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
