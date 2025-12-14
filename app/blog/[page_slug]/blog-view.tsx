@@ -331,7 +331,7 @@ export default function BlogView({ blog }: BlogViewProps) {
       </div>
 
       {/* Narrower overall page width matching Klook - only for /blog pages */}
-      <div className="mx-auto px-4 py-8 max-w-5xl">
+      <div className="mx-auto px-4 py-8 max-w-4xl">
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Main Content - Mobile-first: narrower width matching Klook */}
           <div className="lg:col-span-3">
