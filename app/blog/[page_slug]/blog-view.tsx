@@ -42,7 +42,6 @@ export default function BlogView({ blog }: BlogViewProps) {
 
   // Dummy data for design - will be replaced with actual CMS data later
   const dummyCategories = ["旅遊", "優惠", "折扣碼", "日本"];
-  const dummyHeroImage = "https://res.klook.com/image/upload/q_85/c_fill,w_1360/v1671187857/blog/dnes5bjnwmom1cajn96e.webp";
   
   // Dummy table of contents - will be generated from actual headings later
   const dummyTableOfContents = [
