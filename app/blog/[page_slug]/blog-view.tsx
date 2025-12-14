@@ -520,6 +520,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                   })}
                                 </tbody>
                               </table>
+                              </div>
                             </div>
                             {section.blog_table[0]?.table_date && (
                               <div className="px-6 py-3 bg-yellow-50 text-xs text-muted-foreground border-t border-yellow-200">
