@@ -147,7 +147,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blog.attributes?.page_slug || blog.page_slug || page_slug,
       createdAt: blog.attributes?.createdAt || blog.createdAt,
       updatedAt: blog.attributes?.updatedAt || blog.updatedAt,
-      blog_sections: blog.blog_sections || blog.attributes?.blog_sections,
+      blog_sections: blogSections, // Use separately fetched sections
       related_merchants: blog.related_merchants || blog.attributes?.related_merchants,
       related_blogs: blog.related_blogs || blog.attributes?.related_blogs,
     };
