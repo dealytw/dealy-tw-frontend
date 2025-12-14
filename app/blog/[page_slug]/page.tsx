@@ -174,6 +174,35 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }
     }
 
+    // Fetch blog_coupon merchant/logo separately (nested populate causes route 404)
+    let blogCouponsWithMerchant: any[] = [];
+    if (blogId) {
+      try {
+        const couponsRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
+          "filters[id][$eq]": blogId,
+          "populate[blog_coupon][populate][merchant][fields][0]": "id",
+          "populate[blog_coupon][populate][merchant][fields][1]": "merchant_name",
+          "populate[blog_coupon][populate][merchant][fields][2]": "page_slug",
+          "populate[blog_coupon][populate][merchant][populate][logo][fields][0]": "url",
+        })}`, { 
+          revalidate: 60,
+          tag: `blog-coupons-merchant:${page_slug}` 
+        });
+        
+        const blogWithCoupons = couponsRes?.data?.[0];
+        if (blogWithCoupons) {
+          const couponsData = blogWithCoupons.blog_coupon || blogWithCoupons.attributes?.blog_coupon || [];
+          // Handle array or data wrapper format
+          blogCouponsWithMerchant = Array.isArray(couponsData) 
+            ? couponsData 
+            : (couponsData?.data || []);
+        }
+      } catch (couponsError) {
+        console.error('Error fetching blog_coupon merchant/logo:', couponsError);
+        // Continue without merchant data rather than failing the page
+      }
+    }
+
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
     const blogData = {
       id: blog.id || blog.attributes?.id,
@@ -284,7 +313,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       // Merge merchant/logo data from separate fetch
       blogCoupons = couponsFromCMS.map((coupon: any, index: number) => {
         const couponData = coupon.attributes || coupon;
-        // Get merchant data from separate fetch
+        // Get merchant data from separate fetch (if available)
         const couponWithMerchant = blogCouponsWithMerchant[index];
         const merchantData = couponWithMerchant?.merchant?.data || couponWithMerchant?.merchant || couponData.merchant?.data || couponData.merchant;
         const merchant = merchantData?.attributes || merchantData;
