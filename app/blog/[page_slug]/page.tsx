@@ -132,11 +132,20 @@ export default async function BlogPage({ params }: BlogPageProps) {
           tag: `blog-table:${page_slug}` 
         });
         
+        console.log('Table fetch response:', JSON.stringify(tableRes, null, 2));
         const blogWithTable = tableRes?.data?.[0];
+        console.log('blogWithTable:', blogWithTable);
+        console.log('blogWithTable.blog_table:', blogWithTable?.blog_table);
+        console.log('blogWithTable.attributes?.blog_table:', blogWithTable?.attributes?.blog_table);
+        
         if (blogWithTable) {
           const tableData = blogWithTable.blog_table || blogWithTable.attributes?.blog_table || [];
+          console.log('Raw tableData:', tableData);
+          console.log('tableData is array?', Array.isArray(tableData));
+          
           blogTable = (Array.isArray(tableData) ? tableData : (tableData?.data || [])).map((table: any) => {
             const tableItem = table.attributes || table;
+            console.log('Processing table item:', tableItem);
             return {
               id: tableItem.id || table.id || 0,
               table_h3: tableItem.table_h3 || '',
@@ -147,11 +156,16 @@ export default async function BlogPage({ params }: BlogPageProps) {
               table_date: tableItem.table_date || '',
             };
           });
+          console.log('Final blogTable:', blogTable);
+        } else {
+          console.log('blogWithTable is null or undefined');
         }
       } catch (tableError) {
         console.error('Error fetching blog_table:', tableError);
         // Continue without table rather than failing the page
       }
+    } else {
+      console.log('blogId is null or undefined:', blogId);
     }
 
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
