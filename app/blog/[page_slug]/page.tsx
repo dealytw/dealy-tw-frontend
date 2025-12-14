@@ -151,6 +151,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
     const transformedBlog = {
       id: blog.id || blog.attributes?.id,
+      // CMS Field Mapping: blog_title -> title
       title: getBlogField('blog_title') || 'Untitled Post',
       page_slug: getBlogField('page_slug') || page_slug,
       createdAt: getBlogField('createdAt') || new Date().toISOString(),
