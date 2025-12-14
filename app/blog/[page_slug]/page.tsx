@@ -93,8 +93,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      "populate[blog_sections][fields][0]": "h2_blog_section_title",
-      "populate[blog_sections][fields][1]": "blog_texts",
       "populate[blog_sections][populate][blog_image][fields][0]": "url",
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
