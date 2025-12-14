@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ page_slug
       'fields[0]': 'blog_title',
       'fields[1]': 'page_slug',
     })}`, {
-      revalidate: 86400,
+      revalidate: 60, // 1 minute for development
       tag: `blog:${page_slug}`
     });
     
@@ -103,7 +103,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[related_blogs][fields][3]": "createdAt",
       "populate[related_blogs][fields][4]": "updatedAt",
     })}`, { 
-      revalidate: 86400,
+      revalidate: 60, // 1 minute for development
       tag: `blog:${page_slug}` 
     });
 
