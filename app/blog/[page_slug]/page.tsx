@@ -120,9 +120,11 @@ export default async function BlogPage({ params }: BlogPageProps) {
     let blogTable: any[] = [];
     if (blogId) {
       try {
+        // Try different populate syntax - maybe it's not blog_table but a different field name
+        // Or maybe repeatable components need different syntax
         const queryString = qs({
           "filters[id][$eq]": blogId,
-          "populate[blog_table]": "*",  // Populate all fields first to see if data exists
+          "populate": "*",  // Populate everything first to see what fields exist
         });
         const fetchUrl = `/api/blogs?${queryString}`;
         console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
