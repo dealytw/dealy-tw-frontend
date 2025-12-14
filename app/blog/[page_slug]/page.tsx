@@ -98,14 +98,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      // TEST: Try blog_table alone (without blog_sections) to see if multiple repeatable components is the issue
-      "populate[blog_table][fields][0]": "table_h3",
-      "populate[blog_table][fields][1]": "table_title",
-      "populate[blog_table][fields][2]": "table_description",
-      "populate[blog_table][fields][3]": "table_promo_code",
-      "populate[blog_table][fields][4]": "landingpage",
-      "populate[blog_table][fields][5]": "table_date",
-      // Step 1: blog_sections will be fetched separately (test if multiple repeatable components cause 404)
+      // Step 1: Add blog_sections text fields only (works in main query)
+      "populate[blog_sections][fields][0]": "h2_blog_section_title",
+      "populate[blog_sections][fields][1]": "blog_texts",
+      // Step 2: blog_table will be fetched separately (causes 404 even when alone in main query)
     })}`, { 
       revalidate: 60, // 1 minute for development
       tag: `blog:${page_slug}` 
@@ -214,26 +210,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }));
     }
 
-    // Extract blog_table from main query (TEST: see if it works when alone, without blog_sections)
-    let blogTable: any[] = [];
-    if (blogData.blog_table) {
-      const tableData = Array.isArray(blogData.blog_table) 
-        ? blogData.blog_table 
-        : (blogData.blog_table?.data || []);
-      
-      blogTable = tableData.map((table: any) => {
-        const tableItem = table.attributes || table;
-        return {
-          id: tableItem.id || table.id || 0,
-          table_h3: tableItem.table_h3 || '',
-          table_title: tableItem.table_title || '',
-          table_description: tableItem.table_description || '',
-          table_promo_code: tableItem.table_promo_code || '',
-          landingpage: tableItem.landingpage || '',
-          table_date: tableItem.table_date || '',
-        };
-      });
-    }
+    // blog_table is already fetched separately above (Step 2)
 
     // Extract blog_coupon - handle relation format (same pattern as related_merchants)
     let blogCoupons: any[] = [];
