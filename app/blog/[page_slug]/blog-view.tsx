@@ -327,8 +327,8 @@ export default function BlogView({ blog }: BlogViewProps) {
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Main Content - Mobile-first: narrower width */}
-          <div className="lg:col-span-3 max-w-3xl">
+          {/* Main Content - Mobile-first: narrower width matching Klook */}
+          <div className="lg:col-span-3 max-w-2xl mx-auto lg:mx-0">
             {/* Article Header */}
             <div className="mb-8">
               <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight">
