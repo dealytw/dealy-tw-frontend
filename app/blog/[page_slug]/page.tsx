@@ -114,17 +114,17 @@ export default async function BlogPage({ params }: BlogPageProps) {
       notFound();
     }
 
-    // Step 2: Fetch blog_table separately (causes 404 even when alone in main query - specific to blog_table)
+    // Step 2: Fetch blog_table from within blog_sections (blog_table is nested inside blog_sections, not at blog level)
+    // Each section can have its own blog_table array
     const blogId = blog.id || blog.attributes?.id;
-    console.log('[BLOG_TABLE_FETCH] Starting fetch, blogId:', blogId);
-    let blogTable: any[] = [];
+    let sectionsWithTables: any[] = [];
+    
     if (blogId) {
       try {
-        // Try different populate syntax - maybe it's not blog_table but a different field name
-        // Or maybe repeatable components need different syntax
+        // blog_table is nested inside blog_sections, so we need nested populate
         const queryString = qs({
           "filters[id][$eq]": blogId,
-          "populate": "*",  // Populate everything first to see what fields exist
+          "populate[blog_sections][populate][blog_table]": "*",  // Nested populate: blog_sections -> blog_table
         });
         const fetchUrl = `/api/blogs?${queryString}`;
         console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
@@ -134,52 +134,15 @@ export default async function BlogPage({ params }: BlogPageProps) {
           tag: `blog-table:${page_slug}` 
         });
         
-        console.log('[BLOG_TABLE_FETCH] Response received:', tableRes ? 'exists' : 'null');
-        console.log('[BLOG_TABLE_FETCH] Response data:', tableRes?.data);
-        console.log('[BLOG_TABLE_FETCH] Response data length:', tableRes?.data?.length);
-        
-        const blogWithTable = tableRes?.data?.[0];
-        console.log('[BLOG_TABLE_FETCH] blogWithTable:', blogWithTable ? 'exists' : 'null');
-        
-        if (blogWithTable) {
-          console.log('[BLOG_TABLE_FETCH] blogWithTable keys:', Object.keys(blogWithTable));
-          console.log('[BLOG_TABLE_FETCH] blogWithTable.attributes keys:', blogWithTable.attributes ? Object.keys(blogWithTable.attributes) : 'no attributes');
-          
-          const tableData = blogWithTable.blog_table || blogWithTable.attributes?.blog_table || [];
-          console.log('[BLOG_TABLE_FETCH] Raw tableData:', tableData);
-          console.log('[BLOG_TABLE_FETCH] tableData type:', typeof tableData);
-          console.log('[BLOG_TABLE_FETCH] tableData is array?', Array.isArray(tableData));
-          console.log('[BLOG_TABLE_FETCH] tableData length:', Array.isArray(tableData) ? tableData.length : 'not array');
-          
-          if (Array.isArray(tableData) && tableData.length > 0) {
-            blogTable = tableData.map((table: any, index: number) => {
-              const tableItem = table.attributes || table;
-              console.log(`[BLOG_TABLE_FETCH] Processing table item ${index}:`, tableItem);
-              return {
-                id: tableItem.id || table.id || index,
-                table_h3: tableItem.table_h3 || '',
-                table_title: tableItem.table_title || '',
-                table_description: tableItem.table_description || '',
-                table_promo_code: tableItem.table_promo_code || '',
-                landingpage: tableItem.landingpage || '',
-                table_date: tableItem.table_date || '',
-              };
-            });
-            console.log('[BLOG_TABLE_FETCH] Final blogTable length:', blogTable.length);
-            console.log('[BLOG_TABLE_FETCH] Final blogTable:', blogTable);
-          } else {
-            console.log('[BLOG_TABLE_FETCH] tableData is empty or not an array');
-          }
-        } else {
-          console.log('[BLOG_TABLE_FETCH] blogWithTable is null or undefined');
+        const blogWithTables = tableRes?.data?.[0];
+        if (blogWithTables) {
+          sectionsWithTables = blogWithTables.blog_sections || blogWithTables.attributes?.blog_sections || [];
+          console.log('[BLOG_TABLE_FETCH] Found sections with tables:', sectionsWithTables.length);
         }
       } catch (tableError) {
         console.error('[BLOG_TABLE_FETCH] Error fetching blog_table:', tableError);
-        console.error('[BLOG_TABLE_FETCH] Error stack:', tableError instanceof Error ? tableError.stack : 'no stack');
         // Continue without table rather than failing the page
       }
-    } else {
-      console.log('[BLOG_TABLE_FETCH] blogId is null or undefined:', blogId);
     }
 
     // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
