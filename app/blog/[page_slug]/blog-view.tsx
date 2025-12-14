@@ -463,7 +463,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                             )}
                           </div>
                         </div>
-                      )}
+                        )}
+                      </div>
+                    );
+                  })}
                 </>
               ) : (
                 // Fallback: Show dummy content if no sections
