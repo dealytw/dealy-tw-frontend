@@ -97,27 +97,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[4]": "updatedAt",
       "populate[blog_sections][fields][0]": "h2_blog_section_title",  // Text field - no nested populate
       "populate[blog_sections][fields][1]": "blog_texts",  // Rich text - no nested populate
-      // blog_table - all text fields (repeatable component)
-      "populate[blog_table][fields][0]": "table_h3",
-      "populate[blog_table][fields][1]": "table_title",
-      "populate[blog_table][fields][2]": "table_description",
-      "populate[blog_table][fields][3]": "table_promo_code",
-      "populate[blog_table][fields][4]": "landingpage",
-      "populate[blog_table][fields][5]": "table_date",
-      // blog_coupon - relation to coupons (text fields first)
-      "populate[blog_coupon][fields][0]": "id",
-      "populate[blog_coupon][fields][1]": "coupon_title",
-      "populate[blog_coupon][fields][2]": "value",
-      "populate[blog_coupon][fields][3]": "code",
-      "populate[blog_coupon][fields][4]": "affiliate_link",
-      "populate[blog_coupon][fields][5]": "coupon_type",
-      "populate[blog_coupon][fields][6]": "expires_at",
-      "populate[blog_coupon][fields][7]": "priority",
-      "populate[blog_coupon][fields][8]": "display_count",
-      "populate[blog_coupon][fields][9]": "coupon_status",
-      "populate[blog_coupon][fields][10]": "description",
-      "populate[blog_coupon][fields][11]": "editor_tips",
-      "populate[blog_coupon][populate][market][fields][0]": "key",
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
       "populate[related_merchants][fields][2]": "page_slug",
@@ -363,8 +342,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
         };
       }),
-      blog_table: blogTable,
-      blog_coupons: blogCoupons,
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };
