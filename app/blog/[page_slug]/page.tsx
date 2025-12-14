@@ -24,8 +24,9 @@ import BlogView from './blog-view';
  * Next Steps: Add blog_sections populate incrementally with better error handling
  */
 
-// Revalidate every 24 hours - blog posts don't change frequently
-export const revalidate = 86400;
+// Revalidate every 1 minute - temporarily for development/mapping work
+// TODO: Change back to 86400 (24 hours) after development is complete
+export const revalidate = 60;
 export const dynamic = 'force-static'; // Force static ISR to ensure cacheable HTML
 
 // Generate metadata for SEO
