@@ -261,14 +261,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
       sections: (blogData.blog_sections || []).map((section: any) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
-        // TEST: With force-dynamic, nested populate should work - get image directly
-        const imageData = sectionData.blog_image?.data || sectionData.blog_image;
-        const imageUrl = imageData?.attributes?.url || imageData?.url;
+        // Step 1: Only text fields populated (images will be added in Step 6 with separate fetch)
+        // No blog_image data yet - will be empty string
         
         return {
           id: sectionData.id || section.id || 0,
           h2_title: sectionData.h2_blog_section_title || '',
-          banner_image: imageUrl ? absolutizeMedia(imageUrl) : '',
+          banner_image: '', // Will be populated in Step 6 with separate fetch
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
         };
       }),
