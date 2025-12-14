@@ -224,9 +224,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
         const imageUrl = imageData?.attributes?.url || imageData?.url;
         
         return {
+          id: sectionData.id || section.id || 0,
           h2_title: sectionData.h2_blog_section_title || '',
-          banner_image: imageUrl ? absolutizeMedia(imageUrl) : null,
-          content: sectionData.blog_texts || [], // Rich text JSON
+          banner_image: imageUrl ? absolutizeMedia(imageUrl) : '',
+          blog_texts: sectionData.blog_texts || [], // Rich text JSON
         };
       }),
       related_merchants: relatedMerchants,
