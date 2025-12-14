@@ -117,11 +117,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[blog_coupon][fields][9]": "coupon_status",
       "populate[blog_coupon][fields][10]": "description",
       "populate[blog_coupon][fields][11]": "editor_tips",
-      // blog_coupon nested relations (merchant with logo)
-      "populate[blog_coupon][populate][merchant][fields][0]": "id",
-      "populate[blog_coupon][populate][merchant][fields][1]": "merchant_name",
-      "populate[blog_coupon][populate][merchant][fields][2]": "page_slug",
-      "populate[blog_coupon][populate][merchant][populate][logo][fields][0]": "url",
       "populate[blog_coupon][populate][market][fields][0]": "key",
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
@@ -286,9 +281,12 @@ export default async function BlogPage({ params }: BlogPageProps) {
         couponsFromCMS = blogData.blog_coupon.data;
       }
       
-      blogCoupons = couponsFromCMS.map((coupon: any) => {
+      // Merge merchant/logo data from separate fetch
+      blogCoupons = couponsFromCMS.map((coupon: any, index: number) => {
         const couponData = coupon.attributes || coupon;
-        const merchantData = couponData.merchant?.data || couponData.merchant;
+        // Get merchant data from separate fetch
+        const couponWithMerchant = blogCouponsWithMerchant[index];
+        const merchantData = couponWithMerchant?.merchant?.data || couponWithMerchant?.merchant || couponData.merchant?.data || couponData.merchant;
         const merchant = merchantData?.attributes || merchantData;
         const logoUrl = merchant?.logo?.url || merchant?.logo?.attributes?.url || merchant?.attributes?.logo?.url;
         
