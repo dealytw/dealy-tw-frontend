@@ -85,7 +85,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
   try {
-    // Fetch blog data with ISR (same pattern as merchant pages)
+    // Use server-only Strapi fetch with ISR (same pattern as merchant pages)
     const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
       "filters[page_slug][$eq]": page_slug,
       "fields[0]": "id",
@@ -110,70 +110,89 @@ export default async function BlogPage({ params }: BlogPageProps) {
     const blog = blogRes?.data?.[0];
     
     if (!blog) {
-      // Log failure reason for better error handling
-      console.error(`[Blog Page] Blog not found: ${page_slug}`, {
-        response: blogRes,
-        hasData: !!blogRes?.data,
-        dataLength: blogRes?.data?.length || 0,
-        timestamp: new Date().toISOString(),
-      });
+      console.error('Error fetching blog data:', blogRes);
       notFound();
     }
 
-    // Extract blog data - handle both Strapi v5 attributes format and flat format
-    const getBlogField = (field: string) => {
-      return blog.attributes?.[field] || blog[field];
-    };
-
-    // Handle manyToMany relations - same pattern as merchant pages
-    const getRelatedMerchants = (merchants: any) => {
-      if (!merchants) return [];
-      if (Array.isArray(merchants)) {
-        if (merchants[0]?.data) {
-          return merchants.map((item: any) => item.data || item);
-        }
-        return merchants;
-      }
-      if (merchants.data) return merchants.data;
-      return [];
-    };
-
-    const getRelatedBlogs = (blogs: any) => {
-      if (!blogs) return [];
-      if (Array.isArray(blogs)) {
-        if (blogs[0]?.data) {
-          return blogs.map((item: any) => item.data || item);
-        }
-        return blogs;
-      }
-      if (blogs.data) return blogs.data;
-      return [];
-    };
-
-    const transformedBlog = {
+    // Extract blog data - handle both Strapi v5 attributes format and flat format (same pattern as merchant pages)
+    const blogData = {
       id: blog.id || blog.attributes?.id,
-      // CMS Field Mapping: blog_title -> title (mapped from /api/blogs collection)
-      title: getBlogField('blog_title') || 'Untitled Post',
-      page_slug: getBlogField('page_slug') || page_slug,
-      createdAt: getBlogField('createdAt') || new Date().toISOString(),
-      updatedAt: getBlogField('updatedAt') || new Date().toISOString(),
-      sections: [], // Will be populated later
-      related_merchants: getRelatedMerchants(blog.related_merchants || blog.attributes?.related_merchants).map((merchant: any) => ({
-        id: merchant.id || merchant.attributes?.id,
-        name: merchant.merchant_name || merchant.attributes?.merchant_name || '',
-        slug: merchant.page_slug || merchant.attributes?.page_slug || '',
-        logo: merchant.logo?.url || merchant.logo?.attributes?.url || merchant.attributes?.logo?.url 
-          ? absolutizeMedia(merchant.logo?.url || merchant.logo?.attributes?.url || merchant.attributes?.logo?.url) 
-          : null,
-      })),
-      related_blogs: getRelatedBlogs(blog.related_blogs || blog.attributes?.related_blogs).map((relatedBlog: any) => ({
+      blog_title: blog.attributes?.blog_title || blog.blog_title,
+      page_slug: blog.attributes?.page_slug || blog.page_slug || page_slug,
+      createdAt: blog.attributes?.createdAt || blog.createdAt,
+      updatedAt: blog.attributes?.updatedAt || blog.updatedAt,
+      related_merchants: blog.related_merchants || blog.attributes?.related_merchants,
+      related_blogs: blog.related_blogs || blog.attributes?.related_blogs,
+    };
+
+    // Extract related merchants - handle all possible formats for manyToMany relation (same pattern as merchant pages)
+    let relatedMerchants: any[] = [];
+    if (blogData.related_merchants) {
+      // Handle all possible formats:
+      // 1. Direct array: [{ id, ... }]
+      // 2. With data wrapper: { data: [{ id, ... }] }
+      // 3. Nested: [{ data: { id, ... } }]
+      let relatedFromCMS = [];
+      if (Array.isArray(blogData.related_merchants)) {
+        // Check if it's nested format
+        if (blogData.related_merchants[0]?.data) {
+          relatedFromCMS = blogData.related_merchants.map((item: any) => item.data || item);
+        } else {
+          relatedFromCMS = blogData.related_merchants;
+        }
+      } else if (blogData.related_merchants?.data) {
+        relatedFromCMS = blogData.related_merchants.data;
+      }
+      
+      relatedMerchants = relatedFromCMS.map((merchant: any) => {
+        const merchantId = merchant.id || merchant.attributes?.id;
+        const merchantName = merchant.merchant_name || merchant.attributes?.merchant_name || '';
+        const merchantSlug = merchant.page_slug || merchant.attributes?.page_slug || '';
+        const logoUrl = merchant.logo?.url || merchant.logo?.attributes?.url || merchant.attributes?.logo?.url;
+        
+        return {
+          id: merchantId,
+          name: merchantName,
+          slug: merchantSlug,
+          logo: logoUrl ? absolutizeMedia(logoUrl) : null,
+        };
+      });
+    }
+
+    // Extract related blogs - handle all possible formats (same pattern as merchant pages)
+    let relatedBlogs: any[] = [];
+    if (blogData.related_blogs) {
+      let relatedFromCMS = [];
+      if (Array.isArray(blogData.related_blogs)) {
+        if (blogData.related_blogs[0]?.data) {
+          relatedFromCMS = blogData.related_blogs.map((item: any) => item.data || item);
+        } else {
+          relatedFromCMS = blogData.related_blogs;
+        }
+      } else if (blogData.related_blogs?.data) {
+        relatedFromCMS = blogData.related_blogs.data;
+      }
+      
+      relatedBlogs = relatedFromCMS.map((relatedBlog: any) => ({
         id: relatedBlog.id || relatedBlog.attributes?.id,
         title: relatedBlog.blog_title || relatedBlog.attributes?.blog_title || '',
         slug: relatedBlog.page_slug || relatedBlog.attributes?.page_slug || '',
         createdAt: relatedBlog.createdAt || relatedBlog.attributes?.createdAt || '',
         updatedAt: relatedBlog.updatedAt || relatedBlog.attributes?.updatedAt || '',
         thumbnail: null,
-      })),
+      }));
+    }
+
+    const transformedBlog = {
+      id: blogData.id,
+      // CMS Field Mapping: blog_title -> title (mapped from /api/blogs collection)
+      title: blogData.blog_title || 'Untitled Post',
+      page_slug: blogData.page_slug,
+      createdAt: blogData.createdAt || new Date().toISOString(),
+      updatedAt: blogData.updatedAt || new Date().toISOString(),
+      sections: [], // Will be populated later
+      related_merchants: relatedMerchants,
+      related_blogs: relatedBlogs,
     };
 
     // Build breadcrumb JSON-LD
@@ -192,18 +211,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
     );
 
   } catch (error) {
-    // Log failure reason for better error handling
-    console.error(`[Blog Page] Error fetching blog post: ${page_slug}`, {
-      error: error instanceof Error ? {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      } : error,
-      page_slug,
-      timestamp: new Date().toISOString(),
-      // Additional context
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-    });
+    console.error('Error fetching blog data:', error);
     notFound();
   }
 }
