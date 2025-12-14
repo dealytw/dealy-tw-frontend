@@ -124,6 +124,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blog.attributes?.page_slug || blog.page_slug || page_slug,
       createdAt: blog.attributes?.createdAt || blog.createdAt,
       updatedAt: blog.attributes?.updatedAt || blog.updatedAt,
+      blog_sections: blog.blog_sections || blog.attributes?.blog_sections,
       related_merchants: blog.related_merchants || blog.attributes?.related_merchants,
       related_blogs: blog.related_blogs || blog.attributes?.related_blogs,
     };
@@ -193,7 +194,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
-      sections: [], // Will be populated separately to avoid route 404 issues
+      sections: (blogData.blog_sections || []).map((section: any) => ({
+        h2_title: section.h2_blog_section_title || section.attributes?.h2_blog_section_title || '',
+        banner_image: section.blog_image?.url || section.blog_image?.attributes?.url
+          ? absolutizeMedia(section.blog_image.url || section.blog_image.attributes.url)
+          : null,
+        content: section.blog_texts || section.attributes?.blog_texts || [], // Rich text JSON
+      })),
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };
