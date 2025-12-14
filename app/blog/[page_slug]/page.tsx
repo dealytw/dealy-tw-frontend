@@ -279,7 +279,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
-      sections: (blogSections || []).map((section: any) => {
+      sections: (blogData.blog_sections || []).map((section: any) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
         // Step 1: Only text fields populated (images will be added in Step 6 with separate fetch)
