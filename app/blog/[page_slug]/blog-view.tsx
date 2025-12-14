@@ -222,22 +222,6 @@ export default function BlogView({ blog }: BlogViewProps) {
               </div>
             </div>
 
-            {/* Hero Image */}
-            <div className="mb-8">
-              <div className="relative w-full h-[400px] rounded-lg overflow-hidden bg-muted">
-                <Image
-                  src={dummyHeroImage}
-                  alt={blog.title}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            </div>
-
             {/* Article Content - Dummy Content for Design */}
             <div className="prose prose-lg max-w-none">
               {/* Table of Contents - Generated from h2 headings */}
