@@ -192,13 +192,18 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
-      sections: (blogData.blog_sections || []).map((section: any) => ({
-        h2_title: section.h2_blog_section_title || section.attributes?.h2_blog_section_title || '',
-        banner_image: section.blog_image?.url || section.blog_image?.attributes?.url
-          ? absolutizeMedia(section.blog_image.url || section.blog_image.attributes.url)
-          : null,
-        content: section.blog_texts || section.attributes?.blog_texts || [], // Rich text JSON
-      })),
+      sections: (blogData.blog_sections || []).map((section: any) => {
+        // Handle both Strapi v5 attributes format and flat format
+        const sectionData = section.attributes || section;
+        const imageData = sectionData.blog_image?.data || sectionData.blog_image;
+        const imageUrl = imageData?.attributes?.url || imageData?.url;
+        
+        return {
+          h2_title: sectionData.h2_blog_section_title || '',
+          banner_image: imageUrl ? absolutizeMedia(imageUrl) : null,
+          content: sectionData.blog_texts || [], // Rich text JSON
+        };
+      }),
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };
