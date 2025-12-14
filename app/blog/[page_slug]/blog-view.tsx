@@ -359,6 +359,99 @@ export default function BlogView({ blog }: BlogViewProps) {
                 </div>
               </div>
 
+              {/* Coupon Section - 3 in a row */}
+              <div className="my-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Dummy Coupon 1 */}
+                  <div className="bg-white rounded-lg border-2 border-orange-200 shadow-md overflow-hidden">
+                    <div className="flex">
+                      {/* Left Panel - Offer Details */}
+                      <div className="flex-1 p-4 border-r-2 border-dashed border-orange-300">
+                        <div className="mb-2">
+                          <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">
+                            適用於全部活動
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-semibold text-foreground mb-2">
+                          [交通銀行]即減HK$30
+                        </h4>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span>優惠碼:</span>
+                          <span className="font-mono font-semibold text-orange-600">BOCOM30</span>
+                        </div>
+                      </div>
+                      {/* Right Panel - Discount & Claim */}
+                      <div className="w-32 flex flex-col justify-between p-4 bg-orange-50">
+                        <div>
+                          <div className="text-2xl font-bold text-orange-600 mb-1">HKD 30 off</div>
+                          <div className="text-xs text-muted-foreground">最低消費:HKD 500</div>
+                        </div>
+                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm py-2">
+                          領取
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dummy Coupon 2 */}
+                  <div className="bg-white rounded-lg border-2 border-orange-200 shadow-md overflow-hidden">
+                    <div className="flex">
+                      {/* Left Panel - Offer Details */}
+                      <div className="flex-1 p-4 border-r-2 border-dashed border-orange-300">
+                        <div className="mb-2">
+                          <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">
+                            適用於全部活動
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-semibold text-foreground mb-2">
+                          [交通銀行]即減HK$150
+                        </h4>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span>優惠碼:</span>
+                          <span className="font-mono font-semibold text-orange-600">BOCOM150</span>
+                        </div>
+                      </div>
+                      {/* Right Panel - Discount & Claim */}
+                      <div className="w-32 flex flex-col justify-between p-4 bg-orange-50">
+                        <div>
+                          <div className="text-2xl font-bold text-orange-600 mb-1">HKD 150 off</div>
+                          <div className="text-xs text-muted-foreground">最低消費:HKD 1,500</div>
+                        </div>
+                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm py-2">
+                          領取
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dummy Coupon 3 */}
+                  <div className="bg-white rounded-lg border-2 border-orange-200 shadow-md overflow-hidden">
+                    <div className="flex">
+                      {/* Left Panel - Offer Details */}
+                      <div className="flex-1 p-4 border-r-2 border-dashed border-orange-300">
+                        <h4 className="text-sm font-semibold text-foreground mb-2">
+                          [交通銀行]香港機場快綫單程車票買一送一
+                        </h4>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span>優惠碼:</span>
+                          <span className="font-mono font-semibold text-orange-600">BOCOM25DEC</span>
+                        </div>
+                      </div>
+                      {/* Right Panel - Discount & Claim */}
+                      <div className="w-32 flex flex-col justify-between p-4 bg-orange-50">
+                        <div>
+                          <div className="text-2xl font-bold text-orange-600 mb-1">50%折扣</div>
+                          <div className="text-xs text-muted-foreground">最低消費:HKD 126</div>
+                        </div>
+                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm py-2">
+                          領取
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Promotional Banner */}
               <div className="my-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
                 <h3 className="text-xl font-bold text-primary mb-2">
