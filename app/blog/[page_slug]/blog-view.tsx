@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Facebook, Twitter, Share2, MessageCircle } from "lucide-react";
+import { Facebook, Twitter, Share2, MessageCircle, X, List } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -120,6 +120,7 @@ function blocksToHTML(blocks: any): string {
 export default function BlogView({ blog }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
   const [revealedPromoCodes, setRevealedPromoCodes] = useState<Record<string, boolean>>({});
+  const [isTOCOpen, setIsTOCOpen] = useState(false);
   const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Debug: Log blog_table data
@@ -324,10 +325,10 @@ export default function BlogView({ blog }: BlogViewProps) {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-3">
+          {/* Main Content - Mobile-first: narrower width */}
+          <div className="lg:col-span-3 max-w-3xl">
             {/* Article Header */}
             <div className="mb-8">
               <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight">
