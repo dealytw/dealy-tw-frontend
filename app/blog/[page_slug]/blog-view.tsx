@@ -22,6 +22,15 @@ interface Blog {
     banner_image: string | null;
     blog_texts: any; // Rich text blocks JSON
   }>;
+  blog_table?: Array<{
+    id: number;
+    table_h3: string;
+    table_title: string;
+    table_description: string;
+    table_promo_code: string;
+    landingpage: string;
+    table_date: string;
+  }>;
   related_merchants: Array<{
     id: number;
     name: string;
@@ -369,6 +378,70 @@ export default function BlogView({ blog }: BlogViewProps) {
                             whiteSpace: 'pre-wrap', // Preserve line breaks
                           }}
                         />
+                      )}
+
+                      {/* Comparison Table - Render after first section's blog_texts */}
+                      {sectionIndex === 0 && blog.blog_table && blog.blog_table.length > 0 && (
+                        <div className="my-8">
+                          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 overflow-hidden">
+                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-4">
+                              <h3 className="font-bold text-lg text-white">📊 比較表格</h3>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full border-collapse">
+                                <thead>
+                                  <tr className="bg-blue-100">
+                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">類型</th>
+                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">標題</th>
+                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">說明</th>
+                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">優惠碼</th>
+                                    <th className="border border-blue-200 px-4 py-3 text-left font-bold text-foreground">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {blog.blog_table.map((tableRow, index) => (
+                                    <tr key={tableRow.id || index} className="hover:bg-blue-50 transition-colors">
+                                      <td className="border border-blue-200 px-4 py-3 text-foreground font-medium">
+                                        {tableRow.table_h3 || '-'}
+                                      </td>
+                                      <td className="border border-blue-200 px-4 py-3 text-foreground">
+                                        {tableRow.table_title || '-'}
+                                      </td>
+                                      <td className="border border-blue-200 px-4 py-3 text-foreground">
+                                        {tableRow.table_description || '-'}
+                                      </td>
+                                      <td className="border border-blue-200 px-4 py-3">
+                                        {tableRow.table_promo_code ? (
+                                          <Badge variant="secondary" className="font-mono">
+                                            {tableRow.table_promo_code}
+                                          </Badge>
+                                        ) : (
+                                          <span className="text-muted-foreground">-</span>
+                                        )}
+                                      </td>
+                                      <td className="border border-blue-200 px-4 py-3">
+                                        {tableRow.landingpage ? (
+                                          <Link href={tableRow.landingpage} target="_blank" rel="noopener noreferrer">
+                                            <Button size="sm" variant="outline">
+                                              獲取優惠
+                                            </Button>
+                                          </Link>
+                                        ) : (
+                                          <span className="text-muted-foreground">-</span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            {blog.blog_table[0]?.table_date && (
+                              <div className="px-6 py-3 bg-blue-50 text-sm text-muted-foreground border-t border-blue-200">
+                                最後更新：{blog.blog_table[0].table_date}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
                   );
