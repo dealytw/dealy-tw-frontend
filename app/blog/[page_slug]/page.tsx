@@ -255,6 +255,71 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }));
     }
 
+    // Extract blog_table - handle repeatable component format
+    let blogTable: any[] = [];
+    if (blogData.blog_table) {
+      const tableData = Array.isArray(blogData.blog_table) 
+        ? blogData.blog_table 
+        : (blogData.blog_table?.data || []);
+      
+      blogTable = tableData.map((table: any) => {
+        const tableItem = table.attributes || table;
+        return {
+          id: tableItem.id || table.id || 0,
+          table_h3: tableItem.table_h3 || '',
+          table_title: tableItem.table_title || '',
+          table_description: tableItem.table_description || '',
+          table_promo_code: tableItem.table_promo_code || '',
+          landingpage: tableItem.landingpage || '',
+          table_date: tableItem.table_date || '',
+        };
+      });
+    }
+
+    // Extract blog_coupon - handle relation format (same pattern as related_merchants)
+    let blogCoupons: any[] = [];
+    if (blogData.blog_coupon) {
+      let couponsFromCMS = [];
+      if (Array.isArray(blogData.blog_coupon)) {
+        if (blogData.blog_coupon[0]?.data) {
+          couponsFromCMS = blogData.blog_coupon.map((item: any) => item.data || item);
+        } else {
+          couponsFromCMS = blogData.blog_coupon;
+        }
+      } else if (blogData.blog_coupon?.data) {
+        couponsFromCMS = blogData.blog_coupon.data;
+      }
+      
+      blogCoupons = couponsFromCMS.map((coupon: any) => {
+        const couponData = coupon.attributes || coupon;
+        const merchantData = couponData.merchant?.data || couponData.merchant;
+        const merchant = merchantData?.attributes || merchantData;
+        const logoUrl = merchant?.logo?.url || merchant?.logo?.attributes?.url || merchant?.attributes?.logo?.url;
+        
+        return {
+          id: couponData.id || coupon.id,
+          coupon_title: couponData.coupon_title || '',
+          value: couponData.value || '',
+          code: couponData.code || '',
+          affiliate_link: couponData.affiliate_link || '',
+          coupon_type: couponData.coupon_type || '',
+          expires_at: couponData.expires_at || '',
+          priority: couponData.priority || 0,
+          display_count: couponData.display_count || 0,
+          coupon_status: couponData.coupon_status || 'active',
+          description: couponData.description || [],
+          editor_tips: couponData.editor_tips || [],
+          merchant: merchant ? {
+            id: merchant.id || merchantData.id,
+            name: merchant.merchant_name || merchantData.merchant_name || '',
+            slug: merchant.page_slug || merchantData.page_slug || '',
+            logo: logoUrl ? absolutizeMedia(logoUrl) : null,
+          } : null,
+          market: couponData.market?.key || couponData.market?.attributes?.key || null,
+        };
+      });
+    }
+
     const transformedBlog = {
       id: blogData.id,
       // CMS Field Mapping: blog_title -> title (mapped from /api/blogs collection)
