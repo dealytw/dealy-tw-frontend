@@ -93,9 +93,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
-      "populate[blog_sections][fields][0]": "h2_blog_section_title",
-      "populate[blog_sections][fields][1]": "blog_texts",
-      "populate[blog_sections][populate][blog_image][fields][0]": "url",
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
       "populate[related_merchants][fields][2]": "page_slug",
@@ -124,7 +121,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blog.attributes?.page_slug || blog.page_slug || page_slug,
       createdAt: blog.attributes?.createdAt || blog.createdAt,
       updatedAt: blog.attributes?.updatedAt || blog.updatedAt,
-      blog_sections: blog.blog_sections || blog.attributes?.blog_sections,
       related_merchants: blog.related_merchants || blog.attributes?.related_merchants,
       related_blogs: blog.related_blogs || blog.attributes?.related_blogs,
     };
