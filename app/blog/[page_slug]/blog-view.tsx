@@ -330,10 +330,10 @@ export default function BlogView({ blog }: BlogViewProps) {
         </div>
       </div>
 
-      {/* Narrow desktop style (not mobile layout) - only for /blog pages */}
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      {/* Standard responsive container - narrow desktop style on large screens */}
+      <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Main Content - Mobile-first: narrower width matching Klook */}
+          {/* Main Content */}
           <div className="lg:col-span-3">
             {/* Article Header */}
             <div className="mb-8">
