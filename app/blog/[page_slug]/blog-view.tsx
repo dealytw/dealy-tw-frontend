@@ -433,7 +433,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {section.h2_title && (
                           <h2 
                             id={sectionSlug}
-                            className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8"
+                            className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8 break-words"
                           >
                             {section.h2_title}
                           </h2>
@@ -442,12 +442,14 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Section Blog Texts - Rich Text Content */}
                         {section.blog_texts && (
                           <div 
-                            className="text-base text-foreground leading-normal"
+                            className="text-base text-foreground leading-normal break-words min-w-0"
                             dangerouslySetInnerHTML={{ 
                               __html: blocksToHTML(section.blog_texts) 
                             }}
                             style={{
                               lineHeight: '1.5',
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word',
                             }}
                           />
                         )}
@@ -456,7 +458,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
                           {section.table_h3 && (
-                            <h3 className="font-bold text-lg text-foreground mb-4">
+                            <h3 className="font-bold text-lg text-foreground mb-4 break-words">
                               {section.table_h3}
                             </h3>
                           )}
