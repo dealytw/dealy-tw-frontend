@@ -331,13 +331,13 @@ export default function BlogView({ blog }: BlogViewProps) {
       </div>
 
       {/* Standard responsive container - narrow desktop style on large screens */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-full overflow-x-hidden">
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 min-w-0">
             {/* Article Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight">
+            <div className="mb-8 min-w-0">
+              <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight break-words">
                 {blog.title}
               </h1>
               
