@@ -331,10 +331,10 @@ export default function BlogView({ blog }: BlogViewProps) {
       </div>
 
       {/* Standard responsive container - narrow desktop style on large screens */}
-      <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl overflow-x-hidden">
+      <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
         <div className="grid lg:grid-cols-4 gap-8 lg:items-start">
           {/* Main Content */}
-          <div className="lg:col-span-3 min-w-0">
+          <div className="lg:col-span-3 min-w-0 overflow-x-hidden">
             {/* Article Header */}
             <div className="mb-8 min-w-0">
               <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight break-words">
@@ -594,8 +594,8 @@ export default function BlogView({ blog }: BlogViewProps) {
           </div>
 
           {/* Sidebar - Sticky on desktop */}
-          <div className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start lg:h-fit">
-            <div className="space-y-6">
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-8 space-y-6">
               {/* Related Articles */}
               <Card>
                 <CardContent className="p-6">
