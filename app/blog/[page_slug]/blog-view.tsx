@@ -694,46 +694,47 @@ export default function BlogView({ blog }: BlogViewProps) {
         </div>
       </div>
 
-      {/* Mobile TOC Sticky Button - Bottom Right */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-50">
+      {/* Mobile TOC Sticky Button - Bottom Center (like Klook) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
         <Button
           onClick={() => setIsTOCOpen(true)}
-          className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
+          className="w-full rounded-none h-14 bg-primary hover:bg-primary/90 flex items-center justify-center gap-2"
           size="lg"
         >
-          <List className="w-6 h-6 text-white" />
+          <List className="w-5 h-5 text-white" />
+          <span className="text-white font-medium">本文目錄</span>
         </Button>
       </div>
 
-      {/* Mobile TOC Drawer - Slides in from right */}
+      {/* Mobile TOC Drawer - Slides in from right (like Klook) */}
       {isTOCOpen && (
         <>
           {/* Backdrop */}
           <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-50"
+            className="lg:hidden fixed inset-0 bg-black/50 z-[60]"
             onClick={() => setIsTOCOpen(false)}
           />
           {/* Drawer */}
-          <div className="lg:hidden fixed right-0 top-0 bottom-0 w-80 bg-background shadow-2xl z-50 overflow-y-auto transform transition-transform">
-            <div className="p-6">
+          <div className="lg:hidden fixed right-0 top-0 bottom-0 w-[85%] max-w-sm bg-background shadow-2xl z-[60] overflow-y-auto">
+            <div className="p-4">
               {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-lg text-foreground">📋 本文目錄</h3>
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <List className="w-5 h-5 text-foreground" />
+                  <h3 className="font-bold text-lg text-foreground">內容重點</h3>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsTOCOpen(false)}
-                  className="rounded-full"
+                  className="rounded-full h-8 w-8 p-0"
                 >
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mb-4">
-                最後更新：{formatDate(blog.updatedAt)}
-              </p>
               
               {/* TOC List */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {tableOfContents.map((item, index) => (
                   <button
                     key={index}
@@ -741,12 +742,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                       scrollToSection(item.id);
                       setIsTOCOpen(false);
                     }}
-                    className="w-full text-left flex items-start gap-2 p-3 rounded-lg hover:bg-muted transition-colors"
+                    className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors text-sm"
                   >
-                    <span className="text-primary font-bold text-sm mt-0.5 flex-shrink-0 bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm text-foreground font-medium leading-snug flex-1 break-words">
+                    <span className="text-foreground leading-relaxed break-words">
                       {item.title}
                     </span>
                   </button>
