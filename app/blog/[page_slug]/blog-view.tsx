@@ -374,9 +374,9 @@ export default function BlogView({ blog }: BlogViewProps) {
             </div>
 
             {/* Article Content - Dummy Content for Design */}
-            <div className="prose prose-lg max-w-none">
-              {/* Table of Contents - Generated from h2 headings */}
-              <div className="mb-8">
+            <div className="prose prose-lg max-w-none min-w-0">
+              {/* Table of Contents - Generated from h2 headings - Hidden on mobile for readability */}
+              <div className="mb-8 hidden lg:block">
                 <div className="bg-gradient-to-r from-orange-100 to-pink-100 rounded-lg border border-orange-200 overflow-hidden">
                   <div className="bg-gradient-to-r from-orange-400 to-pink-400 px-6 py-4">
                     <h3 className="font-bold text-lg text-white">📋 本文目錄</h3>
@@ -694,6 +694,8 @@ export default function BlogView({ blog }: BlogViewProps) {
         </div>
       </div>
 
+      <Footer />
+      
       {/* Mobile TOC Sticky Button - Bottom Center (like Klook) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
         <Button
@@ -755,7 +757,8 @@ export default function BlogView({ blog }: BlogViewProps) {
         </>
       )}
       
-      <Footer />
+      {/* Add bottom padding on mobile to account for sticky TOC button */}
+      <div className="lg:hidden h-14" />
     </div>
   );
 }
