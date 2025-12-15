@@ -461,17 +461,15 @@ export default function BlogView({ blog }: BlogViewProps) {
                             </h3>
                           )}
                           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 overflow-hidden">
-                            {/* Mobile swipeable table container */}
+                            {/* Horizontally scrollable table on mobile */}
                             <div 
                               className="overflow-x-auto bg-white" 
                               style={{ 
                                 WebkitOverflowScrolling: 'touch',
-                                scrollbarWidth: 'thin',
-                                overscrollBehaviorX: 'contain',
-                                touchAction: 'pan-x'
+                                scrollbarWidth: 'thin'
                               }}
                             >
-                              <table className="w-full border-collapse" style={{ minWidth: '600px' }}>
+                              <table className="w-full border-collapse min-w-[600px] md:min-w-0">
                                 <thead>
                                   <tr className="bg-yellow-100">
                                     <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠標題</th>
