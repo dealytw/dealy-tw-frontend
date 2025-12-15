@@ -295,7 +295,7 @@ export default function BlogView({ blog }: BlogViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background">
       <Header />
       
       {/* Breadcrumb Navigation */}
