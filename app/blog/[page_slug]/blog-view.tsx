@@ -593,8 +593,8 @@ export default function BlogView({ blog }: BlogViewProps) {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
+          {/* Sidebar - Sticky on desktop */}
+          <div className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start">
             <div className="sticky top-8 space-y-6">
               {/* Related Articles */}
               <Card>
