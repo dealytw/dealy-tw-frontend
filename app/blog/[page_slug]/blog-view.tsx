@@ -375,32 +375,6 @@ export default function BlogView({ blog }: BlogViewProps) {
 
             {/* Article Content - Dummy Content for Design */}
             <div className="prose prose-lg max-w-none min-w-0">
-              {/* Table of Contents - Generated from h2 headings - Hidden on mobile for readability */}
-              <div className="mb-8 hidden lg:block">
-                <div className="bg-gradient-to-r from-orange-100 to-pink-100 rounded-lg border border-orange-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-orange-400 to-pink-400 px-6 py-4">
-                    <h3 className="font-bold text-lg text-white">📋 本文目錄</h3>
-                    <p className="text-sm text-white/90 mt-1">最後更新：{formatDate(blog.updatedAt)}</p>
-                  </div>
-                  <div className="p-6 bg-white/80">
-                    <div className="grid md:grid-cols-2 gap-3">
-                      {tableOfContents.map((item, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <span className="text-primary font-bold text-base mt-0.5 flex-shrink-0 bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                            {index + 1}
-                          </span>
-                          <button 
-                            onClick={() => scrollToSection(item.id)}
-                            className="text-sm text-primary hover:text-primary/80 cursor-pointer transition-colors text-left font-medium hover:underline flex-1 break-words"
-                          >
-                            {item.title}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Blog Sections - Mapped from CMS */}
               {blog.sections && blog.sections.length > 0 ? (
