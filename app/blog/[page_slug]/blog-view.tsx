@@ -391,7 +391,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                           </span>
                           <button 
                             onClick={() => scrollToSection(item.id)}
-                            className="text-sm text-primary hover:text-primary/80 cursor-pointer transition-colors text-left font-medium hover:underline flex-1"
+                            className="text-sm text-primary hover:text-primary/80 cursor-pointer transition-colors text-left font-medium hover:underline flex-1 break-words"
                           >
                             {item.title}
                           </button>
