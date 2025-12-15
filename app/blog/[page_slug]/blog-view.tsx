@@ -331,7 +331,7 @@ export default function BlogView({ blog }: BlogViewProps) {
       </div>
 
       {/* Narrower overall page width matching Klook - only for /blog pages */}
-      <div className="mx-auto px-4 py-8 max-w-5xl w-full overflow-x-hidden">
+      <div className="mx-auto px-4 py-8 max-w-5xl">
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Main Content - Mobile-first: narrower width matching Klook */}
           <div className="lg:col-span-3">
@@ -462,9 +462,16 @@ export default function BlogView({ blog }: BlogViewProps) {
                           )}
                           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 overflow-hidden">
                             {/* Mobile swipeable table container */}
-                            <div className="overflow-x-auto bg-white md:mx-0" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
-                              <div className="min-w-full inline-block">
-                                <table className="w-full border-collapse" style={{ minWidth: '600px' }}>
+                            <div 
+                              className="overflow-x-auto bg-white" 
+                              style={{ 
+                                WebkitOverflowScrolling: 'touch',
+                                scrollbarWidth: 'thin',
+                                overscrollBehaviorX: 'contain',
+                                touchAction: 'pan-x'
+                              }}
+                            >
+                              <table className="w-full border-collapse" style={{ minWidth: '600px' }}>
                                 <thead>
                                   <tr className="bg-yellow-100">
                                     <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠標題</th>
