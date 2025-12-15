@@ -488,13 +488,13 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     
                                     return (
                                       <tr key={tableRow.id || rowIndex} className="hover:bg-yellow-50 transition-colors">
-                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground font-medium">
+                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground font-medium break-words">
                                           {tableRow.table_title || '-'}
                                         </td>
-                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground">
+                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground break-words">
                                           {tableRow.table_description || '-'}
                                         </td>
-                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground">
+                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground break-words">
                                           {tableRow.table_date || '-'}
                                         </td>
                                         <td className="border border-yellow-200 px-3 py-2">
