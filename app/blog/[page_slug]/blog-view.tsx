@@ -694,6 +694,9 @@ export default function BlogView({ blog }: BlogViewProps) {
         </div>
       </div>
 
+      {/* Add bottom padding on mobile to account for sticky TOC button */}
+      <div className="lg:hidden h-14" />
+      
       <Footer />
       
       {/* Mobile TOC Sticky Button - Bottom Center (like Klook) */}
@@ -756,9 +759,6 @@ export default function BlogView({ blog }: BlogViewProps) {
           </div>
         </>
       )}
-      
-      {/* Add bottom padding on mobile to account for sticky TOC button */}
-      <div className="lg:hidden h-14" />
     </div>
   );
 }
