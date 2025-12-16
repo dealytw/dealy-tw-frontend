@@ -593,8 +593,8 @@ export default function BlogView({ blog }: BlogViewProps) {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1 lg:self-start lg:h-fit">
+          {/* Sidebar - Scrolls with page, stops at container bottom */}
+          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start lg:h-fit">
             <div className="space-y-6">
               {/* Related Articles */}
               <Card>
