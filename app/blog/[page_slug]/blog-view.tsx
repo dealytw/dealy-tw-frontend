@@ -752,9 +752,19 @@ export default function BlogView({ blog }: BlogViewProps) {
                     
                     return (
                       <div key={section.id || sectionIndex}>
-                        {/* Section Banner Image */}
+                        {/* Section h2 Heading */}
+                        {section.h2_title && (
+                          <h2 
+                            id={sectionSlug}
+                            className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8 break-words"
+                          >
+                            {section.h2_title}
+                          </h2>
+                        )}
+
+                        {/* Section Banner Image (under H2) */}
                         {section.banner_image && (
-                          <div className="my-8">
+                          <div className="my-6">
                             <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-muted">
                               <Image
                                 src={section.banner_image}
@@ -768,16 +778,6 @@ export default function BlogView({ blog }: BlogViewProps) {
                               />
                             </div>
                           </div>
-                        )}
-
-                        {/* Section h2 Heading */}
-                        {section.h2_title && (
-                          <h2 
-                            id={sectionSlug}
-                            className="text-2xl font-bold text-foreground mt-8 mb-4 scroll-mt-8 break-words"
-                          >
-                            {section.h2_title}
-                          </h2>
                         )}
 
                         {/* Section Blog Texts - Rich Text Content */}
