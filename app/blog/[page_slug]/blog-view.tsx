@@ -389,15 +389,18 @@ export default function BlogView({ blog }: BlogViewProps) {
         const dt = lastAnimTs == null ? 16 : Math.min(64, ts - lastAnimTs);
         lastAnimTs = ts;
 
-        // Exponential smoothing: more "chill" feel, but still responsive.
-        // Tau controls how quickly it catches up (lower = snappier).
-        const TAU_MS = 120;
-        const alpha = 1 - Math.exp(-dt / TAU_MS);
+        // Exponential smoothing: keep it smooth but more synchronized with scroll.
+        // Use adaptive tau: big gaps catch up faster, small gaps remain smooth.
+        const dist = Math.abs(targetTopPx - currentTopPx);
+        const TAU_MS = dist > 320 ? 45 : dist > 160 ? 70 : 90;
+        let alpha = 1 - Math.exp(-dt / TAU_MS);
+        // Clamp alpha to avoid sluggishness on fast scroll and avoid jitter on tiny moves
+        alpha = Math.min(0.65, Math.max(0.18, alpha));
 
         currentTopPx = currentTopPx + (targetTopPx - currentTopPx) * alpha;
 
         // Snap when close enough to prevent micro-jitter
-        if (Math.abs(targetTopPx - currentTopPx) < 0.5) {
+        if (Math.abs(targetTopPx - currentTopPx) < 0.35) {
           currentTopPx = targetTopPx;
         }
 
