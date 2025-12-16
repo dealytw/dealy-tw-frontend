@@ -951,7 +951,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                             <div
                                               key={c.id}
                                               id={`coupon-${c.id}`}
-                                              className="relative w-full bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 rounded-2xl overflow-hidden shadow-sm"
+                                              className="relative w-full bg-gradient-to-r from-pink-50 to-pink-100 border border-pink-200 rounded-2xl overflow-hidden shadow-sm"
                                             >
                                               <div className="flex h-full">
                                                 {/* Left content */}
@@ -990,7 +990,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                 </div>
 
                                                 {/* Right value + button */}
-                                                <div className="w-[132px] bg-gradient-to-b from-orange-100 to-pink-100 px-3 py-3 flex flex-col items-center justify-center gap-2">
+                                                <div className="w-[132px] bg-gradient-to-b from-pink-100 to-pink-200 px-3 py-3 flex flex-col items-center justify-center gap-2">
                                                   <div className="text-center w-full">
                                                     <div className="text-xl font-extrabold text-pink-600 leading-tight break-words">
                                                       {c.value || ''}
