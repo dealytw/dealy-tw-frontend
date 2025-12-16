@@ -496,7 +496,9 @@ export default function BlogView({ blog }: BlogViewProps) {
 
       {/* Standard responsive container - narrow desktop style on large screens */}
       <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
-        <div className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
+        {/* Important: don't use `items-start` on the grid here; it prevents the sidebar column from stretching to the row height,
+            which breaks sticky / smart-sticky bounds because the sidebar container becomes only as tall as its content. */}
+        <div className="grid lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3 min-w-0 overflow-x-hidden">
             {/* Article Header */}
