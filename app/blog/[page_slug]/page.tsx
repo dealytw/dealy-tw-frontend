@@ -119,6 +119,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
     // Each section can have its own blog_table array
     const blogId = blog.id || blog.attributes?.id;
     let sectionsWithTables: any[] = [];
+    let blogCouponComponents: any[] = [];
     
     if (blogId) {
       try {
@@ -143,6 +144,40 @@ export default async function BlogPage({ params }: BlogPageProps) {
       } catch (tableError) {
         console.error('[BLOG_TABLE_FETCH] Error fetching blog_table:', tableError);
         // Continue without table rather than failing the page
+      }
+    }
+
+    // Step 3: Fetch blog_coupon separately (repeatable component with relation+media)
+    // blog_coupon is a repeatable component: blog_coupon[] -> coupons[] + coupon_image
+    // Keep this separate to avoid nested populate issues breaking the main blog query.
+    if (blogId) {
+      try {
+        const couponQuery = qs({
+          "filters[id][$eq]": blogId,
+          "populate[blog_coupon][populate][coupons][fields][0]": "id",
+          "populate[blog_coupon][populate][coupons][fields][1]": "coupon_title",
+          "populate[blog_coupon][populate][coupons][fields][2]": "value",
+          "populate[blog_coupon][populate][coupons][fields][3]": "code",
+          "populate[blog_coupon][populate][coupons][fields][4]": "affiliate_link",
+          "populate[blog_coupon][populate][coupons][fields][5]": "coupon_type",
+          "populate[blog_coupon][populate][coupons][fields][6]": "expires_at",
+          // component-level image for the coupon block
+          "populate[blog_coupon][populate][coupon_image][fields][0]": "url",
+        });
+
+        const couponRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${couponQuery}`, {
+          revalidate: 60,
+          tag: `blog-coupon:${page_slug}`,
+        });
+
+        const blogWithCoupons = couponRes?.data?.[0];
+        blogCouponComponents =
+          blogWithCoupons?.blog_coupon ||
+          blogWithCoupons?.attributes?.blog_coupon ||
+          [];
+      } catch (couponError) {
+        console.error('[BLOG_COUPON_FETCH] Error fetching blog_coupon:', couponError);
+        // Continue without coupons rather than failing the page
       }
     }
 
@@ -220,49 +255,40 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
     // blog_table is already fetched separately above (Step 2)
 
-    // Extract blog_coupon - handle relation format (same pattern as related_merchants)
-    let blogCoupons: any[] = [];
-    if (blogData.blog_coupon) {
-      let couponsFromCMS = [];
-      if (Array.isArray(blogData.blog_coupon)) {
-        if (blogData.blog_coupon[0]?.data) {
-          couponsFromCMS = blogData.blog_coupon.map((item: any) => item.data || item);
-        } else {
-          couponsFromCMS = blogData.blog_coupon;
-        }
-      } else if (blogData.blog_coupon?.data) {
-        couponsFromCMS = blogData.blog_coupon.data;
-      }
-      
-      blogCoupons = couponsFromCMS.map((coupon: any) => {
-        const couponData = coupon.attributes || coupon;
-        const merchantData = couponData.merchant?.data || couponData.merchant;
-        const merchant = merchantData?.attributes || merchantData;
-        const logoUrl = merchant?.logo?.url || merchant?.logo?.attributes?.url || merchant?.attributes?.logo?.url;
-        
+    // Extract blog_coupon (repeatable component) from separate fetch:
+    // blog_coupon[] -> { coupon_image, coupons[] }
+    const blogCouponSections = (Array.isArray(blogCouponComponents) ? blogCouponComponents : []).map((block: any) => {
+      const blockData = block?.attributes || block;
+      const imgUrl =
+        blockData?.coupon_image?.url ||
+        blockData?.coupon_image?.attributes?.url ||
+        blockData?.attributes?.coupon_image?.url;
+
+      const couponsRaw =
+        blockData?.coupons?.data ||
+        blockData?.coupons ||
+        [];
+
+      const couponsArray = Array.isArray(couponsRaw) ? couponsRaw : [];
+
+      const coupons = couponsArray.map((c: any) => {
+        const cd = c?.attributes || c;
         return {
-          id: couponData.id || coupon.id,
-          coupon_title: couponData.coupon_title || '',
-          value: couponData.value || '',
-          code: couponData.code || '',
-          affiliate_link: couponData.affiliate_link || '',
-          coupon_type: couponData.coupon_type || '',
-          expires_at: couponData.expires_at || '',
-          priority: couponData.priority || 0,
-          display_count: couponData.display_count || 0,
-          coupon_status: couponData.coupon_status || 'active',
-          description: couponData.description || [],
-          editor_tips: couponData.editor_tips || [],
-          merchant: merchant ? {
-            id: merchant.id || merchantData.id,
-            name: merchant.merchant_name || merchantData.merchant_name || '',
-            slug: merchant.page_slug || merchantData.page_slug || '',
-            logo: logoUrl ? absolutizeMedia(logoUrl) : null,
-          } : null,
-          market: couponData.market?.key || couponData.market?.attributes?.key || null,
+          id: (cd?.id || c?.id || '').toString(),
+          coupon_title: cd?.coupon_title || '',
+          value: cd?.value || '',
+          code: cd?.code || '',
+          affiliate_link: cd?.affiliate_link || '',
+          coupon_type: cd?.coupon_type || (cd?.code ? 'promo_code' : 'coupon'),
+          expires_at: cd?.expires_at || '',
         };
-      });
-    }
+      }).filter((c: any) => c.id && (c.coupon_title || c.value || c.affiliate_link));
+
+      return {
+        coupon_image: imgUrl ? absolutizeMedia(imgUrl) : null,
+        coupons,
+      };
+    }).filter((s: any) => s.coupons?.length > 0);
 
     const transformedBlog = {
       id: blogData.id,
@@ -308,7 +334,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           blog_table: blogTable, // Each section has its own blog_table array
         };
       }),
-      blog_coupons: blogCoupons,
+      blog_coupon_sections: blogCouponSections,
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };

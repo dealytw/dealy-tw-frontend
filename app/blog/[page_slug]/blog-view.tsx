@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Facebook, Twitter, Share2, MessageCircle, X, List } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import CouponModal from "@/components/CouponModal";
 
 interface Blog {
   id: number;
@@ -54,6 +55,18 @@ interface Blog {
     createdAt: string;
     updatedAt: string;
     thumbnail: string | null;
+  }>;
+  blog_coupon_sections?: Array<{
+    coupon_image: string | null;
+    coupons: Array<{
+      id: string;
+      coupon_title: string;
+      value: string;
+      code?: string;
+      affiliate_link: string;
+      coupon_type?: "promo_code" | "coupon" | "discount" | string;
+      expires_at?: string;
+    }>;
   }>;
 }
 
@@ -129,6 +142,8 @@ export default function BlogView({ blog }: BlogViewProps) {
   const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const sidebarColRef = useRef<HTMLDivElement | null>(null);
   const sidebarInnerRef = useRef<HTMLDivElement | null>(null);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
 
   // Debug: Log blog_table data
   useEffect(() => {
@@ -155,6 +170,53 @@ export default function BlogView({ blog }: BlogViewProps) {
     }
   }, []);
 
+  // Open coupon modal from hash (#coupon-{id}) in the SAME way as shop page
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash.startsWith('#coupon-')) return;
+
+    const couponId = hash.replace('#coupon-', '');
+    const el = document.getElementById(`coupon-${couponId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Find coupon data from blog_coupon_sections
+    const allCoupons =
+      (blog.blog_coupon_sections || [])
+        .flatMap((s) => s.coupons || []);
+
+    const c = allCoupons.find((x) => x.id === couponId);
+    if (!c) return;
+
+    // Transform into CouponModal shape (merchant logo uses component-level coupon_image if available)
+    const sectionWithCoupon = (blog.blog_coupon_sections || []).find((s) => (s.coupons || []).some((x) => x.id === couponId));
+    const logo = sectionWithCoupon?.coupon_image || "/placeholder.svg";
+
+    const transformed = {
+      id: c.id,
+      code: c.code || undefined,
+      title: c.coupon_title || '',
+      description: '',
+      discount: c.value || '',
+      discountValue: c.value || '',
+      expiry: c.expires_at || '長期有效',
+      usageCount: 0,
+      steps: '',
+      terms: '',
+      affiliateLink: c.affiliate_link || '#',
+      coupon_type: (c.coupon_type || (c.code ? 'promo_code' : 'coupon')) as any,
+      merchant: {
+        name: 'Dealy',
+        logo,
+      }
+    };
+
+    setSelectedCoupon(transformed);
+    setIsCouponModalOpen(true);
+  }, [blog.blog_coupon_sections]);
+
   const handleGetPromoClick = (e: React.MouseEvent, tableRow: any, sectionIndex: number, rowIndex: number, landingpage: string) => {
     e.preventDefault();
     const buttonId = `promo-${sectionIndex}-${rowIndex}`;
@@ -179,6 +241,19 @@ export default function BlogView({ blog }: BlogViewProps) {
       if (landingpage) {
         window.open(landingpage, '_blank');
       }
+    }
+  };
+
+  // Blog coupon button behavior (same procedure as "normal coupon button modal"):
+  // - Open new tab to THIS blog page with #coupon-{id} (auto scroll + auto open modal)
+  // - Redirect current tab to affiliate link immediately
+  const handleBlogCouponClick = (coupon: any) => {
+    if (typeof window === 'undefined') return;
+    const baseUrl = window.location.href.split('#')[0];
+    const couponHashUrl = `${baseUrl}#coupon-${coupon.id}`;
+    window.open(couponHashUrl, '_blank', 'noopener,noreferrer');
+    if (coupon.affiliate_link && coupon.affiliate_link !== '#') {
+      window.location.href = coupon.affiliate_link;
     }
   };
 
@@ -823,6 +898,57 @@ export default function BlogView({ blog }: BlogViewProps) {
               )}
             </div>
 
+            {/* Blog Coupon Section (blog_coupon component) */}
+            {blog.blog_coupon_sections && blog.blog_coupon_sections.length > 0 && (
+              <div className="my-10 not-prose">
+                {blog.blog_coupon_sections.map((section, sectionIdx) => (
+                  <div key={sectionIdx} className="mb-8">
+                    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="flex gap-4 min-w-max">
+                        {section.coupons.map((c) => (
+                          <div
+                            key={c.id}
+                            id={`coupon-${c.id}`}
+                            className="w-[280px] sm:w-[320px] bg-white border border-orange-200 rounded-xl overflow-hidden shadow-sm"
+                          >
+                            <div className="p-4 flex items-start gap-3">
+                              {/* Image (component-level coupon_image) */}
+                              <div className="w-10 h-10 rounded-full bg-orange-50 border border-orange-100 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                {section.coupon_image ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={section.coupon_image} alt="coupon" className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-xs text-orange-400 font-semibold">券</span>
+                                )}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-semibold text-gray-900 leading-snug break-words">
+                                  {c.coupon_title || '-'}
+                                </div>
+                                <div className="mt-1 text-xs text-gray-600">
+                                  {c.value || ''}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="px-4 pb-4">
+                              <Button
+                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg h-9 text-sm"
+                                onClick={() => handleBlogCouponClick(c)}
+                              >
+                                領取
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Related Blog Posts */}
             {blog.related_blogs && blog.related_blogs.length > 0 && (
               <div className="my-12">
@@ -1012,6 +1138,9 @@ export default function BlogView({ blog }: BlogViewProps) {
           </div>
         </>
       )}
+
+      {/* Coupon Modal (opened via #coupon-{id} in new tab) */}
+      <CouponModal open={isCouponModalOpen} onOpenChange={setIsCouponModalOpen} coupon={selectedCoupon} />
     </div>
   );
 }
