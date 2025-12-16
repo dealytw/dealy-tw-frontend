@@ -103,6 +103,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[blog_sections][fields][1]": "blog_texts",
       "populate[blog_sections][fields][2]": "table_h3",
       "populate[blog_sections][fields][3]": "blog_texts_second",
+      "populate[blog_sections][fields][4]": "section_button_text",
+      "populate[blog_sections][fields][5]": "section_button_link",
       // Relations (basic fields only)
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
@@ -469,6 +471,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
             table_promo_code: tableItem.table_promo_code || '',
             landingpage: tableItem.landingpage || '',
             table_date: tableItem.table_date || '',
+            header_color: tableItem.header_color || '',
+            hover_color: tableItem.hover_color || '',
+            border_color: tableItem.border_color || '',
           };
         });
 
@@ -499,6 +504,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
           banner_image: bannerImageUrl, // Section banner image (first blog_images url)
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
           blog_texts_second: sectionData.blog_texts_second || [], // Rich text JSON (below table/coupon)
+          section_button_text: sectionData.section_button_text || '',
+          section_button_link: sectionData.section_button_link || '',
           blog_table: blogTable, // Each section has its own blog_table array
           blog_coupon_blocks: sectionCouponBlocks, // Each section can have coupon blocks
         };

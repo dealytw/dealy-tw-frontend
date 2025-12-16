@@ -25,6 +25,8 @@ interface Blog {
     banner_image: string | null;
     blog_texts: any; // Rich text blocks JSON
     blog_texts_second?: any; // Rich text blocks JSON (below table/coupon)
+    section_button_text?: string;
+    section_button_link?: string;
     blog_table?: Array<{  // Each section has its own blog_table
       id: number;
       table_h3: string;
@@ -33,6 +35,9 @@ interface Blog {
       table_promo_code: string;
       landingpage: string;
       table_date: string;
+      header_color?: string;
+      hover_color?: string;
+      border_color?: string;
     }>;
     blog_coupon_blocks?: Array<{
       coupon_image: string | null;
@@ -57,6 +62,9 @@ interface Blog {
     table_promo_code: string;
     landingpage: string;
     table_date: string;
+    header_color?: string;
+    hover_color?: string;
+    border_color?: string;
   }>;
   related_merchants: Array<{
     id: number;
@@ -798,6 +806,14 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
                           {(() => {
+                            const firstThemeRow =
+                              section.blog_table.find((r) => (r.header_color || r.hover_color || r.border_color)) ||
+                              section.blog_table[0];
+                            const headerColor = (firstThemeRow?.header_color || '').toString().trim();
+                            const hoverColor = (firstThemeRow?.hover_color || '').toString().trim();
+                            const borderColor = (firstThemeRow?.border_color || '').toString().trim();
+                            const hasCustomTheme = Boolean(headerColor || hoverColor || borderColor);
+
                             const showTitleCol = section.blog_table.some((r) => (r.table_title || '').toString().trim() !== '');
                             const showDescCol = section.blog_table.some((r) => (r.table_description || '').toString().trim() !== '');
                             const showDateCol = section.blog_table.some((r) => (r.table_date || '').toString().trim() !== '');
@@ -820,7 +836,22 @@ export default function BlogView({ blog }: BlogViewProps) {
                               {section.table_h3}
                             </h3>
                           )}
-                          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 overflow-hidden">
+                          <div
+                            className={[
+                              "rounded-lg overflow-hidden border",
+                              hasCustomTheme ? "" : "bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200",
+                            ].join(" ")}
+                            style={
+                              hasCustomTheme
+                                ? ({
+                                    // Use CSS vars so we can keep Tailwind structure while supporting HEX from CMS
+                                    ["--bt-header" as any]: headerColor || "#FEF3C7",
+                                    ["--bt-hover" as any]: hoverColor || "#FFFBEB",
+                                    ["--bt-border" as any]: borderColor || "#FDE68A",
+                                  } as React.CSSProperties)
+                                : undefined
+                            }
+                          >
                             {/* Horizontally scrollable table on mobile */}
                             <div 
                               className="overflow-x-auto bg-white" 
@@ -832,24 +863,24 @@ export default function BlogView({ blog }: BlogViewProps) {
                               {/* `prose` adds default margins to tables; remove to avoid white space above header */}
                               <table className={`w-full border-collapse ${minWidth} md:min-w-0 m-0`}>
                                 <thead>
-                                  <tr className="bg-yellow-100">
+                                  <tr className={hasCustomTheme ? "bg-[var(--bt-header)]" : "bg-yellow-100"}>
                                     {showTitleCol && (
-                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
                                         優惠標題
                                       </th>
                                     )}
                                     {showDescCol && (
-                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
                                         優惠門檻及內容
                                       </th>
                                     )}
                                     {showDateCol && (
-                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
                                         優惠期限
                                       </th>
                                     )}
                                     {showActionCol && (
-                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
                                         專屬頁面或優惠碼
                                       </th>
                                     )}
@@ -862,24 +893,30 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
                                     
                                     return (
-                                      <tr key={tableRow.id || rowIndex} className="hover:bg-yellow-50 transition-colors">
+                                      <tr
+                                        key={tableRow.id || rowIndex}
+                                        className={[
+                                          "transition-colors",
+                                          hasCustomTheme ? "hover:bg-[var(--bt-hover)]" : "hover:bg-yellow-50",
+                                        ].join(" ")}
+                                      >
                                         {showTitleCol && (
-                                          <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6">
+                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6"}>
                                             {tableRow.table_title || '-'}
                                           </td>
                                         )}
                                         {showDescCol && (
-                                          <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6">
+                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}>
                                             {tableRow.table_description || '-'}
                                           </td>
                                         )}
                                         {showDateCol && (
-                                          <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6">
+                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}>
                                             {tableRow.table_date || '-'}
                                           </td>
                                         )}
                                         {showActionCol && (
-                                          <td className="border border-yellow-200 px-4 py-3 first:pl-6">
+                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 first:pl-6" : "border border-yellow-200 px-4 py-3 first:pl-6"}>
                                             <div 
                                               id={buttonId}
                                               ref={(el) => { buttonRefs.current[buttonId] = el; }}
@@ -1086,6 +1123,22 @@ export default function BlogView({ blog }: BlogViewProps) {
                               overflowWrap: 'break-word',
                             }}
                           />
+                        )}
+
+                        {/* Section CTA Button */}
+                        {section.section_button_text && section.section_button_link && (
+                          <div className="mt-6 not-prose">
+                            <Link
+                              href={section.section_button_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <Button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold rounded-lg h-11 text-base">
+                                {section.section_button_text}
+                              </Button>
+                            </Link>
+                          </div>
                         )}
                       </div>
                     );
