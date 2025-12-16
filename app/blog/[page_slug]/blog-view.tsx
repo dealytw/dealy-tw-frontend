@@ -593,8 +593,8 @@ export default function BlogView({ blog }: BlogViewProps) {
             )}
           </div>
 
-          {/* Sidebar - Sticky on desktop */}
-          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          {/* Sidebar - Sticky on desktop with scrollable content */}
+          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start lg:h-fit lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
             <div className="space-y-6">
               {/* Related Articles */}
               <Card>
