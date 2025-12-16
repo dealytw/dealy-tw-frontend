@@ -1017,9 +1017,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                                             <div
                                               key={c.id}
                                               id={`coupon-${c.id}`}
-                                              className="relative flex gap-4 px-4 py-2 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
+                                              // Keep top padding tight (reduce space above tag), but make the card taller via bottom padding.
+                                              className="relative flex gap-4 px-4 pt-2 pb-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
                                             >
-                                              <div className="relative w-44 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                                              <div className="relative w-44 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                                                 <Image
                                                   src={c._coupon_image || "/placeholder.svg"}
                                                   alt={c.coupon_title || "coupon"}
