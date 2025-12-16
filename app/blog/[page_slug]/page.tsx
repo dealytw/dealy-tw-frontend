@@ -154,18 +154,17 @@ export default async function BlogPage({ params }: BlogPageProps) {
       try {
         const couponQuery = qs({
           "filters[id][$eq]": blogId,
-          "populate[blog_coupon][populate][coupons][fields][0]": "id",
-          "populate[blog_coupon][populate][coupons][fields][1]": "coupon_title",
-          "populate[blog_coupon][populate][coupons][fields][2]": "value",
-          "populate[blog_coupon][populate][coupons][fields][3]": "code",
-          "populate[blog_coupon][populate][coupons][fields][4]": "affiliate_link",
-          "populate[blog_coupon][populate][coupons][fields][5]": "coupon_type",
-          "populate[blog_coupon][populate][coupons][fields][6]": "expires_at",
-          // component-level image for the coupon block
-          "populate[blog_coupon][populate][coupon_image][fields][0]": "url",
+          // More robust populate for Strapi v5 repeatable component + nested relation/media
+          // (We previously saw nested populates be fragile; this keeps it simple and resilient.)
+          "populate[blog_coupon]": "*",
+          "populate[blog_coupon][populate][coupons]": "*",
+          "populate[blog_coupon][populate][coupon_image]": "*",
         });
 
-        const couponRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${couponQuery}`, {
+        const fetchUrl = `/api/blogs?${couponQuery}`;
+        console.log('[BLOG_COUPON_FETCH] Fetch URL:', fetchUrl);
+
+        const couponRes = await strapiFetch<{ data: any[] }>(fetchUrl, {
           revalidate: 60,
           tag: `blog-coupon:${page_slug}`,
         });
@@ -175,6 +174,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           blogWithCoupons?.blog_coupon ||
           blogWithCoupons?.attributes?.blog_coupon ||
           [];
+        console.log('[BLOG_COUPON_FETCH] Found coupon blocks:', Array.isArray(blogCouponComponents) ? blogCouponComponents.length : 0);
       } catch (couponError) {
         console.error('[BLOG_COUPON_FETCH] Error fetching blog_coupon:', couponError);
         // Continue without coupons rather than failing the page
@@ -262,6 +262,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
       const imgUrl =
         blockData?.coupon_image?.url ||
         blockData?.coupon_image?.attributes?.url ||
+        blockData?.coupon_image?.data?.attributes?.url ||
+        blockData?.coupon_image?.data?.url ||
         blockData?.attributes?.coupon_image?.url;
 
       const couponsRaw =
@@ -289,6 +291,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         coupons,
       };
     }).filter((s: any) => s.coupons?.length > 0);
+    console.log('[BLOG_COUPON_FETCH] Total coupons mapped:', blogCouponSections.reduce((n: number, s: any) => n + (s.coupons?.length || 0), 0));
 
     const transformedBlog = {
       id: blogData.id,
