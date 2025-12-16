@@ -290,12 +290,23 @@ export default function BlogView({ blog }: BlogViewProps) {
     let rafPending = false;
     let mode: "short" | "tall" | null = null;
     let currentTopDoc: number | null = null; // inner top in document coordinates (for tall mode)
+    let lastAppliedTopPx: number | null = null;
+
+    // Cached measurements (avoid forcing layout on every scroll frame)
+    let colTopDoc = 0;
+    let colBottomDoc = 0;
+    let innerH = 0;
+    let availableH = 0;
+    let minTopDoc = 0;
+    let maxTopDoc = 0;
+    let metricsReady = false;
 
     const clear = () => {
       inner.style.position = "";
       inner.style.top = "";
       inner.style.left = "";
       inner.style.width = "";
+      lastAppliedTopPx = null;
     };
 
     const applyShort = () => {
@@ -321,28 +332,50 @@ export default function BlogView({ blog }: BlogViewProps) {
 
     const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
+    const recomputeMetrics = () => {
+      if (!mql.matches) return;
+
+      col.style.position = "relative";
+
+      const scrollY = window.scrollY;
+      const viewportH = window.innerHeight;
+
+      // These doc-coordinates are invariant while scrolling; only change on resize/layout changes.
+      const rect = col.getBoundingClientRect();
+      colTopDoc = rect.top + scrollY;
+      colBottomDoc = rect.bottom + scrollY;
+
+      innerH = inner.offsetHeight;
+      availableH = viewportH - TOP_OFFSET - BOTTOM_OFFSET;
+
+      minTopDoc = colTopDoc;
+      maxTopDoc = colBottomDoc - innerH;
+      metricsReady = true;
+    };
+
+    const applyTopPx = (topPx: number) => {
+      // Only write if it actually changes (reduces paint/jank on fast scroll)
+      if (lastAppliedTopPx == null || Math.abs(lastAppliedTopPx - topPx) > 0.5) {
+        inner.style.top = `${topPx}px`;
+        lastAppliedTopPx = topPx;
+      }
+    };
+
     const update = () => {
       if (!mql.matches) {
         mode = null;
         currentTopDoc = null;
+        metricsReady = false;
         clear();
         col.style.position = "";
         return;
       }
 
-      col.style.position = "relative";
-
       const viewportH = window.innerHeight;
       const scrollY = window.scrollY;
       const directionDown = scrollY > lastScrollY;
       lastScrollY = scrollY;
-
-      const colRect = col.getBoundingClientRect();
-      const colTopDoc = colRect.top + scrollY;
-      const colBottomDoc = colRect.bottom + scrollY;
-
-      const innerH = inner.offsetHeight;
-      const availableH = viewportH - TOP_OFFSET - BOTTOM_OFFSET;
+      if (!metricsReady) recomputeMetrics();
 
       // Fits in viewport => simple sticky-top
       if (innerH <= availableH) {
@@ -359,12 +392,10 @@ export default function BlogView({ blog }: BlogViewProps) {
         applyTall();
       }
 
-      const minTopDoc = colTopDoc;
-      const maxTopDoc = colBottomDoc - innerH;
       if (maxTopDoc <= minTopDoc) {
         // Defensive: if layout is weird, just pin to top of column
         currentTopDoc = minTopDoc;
-        inner.style.top = "0px";
+        applyTopPx(0);
         return;
       }
 
@@ -387,7 +418,7 @@ export default function BlogView({ blog }: BlogViewProps) {
       }
 
       currentTopDoc = clamp(currentTopDoc, minTopDoc, maxTopDoc);
-      inner.style.top = `${currentTopDoc - colTopDoc}px`;
+      applyTopPx(currentTopDoc - colTopDoc);
     };
 
     const onScrollOrResize = () => {
@@ -399,10 +430,24 @@ export default function BlogView({ blog }: BlogViewProps) {
       });
     };
 
+    // Observe size changes to keep metrics accurate without recalculating on every scroll
+    const ro = new ResizeObserver(() => {
+      metricsReady = false;
+      // Keep currentTopDoc stable but recompute bounds
+      onScrollOrResize();
+    });
+    ro.observe(col);
+    ro.observe(inner);
+
     // init + listeners
+    metricsReady = false;
     update();
     window.addEventListener("scroll", onScrollOrResize, { passive: true });
-    window.addEventListener("resize", onScrollOrResize, { passive: true });
+    const onResize = () => {
+      metricsReady = false;
+      onScrollOrResize();
+    };
+    window.addEventListener("resize", onResize, { passive: true });
 
     const onMql = () => {
       // reset + re-measure when breakpoint changes
@@ -415,7 +460,8 @@ export default function BlogView({ blog }: BlogViewProps) {
 
     return () => {
       window.removeEventListener("scroll", onScrollOrResize);
-      window.removeEventListener("resize", onScrollOrResize);
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
       mql.removeEventListener?.("change", onMql);
       clear();
       col.style.position = "";
