@@ -871,18 +871,14 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {section.blog_coupon_blocks && section.blog_coupon_blocks.length > 0 && (
                           <div className="my-6 not-prose">
                             {section.blog_coupon_blocks.map((block, blockIdx) => (
-                              <div
-                                key={blockIdx}
-                                className="overflow-x-auto lg:overflow-visible"
-                                style={{ WebkitOverflowScrolling: 'touch' }}
-                              >
-                                {/* Mobile: horizontal swipe. Desktop: 3 columns in one row */}
-                                <div className="flex gap-3 min-w-max py-2 lg:min-w-0 lg:grid lg:grid-cols-3 lg:gap-4">
+                              <div key={blockIdx} className="py-2">
+                                {/* Wrap layout: up to 3 per row on desktop, overflow goes to next row */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                   {block.coupons.map((c) => (
                                     <div
                                       key={c.id}
                                       id={`coupon-${c.id}`}
-                                      className="relative w-[260px] sm:w-[280px] lg:w-auto bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
+                                      className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
                                     >
                                       {/* Ticket cut-outs */}
                                       <div className="absolute left-[84px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
