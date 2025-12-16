@@ -951,14 +951,14 @@ export default function BlogView({ blog }: BlogViewProps) {
                                             <div
                                               key={c.id}
                                               id={`coupon-${c.id}`}
-                                              className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
+                                              className="relative w-full bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 rounded-2xl overflow-hidden shadow-sm"
                                             >
                                               <div className="flex h-full">
                                                 {/* Left content */}
                                                 <div className="flex-1 px-5 py-3 min-w-0">
                                                   {/* Short style: use coupon_tag as the category tag (no hardcoded label) */}
                                                   {c._coupon_tag ? (
-                                                    <Badge className="mb-0.5 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none inline-flex w-fit">
+                                                    <Badge className="mb-0.5 bg-pink-100 text-pink-700 hover:bg-pink-100 text-[10px] px-2 py-0.5 rounded-full leading-none inline-flex w-fit">
                                                       {c._coupon_tag}
                                                     </Badge>
                                                   ) : null}
@@ -973,10 +973,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                       <img
                                                         src={c._coupon_image}
                                                         alt="coupon"
-                                                        className="w-5 h-5 rounded-full object-cover border border-orange-200 bg-white"
+                                                        className="w-5 h-5 rounded-full object-cover border border-pink-200 bg-white"
                                                       />
                                                     ) : (
-                                                      <span className="w-5 h-5 rounded-full bg-white border border-orange-200 flex items-center justify-center text-[10px] text-orange-400">
+                                                      <span className="w-5 h-5 rounded-full bg-white border border-pink-200 flex items-center justify-center text-[10px] text-pink-500">
                                                         券
                                                       </span>
                                                     )}
@@ -986,13 +986,13 @@ export default function BlogView({ blog }: BlogViewProps) {
 
                                                 {/* Dashed divider */}
                                                 <div className="relative w-px bg-transparent">
-                                                  <div className="absolute inset-y-4 left-0 border-l border-dashed border-orange-200" />
+                                                  <div className="absolute inset-y-4 left-0 border-l border-dashed border-pink-200" />
                                                 </div>
 
                                                 {/* Right value + button */}
-                                                <div className="w-[132px] bg-[#ffedd5] px-3 py-3 flex flex-col items-center justify-center gap-2">
+                                                <div className="w-[132px] bg-gradient-to-b from-orange-100 to-pink-100 px-3 py-3 flex flex-col items-center justify-center gap-2">
                                                   <div className="text-center w-full">
-                                                    <div className="text-xl font-extrabold text-orange-600 leading-tight break-words">
+                                                    <div className="text-xl font-extrabold text-pink-600 leading-tight break-words">
                                                       {c.value || ''}
                                                     </div>
                                                     {/* Only show min spend if we can derive it from title (no fabrication) */}
@@ -1000,7 +1000,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                       const ms = extractMinSpendFromTitle(c.coupon_title);
                                                       if (!ms) return null;
                                                       return (
-                                                        <div className="mt-1 text-[11px] text-orange-700/80">
+                                                        <div className="mt-1 text-[11px] text-pink-700/80">
                                                           最低消費：{ms}
                                                         </div>
                                                       );
@@ -1008,7 +1008,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                   </div>
 
                                                   <Button
-                                                    className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-9 px-5 text-sm"
+                                                    className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold rounded-full h-9 px-5 text-sm"
                                                     onClick={() => handleBlogCouponClick(c)}
                                                   >
                                                     領取
