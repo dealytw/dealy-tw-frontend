@@ -914,7 +914,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         <div className="text-xs text-orange-600 font-semibold mb-2">
                                           適用於全部活動
                                         </div>
-                                        <div className="text-[14px] font-semibold text-gray-900 leading-snug break-words">
+                                        <div className="text-[14px] font-semibold text-gray-900 leading-snug break-words line-clamp-2">
                                           {c.coupon_title || '-'}
                                         </div>
 
@@ -942,7 +942,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                       </div>
 
                                       {/* Right value + button */}
-                                      <div className="w-[160px] bg-[#ffedd5] px-4 py-4 flex flex-col items-center justify-center gap-2">
+                                      <div className="w-[132px] bg-[#ffedd5] px-3 py-4 flex flex-col items-center justify-center gap-2">
                                         <div className="text-center w-full">
                                           <div className="text-xl font-extrabold text-orange-600 leading-tight break-words">
                                             {c.value || ''}
@@ -960,7 +960,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         </div>
 
                                         <Button
-                                          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-9 px-6 text-sm"
+                                          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-9 px-5 text-sm"
                                           onClick={() => handleBlogCouponClick(c)}
                                         >
                                           領取
