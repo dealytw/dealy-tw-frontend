@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
 
-export const revalidate = 86400 // ISR - revalidate every 24 hours
+// Long cache: sitemaps are heavily crawled; keep edge-cached to reduce Strapi API calls.
+export const revalidate = 604800 // 7 days
+
+const SITEMAP_CACHE_CONTROL = 'public, s-maxage=604800, stale-while-revalidate=86400'
 
 export async function GET() {
   const domainConfig = getDomainConfigServer()
@@ -28,6 +31,7 @@ ${sitemaps.map(url => `  <sitemap>
   return new NextResponse(xml, {
     headers: {
       'Content-Type': 'application/xml',
+      'Cache-Control': SITEMAP_CACHE_CONTROL,
     },
   })
 }

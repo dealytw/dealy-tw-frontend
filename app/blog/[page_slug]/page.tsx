@@ -26,10 +26,7 @@ import BlogView from './blog-view';
 
 // Revalidate once per day
 export const revalidate = 86400;
-// Changed to force-dynamic to test if static generation is causing 404
-// Repeatable components with nested populate may timeout during build-time static generation
-// force-dynamic renders on-demand, avoiding build-time route generation issues
-export const dynamic = 'force-dynamic'; // Test: Render on-demand instead of static generation
+// Content page: use ISR via `export const revalidate` (do not force SSR)
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ page_slug: string }> }) {
