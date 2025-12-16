@@ -821,9 +821,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                             const showTitleCol = section.blog_table.some((r) => (r.table_title || '').toString().trim() !== '');
                             const showDescCol = section.blog_table.some((r) => (r.table_description || '').toString().trim() !== '');
                             const showDateCol = section.blog_table.some((r) => (r.table_date || '').toString().trim() !== '');
+                            // Only show the action column if there is at least one real landing page link.
+                            // (If the table has no links, showing a whole column of '-' is noisy.)
                             const showActionCol = section.blog_table.some((r) =>
-                              ((r.landingpage || '').toString().trim() !== '') ||
-                              ((r.table_promo_code || '').toString().trim() !== '')
+                              ((r.landingpage || '').toString().trim() !== '')
                             );
 
                             // If a column has no data at all, hide it.
@@ -914,7 +915,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                   獲取優惠
                                                 </Button>
                                               ) : (
-                                                <span className="text-muted-foreground text-sm">-</span>
+                                                <span className="text-muted-foreground text-sm"></span>
                                               )}
                                               {isRevealed && hasPromoCode && (
                                                 <Badge variant="secondary" className="font-mono text-[11px]">
