@@ -17,6 +17,7 @@ interface Blog {
   page_slug: string;
   createdAt: string;
   updatedAt: string;
+  intro_text?: string;
   sections: Array<{
     id: number;
     h2_title: string;
@@ -733,6 +734,13 @@ export default function BlogView({ blog }: BlogViewProps) {
 
             {/* Article Content - Dummy Content for Design */}
             <div className="prose prose-lg max-w-none min-w-0">
+
+              {/* Intro paragraph (blog.intro_text) - above the first H2 */}
+              {blog.intro_text && blog.intro_text.trim() !== '' && (
+                <p className="text-foreground leading-normal mb-6">
+                  {blog.intro_text}
+                </p>
+              )}
 
               {/* Blog Sections - Mapped from CMS */}
               {blog.sections && blog.sections.length > 0 ? (

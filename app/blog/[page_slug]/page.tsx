@@ -98,6 +98,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "fields[2]": "page_slug",
       "fields[3]": "createdAt",
       "fields[4]": "updatedAt",
+      "fields[5]": "intro_text",
       // Step 1: Add blog_sections text fields only (works in main query)
       "populate[blog_sections][fields][0]": "h2_blog_section_title",
       "populate[blog_sections][fields][1]": "blog_texts",
@@ -247,6 +248,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blog.attributes?.page_slug || blog.page_slug || page_slug,
       createdAt: blog.attributes?.createdAt || blog.createdAt,
       updatedAt: blog.attributes?.updatedAt || blog.updatedAt,
+      intro_text: blog.attributes?.intro_text || blog.intro_text || '',
       blog_sections: blog.blog_sections || blog.attributes?.blog_sections,
       blog_table: blog.blog_table || blog.attributes?.blog_table,
       blog_coupon: blog.blog_coupon || blog.attributes?.blog_coupon,
@@ -442,6 +444,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       page_slug: blogData.page_slug,
       createdAt: blogData.createdAt || new Date().toISOString(),
       updatedAt: blogData.updatedAt || new Date().toISOString(),
+      intro_text: blogData.intro_text || '',
       sections: (blogData.blog_sections || []).map((section: any, index: number) => {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
