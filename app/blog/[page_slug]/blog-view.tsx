@@ -1017,11 +1017,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                                             <div
                                               key={c.id}
                                               id={`coupon-${c.id}`}
-                                              // Keep top padding tight (reduce space above tag), but make the card taller via bottom padding.
-                                              // Keep the tag close to the top (smaller pt), but keep the card tall via larger pb.
-                                              className="relative flex gap-4 px-4 pt-1 pb-5 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
+                                              className="relative flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
                                             >
-                                              <div className="relative w-44 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                                              <div className="relative w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                                                 <Image
                                                   src={c._coupon_image || "/placeholder.svg"}
                                                   alt={c.coupon_title || "coupon"}
@@ -1031,11 +1029,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                 />
                                               </div>
 
-                                              {/* Compact layout: avoid justify-between which creates extra vertical whitespace */}
-                                              <div className="flex-1 min-w-0 flex flex-col gap-2">
-                                                <div className="min-w-0">
+                                              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                                <div>
                                                   {c._coupon_tag ? (
-                                                    <Badge className="mb-0 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none inline-flex w-fit">
+                                                    <Badge className="mb-2 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none inline-flex w-fit">
                                                       {c._coupon_tag}
                                                     </Badge>
                                                   ) : null}
@@ -1044,7 +1041,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                   </div>
                                                 </div>
 
-                                                <div className="flex items-end justify-between gap-3">
+                                                <div className="mt-3 flex items-end justify-between gap-3">
                                                   <div className="text-sm text-muted-foreground font-medium">
                                                     {c.value || ''}
                                                   </div>
