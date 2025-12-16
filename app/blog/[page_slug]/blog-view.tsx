@@ -262,9 +262,17 @@ export default function BlogView({ blog }: BlogViewProps) {
 
   /**
    * Smart sticky sidebar (desktop only)
-   * - Scrolls normally with the page until the sidebar would leave white space beneath (its bottom goes above viewport bottom)
-   * - Then "sticks" (pins) so the sidebar stays visible (no disappearing), without React state toggling (prevents flicker)
-   * - If sidebar fits in viewport, we just use CSS sticky-top.
+   * Goal (your spec):
+   * - Main content + sidebar scroll normally in parallel
+   * - When user has "reached the end of the sidebar" (its bottom would start disappearing / leave white space),
+   *   keep it visible (stop moving further) without flicker.
+   *
+   * Implementation:
+   * - Desktop only (lg)
+   * - If sidebar fits in viewport: simple CSS sticky-top
+   * - If sidebar is taller than viewport: keep sidebar inner ABSOLUTE inside a full-height column and
+   *   adjust its `top` ONLY when needed to keep either the bottom (scrolling down) or top (scrolling up)
+   *   within the viewport offsets. No fixed/absolute mode switching => no flicker.
    */
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -274,162 +282,112 @@ export default function BlogView({ blog }: BlogViewProps) {
     if (!col || !inner) return;
 
     const mql = window.matchMedia("(min-width: 1024px)"); // Tailwind lg
-    if (!mql.matches) return;
 
-    const TOP_OFFSET = 96; // lg:top-24 (header spacing)
-    const BOTTOM_OFFSET = 24; // a little breathing room at bottom
+    const TOP_OFFSET = 96; // header spacing (top-24)
+    const BOTTOM_OFFSET = 24; // breathing room
 
-    type Mode = "css-sticky-top" | "absolute" | "fixed-top" | "fixed-bottom";
-    let mode: Mode = "absolute";
     let lastScrollY = window.scrollY;
     let rafPending = false;
+    let mode: "short" | "tall" | null = null;
+    let currentTopDoc: number | null = null; // inner top in document coordinates (for tall mode)
 
-    // absolute top within the column (px)
-    let absTop = 0;
-
-    const clearPositioning = () => {
+    const clear = () => {
       inner.style.position = "";
       inner.style.top = "";
-      inner.style.bottom = "";
       inner.style.left = "";
       inner.style.width = "";
-      inner.style.transform = "";
     };
 
-    const setCssStickyTop = () => {
-      if (mode === "css-sticky-top") return;
-      mode = "css-sticky-top";
-      clearPositioning();
+    const applyShort = () => {
+      if (mode === "short") return;
+      mode = "short";
+      currentTopDoc = null;
+      clear();
       inner.style.position = "sticky";
       inner.style.top = `${TOP_OFFSET}px`;
+      inner.style.width = "100%";
     };
 
-    const setAbsolute = (nextAbsTop: number) => {
-      const clamped = Math.max(0, nextAbsTop);
-      if (mode !== "absolute" || Math.abs(absTop - clamped) > 0.5) {
-        mode = "absolute";
-        absTop = clamped;
-        clearPositioning();
+    const applyTall = (naturalTopDoc?: number) => {
+      if (mode !== "tall") {
+        mode = "tall";
+        clear();
         inner.style.position = "absolute";
-        inner.style.top = `${absTop}px`;
         inner.style.left = "0px";
         inner.style.width = "100%";
       }
+      if (naturalTopDoc != null) currentTopDoc = naturalTopDoc;
     };
 
-    const setFixedTop = (colRect: DOMRect) => {
-      if (mode === "fixed-top") return;
-      mode = "fixed-top";
-      clearPositioning();
-      inner.style.position = "fixed";
-      inner.style.top = `${TOP_OFFSET}px`;
-      inner.style.left = `${colRect.left}px`;
-      inner.style.width = `${colRect.width}px`;
-    };
+    const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
-    const setFixedBottom = (colRect: DOMRect) => {
-      if (mode === "fixed-bottom") return;
-      mode = "fixed-bottom";
-      clearPositioning();
-      inner.style.position = "fixed";
-      inner.style.bottom = `${BOTTOM_OFFSET}px`;
-      inner.style.left = `${colRect.left}px`;
-      inner.style.width = `${colRect.width}px`;
-    };
+    const update = () => {
+      if (!mql.matches) {
+        mode = null;
+        currentTopDoc = null;
+        clear();
+        col.style.position = "";
+        return;
+      }
 
-    const measureAndUpdate = () => {
+      col.style.position = "relative";
+
       const viewportH = window.innerHeight;
       const scrollY = window.scrollY;
       const directionDown = scrollY > lastScrollY;
       lastScrollY = scrollY;
 
-      // Ensure column provides containing block for absolute positioning
-      col.style.position = "relative";
-
       const colRect = col.getBoundingClientRect();
       const colTopDoc = colRect.top + scrollY;
       const colBottomDoc = colRect.bottom + scrollY;
 
-      // Use scrollHeight for content height; offsetHeight for rendered box
       const innerH = inner.offsetHeight;
       const availableH = viewportH - TOP_OFFSET - BOTTOM_OFFSET;
 
-      // If it fits, classic sticky-top is perfect and flicker-free
+      // Fits in viewport => simple sticky-top
       if (innerH <= availableH) {
-        setCssStickyTop();
+        applyShort();
         return;
       }
 
-      // Otherwise, "smart" behavior:
-      // We keep it absolute in the column until it would start leaving white space beneath,
-      // then pin it to bottom on scroll-down. On scroll-up, pin to top when top would leave space above.
-      const maxAbsTop = Math.max(0, (colBottomDoc - colTopDoc) - innerH);
-
-      // Current top in document coords based on mode
-      let currentTopDoc: number;
-      if (mode === "fixed-top") {
-        currentTopDoc = scrollY + TOP_OFFSET;
-      } else if (mode === "fixed-bottom") {
-        currentTopDoc = scrollY + viewportH - BOTTOM_OFFSET - innerH;
-      } else if (mode === "css-sticky-top") {
-        // Shouldn't happen in tall mode, but handle anyway
-        currentTopDoc = scrollY + TOP_OFFSET;
+      // Tall sidebar => absolute + adjust `top` as needed
+      if (mode !== "tall") {
+        // capture natural position before we take it out of flow
+        const naturalTop = inner.getBoundingClientRect().top + scrollY;
+        applyTall(naturalTop);
       } else {
-        currentTopDoc = colTopDoc + absTop;
+        applyTall();
       }
-      let currentBottomDoc = currentTopDoc + innerH;
+
+      const minTopDoc = colTopDoc;
+      const maxTopDoc = colBottomDoc - innerH;
+      if (maxTopDoc <= minTopDoc) {
+        // Defensive: if layout is weird, just pin to top of column
+        currentTopDoc = minTopDoc;
+        inner.style.top = "0px";
+        return;
+      }
+
+      if (currentTopDoc == null) currentTopDoc = clamp(colTopDoc, minTopDoc, maxTopDoc);
 
       const viewportTopDoc = scrollY + TOP_OFFSET;
       const viewportBottomDoc = scrollY + viewportH - BOTTOM_OFFSET;
 
-      // Clamp within column boundaries
-      const clampToColumn = (topDoc: number) => {
-        const clampedTopDoc = Math.min(Math.max(topDoc, colTopDoc), colTopDoc + maxAbsTop);
-        return clampedTopDoc;
-      };
-
-      // If column ends, lock to bottom of column (never float past)
-      if (currentTopDoc > colTopDoc + maxAbsTop) {
-        setAbsolute(maxAbsTop);
-        return;
-      }
-      if (currentTopDoc < colTopDoc) {
-        setAbsolute(0);
-        return;
-      }
-
+      // Core rule:
+      // - scrolling DOWN: if bottom is above viewportBottom => move down so bottom aligns to viewportBottom
+      // - scrolling UP: if top is below viewportTop => move up so top aligns to viewportTop
       if (directionDown) {
-        // When scrolling down, once the sidebar bottom would go ABOVE the viewport bottom (white space appears below),
-        // pin it to the bottom so it stays visible.
-        if (currentBottomDoc <= viewportBottomDoc + 0.5) {
-          // But don't pin past the column bottom
-          const fixedBottomTopDoc = scrollY + viewportH - BOTTOM_OFFSET - innerH;
-          const clampedTopDoc = clampToColumn(fixedBottomTopDoc);
-          if (Math.abs(clampedTopDoc - fixedBottomTopDoc) > 0.5) {
-            setAbsolute(clampedTopDoc - colTopDoc);
-          } else {
-            setFixedBottom(colRect);
-          }
-        } else {
-          // Keep absolute so user can scroll through the sidebar content
-          // absTop remains as-is (natural)
-          setAbsolute(Math.min(Math.max(absTop, 0), maxAbsTop));
+        if (currentTopDoc + innerH < viewportBottomDoc) {
+          currentTopDoc = viewportBottomDoc - innerH;
         }
       } else {
-        // Scrolling up: once the sidebar top would go BELOW the viewport top (white space appears above),
-        // pin it to the top so user can scroll back to upper parts smoothly.
-        if (currentTopDoc >= viewportTopDoc - 0.5) {
-          const fixedTopTopDoc = scrollY + TOP_OFFSET;
-          const clampedTopDoc = clampToColumn(fixedTopTopDoc);
-          if (Math.abs(clampedTopDoc - fixedTopTopDoc) > 0.5) {
-            setAbsolute(clampedTopDoc - colTopDoc);
-          } else {
-            setFixedTop(colRect);
-          }
-        } else {
-          setAbsolute(Math.min(Math.max(absTop, 0), maxAbsTop));
+        if (currentTopDoc > viewportTopDoc) {
+          currentTopDoc = viewportTopDoc;
         }
       }
+
+      currentTopDoc = clamp(currentTopDoc, minTopDoc, maxTopDoc);
+      inner.style.top = `${currentTopDoc - colTopDoc}px`;
     };
 
     const onScrollOrResize = () => {
@@ -437,35 +395,21 @@ export default function BlogView({ blog }: BlogViewProps) {
       rafPending = true;
       window.requestAnimationFrame(() => {
         rafPending = false;
-        measureAndUpdate();
+        update();
       });
     };
 
-    // Initialize absolute top to current layout position
-    const init = () => {
-      // Start from natural flow position:
-      clearPositioning();
-      inner.style.position = "relative";
-      inner.style.top = "0px";
-      inner.style.left = "0px";
-      inner.style.width = "100%";
-      absTop = 0;
-      mode = "absolute";
-      measureAndUpdate();
-    };
-
-    init();
+    // init + listeners
+    update();
     window.addEventListener("scroll", onScrollOrResize, { passive: true });
     window.addEventListener("resize", onScrollOrResize, { passive: true });
 
-    // If breakpoint changes, reset
     const onMql = () => {
-      if (!mql.matches) {
-        clearPositioning();
-        col.style.position = "";
-        return;
-      }
-      init();
+      // reset + re-measure when breakpoint changes
+      mode = null;
+      currentTopDoc = null;
+      clear();
+      update();
     };
     mql.addEventListener?.("change", onMql);
 
@@ -473,7 +417,7 @@ export default function BlogView({ blog }: BlogViewProps) {
       window.removeEventListener("scroll", onScrollOrResize);
       window.removeEventListener("resize", onScrollOrResize);
       mql.removeEventListener?.("change", onMql);
-      clearPositioning();
+      clear();
       col.style.position = "";
     };
   }, []);
@@ -814,7 +758,7 @@ export default function BlogView({ blog }: BlogViewProps) {
           </div>
 
           {/* Sidebar (smart sticky on desktop) */}
-          <div ref={sidebarColRef} className="lg:col-span-1 lg:self-start lg:h-fit">
+          <div ref={sidebarColRef} className="lg:col-span-1 min-w-0">
             <div ref={sidebarInnerRef}>
             <div className="space-y-6">
               {/* Related Articles */}
