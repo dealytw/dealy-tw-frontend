@@ -121,6 +121,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
     const blogId = blog.id || blog.attributes?.id;
     let sectionsWithTables: any[] = [];
     let sectionsWithCoupons: any[] = [];
+    let sectionsWithImages: any[] = [];
     
     if (blogId) {
       try {
@@ -145,6 +146,34 @@ export default async function BlogPage({ params }: BlogPageProps) {
       } catch (tableError) {
         console.error('[BLOG_TABLE_FETCH] Error fetching blog_table:', tableError);
         // Continue without table rather than failing the page
+      }
+    }
+
+    // Step 2.5: Fetch blog_images (media) from within blog_sections
+    // Keep separate to avoid nested media populate causing route/Strapi issues.
+    if (blogId) {
+      try {
+        const queryString = qs({
+          "filters[id][$eq]": blogId,
+          // Media: only request url (avoid `*` which can expand invalid keys like `.related`)
+          "populate[blog_sections][populate][blog_images][fields][0]": "url",
+        });
+        const fetchUrl = `/api/blogs?${queryString}`;
+        console.log('[BLOG_IMAGES_FETCH] Fetch URL:', fetchUrl);
+
+        const imageRes = await strapiFetch<{ data: any[] }>(fetchUrl, {
+          revalidate: 60,
+          tag: `blog-images:${page_slug}`,
+        });
+
+        const blogWithImages = imageRes?.data?.[0];
+        if (blogWithImages) {
+          sectionsWithImages = blogWithImages.blog_sections || blogWithImages.attributes?.blog_sections || [];
+          console.log('[BLOG_IMAGES_FETCH] Found sections with images:', sectionsWithImages.length);
+        }
+      } catch (imageError) {
+        console.error('[BLOG_IMAGES_FETCH] Error fetching blog_images:', imageError);
+        // Continue without images rather than failing the page
       }
     }
 
@@ -342,12 +371,26 @@ export default async function BlogPage({ params }: BlogPageProps) {
         if (sectionsWithCoupons.length > index) {
           sectionCouponBlocks = mapCouponBlocks(sectionsWithCoupons[index]);
         }
+
+        // Merge blog_images from separate fetch (sectionsWithImages) if available
+        // Use the first image as the section banner
+        let bannerImageUrl: string | null = null;
+        if (sectionsWithImages.length > index) {
+          const sectionWithImage = sectionsWithImages[index];
+          const sectionWithImageData = sectionWithImage.attributes || sectionWithImage;
+          const imgs = sectionWithImageData.blog_images;
+          const imgDataArr = Array.isArray(imgs) ? imgs : (imgs?.data || []);
+          const first = imgDataArr?.[0];
+          const firstData = first?.attributes || first?.data?.attributes || first?.data || first;
+          const url = firstData?.url;
+          if (url) bannerImageUrl = absolutizeMedia(url);
+        }
         
         return {
           id: sectionData.id || section.id || 0,
           h2_title: sectionData.h2_blog_section_title || '',
           table_h3: sectionData.table_h3 || '', // Table title above the table
-          banner_image: '', // Will be populated in Step 6 with separate fetch
+          banner_image: bannerImageUrl, // Section banner image (first blog_images url)
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
           blog_texts_second: sectionData.blog_texts_second || [], // Rich text JSON (below table/coupon)
           blog_table: blogTable, // Each section has its own blog_table array
