@@ -290,7 +290,11 @@ export default function BlogView({ blog }: BlogViewProps) {
     let rafPending = false;
     let mode: "short" | "tall" | null = null;
     let currentTopDoc: number | null = null; // inner top in document coordinates (for tall mode)
-    let lastAppliedTopPx: number | null = null;
+    // Smooth animation state (for tall mode). We animate the Y offset within the column.
+    let targetTopPx: number | null = null;
+    let currentTopPx: number | null = null;
+    let animRaf: number | null = null;
+    let lastAnimTs: number | null = null;
 
     // Cached measurements (avoid forcing layout on every scroll frame)
     let colTopDoc = 0;
@@ -306,13 +310,23 @@ export default function BlogView({ blog }: BlogViewProps) {
       inner.style.top = "";
       inner.style.left = "";
       inner.style.width = "";
-      lastAppliedTopPx = null;
+      inner.style.transform = "";
+      inner.style.willChange = "";
+      targetTopPx = null;
+      currentTopPx = null;
+      lastAnimTs = null;
+      if (animRaf != null) {
+        window.cancelAnimationFrame(animRaf);
+        animRaf = null;
+      }
     };
 
     const applyShort = () => {
       if (mode === "short") return;
       mode = "short";
       currentTopDoc = null;
+      targetTopPx = null;
+      currentTopPx = null;
       clear();
       inner.style.position = "sticky";
       inner.style.top = `${TOP_OFFSET}px`;
@@ -324,8 +338,11 @@ export default function BlogView({ blog }: BlogViewProps) {
         mode = "tall";
         clear();
         inner.style.position = "absolute";
+        // anchor at top=0, then we move via transform translateY for smoothness
+        inner.style.top = "0px";
         inner.style.left = "0px";
         inner.style.width = "100%";
+        inner.style.willChange = "transform";
       }
       if (naturalTopDoc != null) currentTopDoc = naturalTopDoc;
     };
@@ -353,12 +370,48 @@ export default function BlogView({ blog }: BlogViewProps) {
       metricsReady = true;
     };
 
-    const applyTopPx = (topPx: number) => {
-      // Only write if it actually changes (reduces paint/jank on fast scroll)
-      if (lastAppliedTopPx == null || Math.abs(lastAppliedTopPx - topPx) > 0.5) {
-        inner.style.top = `${topPx}px`;
-        lastAppliedTopPx = topPx;
-      }
+    const applyTransformPx = (yPx: number) => {
+      // GPU-friendly; avoids layout reflow from changing `top` continuously
+      inner.style.transform = `translate3d(0, ${yPx}px, 0)`;
+    };
+
+    const startAnimation = () => {
+      if (animRaf != null) return;
+      const tick = (ts: number) => {
+        animRaf = null;
+        if (mode !== "tall" || targetTopPx == null) {
+          lastAnimTs = null;
+          return;
+        }
+
+        if (currentTopPx == null) currentTopPx = targetTopPx;
+
+        const dt = lastAnimTs == null ? 16 : Math.min(64, ts - lastAnimTs);
+        lastAnimTs = ts;
+
+        // Exponential smoothing: more "chill" feel, but still responsive.
+        // Tau controls how quickly it catches up (lower = snappier).
+        const TAU_MS = 120;
+        const alpha = 1 - Math.exp(-dt / TAU_MS);
+
+        currentTopPx = currentTopPx + (targetTopPx - currentTopPx) * alpha;
+
+        // Snap when close enough to prevent micro-jitter
+        if (Math.abs(targetTopPx - currentTopPx) < 0.5) {
+          currentTopPx = targetTopPx;
+        }
+
+        applyTransformPx(currentTopPx);
+
+        if (currentTopPx !== targetTopPx) {
+          animRaf = window.requestAnimationFrame(tick);
+        } else {
+          // done
+          lastAnimTs = null;
+        }
+      };
+
+      animRaf = window.requestAnimationFrame(tick);
     };
 
     const update = () => {
@@ -395,7 +448,9 @@ export default function BlogView({ blog }: BlogViewProps) {
       if (maxTopDoc <= minTopDoc) {
         // Defensive: if layout is weird, just pin to top of column
         currentTopDoc = minTopDoc;
-        applyTopPx(0);
+        targetTopPx = 0;
+        currentTopPx = 0;
+        applyTransformPx(0);
         return;
       }
 
@@ -418,7 +473,18 @@ export default function BlogView({ blog }: BlogViewProps) {
       }
 
       currentTopDoc = clamp(currentTopDoc, minTopDoc, maxTopDoc);
-      applyTopPx(currentTopDoc - colTopDoc);
+      // Set the target position inside the column; animation will ease toward it.
+      const nextTarget = currentTopDoc - colTopDoc;
+      if (targetTopPx == null || Math.abs(targetTopPx - nextTarget) > 0.25) {
+        targetTopPx = nextTarget;
+        // If first time, jump to avoid weird initial offset, otherwise animate
+        if (currentTopPx == null) {
+          currentTopPx = targetTopPx;
+          applyTransformPx(currentTopPx);
+        } else {
+          startAnimation();
+        }
+      }
     };
 
     const onScrollOrResize = () => {
