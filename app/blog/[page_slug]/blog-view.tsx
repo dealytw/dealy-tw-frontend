@@ -740,8 +740,9 @@ export default function BlogView({ blog }: BlogViewProps) {
               </div>
             </div>
 
-            {/* Article Content - Dummy Content for Design */}
-            <div className="prose prose-lg max-w-none min-w-0">
+            {/* Article Content */}
+            {/* Hide any <hr> coming from rich text (it was showing as an unwanted yellow divider above coupons) */}
+            <div className="prose prose-lg max-w-none min-w-0 [&_hr]:hidden">
 
               {/* Intro paragraph (blog.intro_text) - above the first H2 */}
               {blog.intro_text && blog.intro_text.trim() !== '' && (
