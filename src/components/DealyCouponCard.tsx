@@ -71,19 +71,29 @@ const DealyCouponCard = ({
         return;
       }
 
-      // Try to parse the expiry date
+      // Try to parse the expiry date (treat YYYY-MM-DD as LOCAL date to avoid timezone weirdness)
       let expiryDate: Date | null = null;
-      
-      // Try various date formats
-      const dateFormats = [
-        coupon.expiry, // Try as-is (ISO format)
-        coupon.expiry.replace(/\//g, '-'), // Replace / with -
-      ];
 
-      for (const dateStr of dateFormats) {
-        expiryDate = new Date(dateStr);
-        if (!isNaN(expiryDate.getTime())) {
-          break;
+      const raw = String(coupon.expiry || '').trim();
+      const normalized = raw.replace(/\//g, '-');
+
+      const m = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) {
+        const y = Number(m[1]);
+        const mo = Number(m[2]);
+        const d = Number(m[3]);
+        // Local end-of-day for that date
+        expiryDate = new Date(y, mo - 1, d, 23, 59, 59, 999);
+      } else {
+        // Fallback: try Date parsing for ISO strings etc.
+        const dateFormats = [raw, normalized];
+        for (const dateStr of dateFormats) {
+          expiryDate = new Date(dateStr);
+          if (!isNaN(expiryDate.getTime())) {
+            // Set time to end of day (23:59:59) in local time
+            expiryDate.setHours(23, 59, 59, 999);
+            break;
+          }
         }
       }
 
@@ -93,9 +103,6 @@ const DealyCouponCard = ({
         setIsExpired(false);
         return;
       }
-
-      // Set time to end of day (23:59:59)
-      expiryDate.setHours(23, 59, 59, 999);
 
       const updateTime = () => {
         const now = new Date();
