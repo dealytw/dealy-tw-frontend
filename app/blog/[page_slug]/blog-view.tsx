@@ -726,7 +726,8 @@ export default function BlogView({ blog }: BlogViewProps) {
                                 scrollbarWidth: 'thin'
                               }}
                             >
-                              <table className="w-full border-collapse min-w-[600px] md:min-w-0">
+                              {/* `prose` adds default margins to tables; remove to avoid white space above header */}
+                              <table className="w-full border-collapse min-w-[600px] md:min-w-0 m-0">
                                 <thead>
                                   <tr className="bg-yellow-100">
                                     <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠標題</th>
