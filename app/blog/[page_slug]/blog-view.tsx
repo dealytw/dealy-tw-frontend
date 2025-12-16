@@ -70,6 +70,11 @@ interface Blog {
     thumbnail: string | null;
     first_h2?: string;
   }>;
+  categories?: Array<{
+    id: number;
+    name: string;
+    slug: string;
+  }>;
 }
 
 interface BlogViewProps {
@@ -662,38 +667,6 @@ export default function BlogView({ blog }: BlogViewProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      {/* Breadcrumb Navigation */}
-      <div className="bg-muted/30 py-4">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-2">
-            {/* Use related merchants as categories for now - will be mapped properly later */}
-            {blog.related_merchants && blog.related_merchants.length > 0 ? (
-              blog.related_merchants.slice(0, 4).map((merchant) => (
-                <Link key={merchant.id} href={`/shop/${merchant.slug}`}>
-                  <Badge 
-                    variant="secondary" 
-                    className="hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors"
-                  >
-                    {merchant.name}
-                  </Badge>
-                </Link>
-              ))
-            ) : (
-              // Fallback to dummy categories
-              dummyCategories.map((category, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary" 
-                  className="hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors"
-                >
-                  {category}
-                </Badge>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Standard responsive container - narrow desktop style on large screens */}
       <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
@@ -704,6 +677,22 @@ export default function BlogView({ blog }: BlogViewProps) {
           <div className="lg:col-span-3 min-w-0 overflow-x-hidden">
             {/* Article Header */}
             <div className="mb-8 min-w-0">
+              {/* Categories pills (inside main container width) */}
+              {blog.categories && blog.categories.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {blog.categories.map((c) => (
+                    <Link key={c.id} href={`/category/${c.slug}`}>
+                      <Badge
+                        variant="secondary"
+                        className="bg-pink-50 text-pink-700 hover:bg-pink-100 cursor-pointer transition-colors"
+                      >
+                        {c.name}
+                      </Badge>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
               <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight break-words">
                 {blog.title}
               </h1>

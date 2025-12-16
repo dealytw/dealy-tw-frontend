@@ -114,6 +114,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[related_blogs][fields][1]": "blog_title",
       "populate[related_blogs][fields][2]": "page_slug",
       "populate[related_blogs][fields][3]": "updatedAt",
+      // Categories (relation)
+      "populate[categories][fields][0]": "id",
+      "populate[categories][fields][1]": "name",
+      "populate[categories][fields][2]": "page_slug",
       // Step 2: blog_table will be fetched separately (causes 404 even when alone in main query)
     })}`, { 
       revalidate: 60, // 1 minute for development
@@ -243,8 +247,34 @@ export default async function BlogPage({ params }: BlogPageProps) {
       blog_coupon: blog.blog_coupon || blog.attributes?.blog_coupon,
       related_merchants: blog.related_merchants || blog.attributes?.related_merchants,
       related_blogs: blog.related_blogs || blog.attributes?.related_blogs,
+      categories: blog.categories || blog.attributes?.categories,
     };
 
+    // Extract categories (manyToMany)
+    let categories: any[] = [];
+    if (blogData.categories) {
+      let catsFromCMS: any[] = [];
+      if (Array.isArray(blogData.categories)) {
+        if (blogData.categories[0]?.data) {
+          catsFromCMS = blogData.categories.map((item: any) => item.data || item);
+        } else {
+          catsFromCMS = blogData.categories;
+        }
+      } else if (blogData.categories?.data) {
+        catsFromCMS = blogData.categories.data;
+      }
+
+      categories = catsFromCMS
+        .map((c: any) => {
+          const cd = c?.attributes || c;
+          return {
+            id: c?.id || cd?.id,
+            name: cd?.name || '',
+            slug: cd?.page_slug || '',
+          };
+        })
+        .filter((c: any) => c.id && c.name && c.slug);
+    }
     // Extract related merchants - handle all possible formats for manyToMany relation (same pattern as merchant pages)
     let relatedMerchants: any[] = [];
     if (blogData.related_merchants) {
@@ -451,6 +481,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           blog_coupon_blocks: sectionCouponBlocks, // Each section can have coupon blocks
         };
       }),
+      categories,
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };
