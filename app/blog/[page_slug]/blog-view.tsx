@@ -126,12 +126,7 @@ export default function BlogView({ blog }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
   const [revealedPromoCodes, setRevealedPromoCodes] = useState<Record<string, boolean>>({});
   const [isTOCOpen, setIsTOCOpen] = useState(false);
-  const [isSidebarSticky, setIsSidebarSticky] = useState(false);
   const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const sidebarRef = useRef<HTMLDivElement | null>(null);
-  const sidebarContainerRef = useRef<HTMLDivElement | null>(null);
-  const sidebarInitialTop = useRef<number | null>(null);
-  const sidebarHeight = useRef<number | null>(null);
 
   // Debug: Log blog_table data
   useEffect(() => {
@@ -158,88 +153,6 @@ export default function BlogView({ blog }: BlogViewProps) {
     }
   }, []);
 
-  // Handle sidebar sticky behavior - stick when bottom reaches viewport bottom
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleScroll = () => {
-      const sidebar = sidebarRef.current;
-      if (!sidebar) return;
-
-      // When sidebar is NOT sticky, get its natural position directly
-      // When it IS sticky, use stored values
-      let sidebarNaturalTop: number;
-      let sidebarHeightValue: number;
-      
-      if (!isSidebarSticky) {
-        // Not sticky - get natural position directly
-        const rect = sidebar.getBoundingClientRect();
-        sidebarNaturalTop = rect.top + window.scrollY;
-        sidebarHeightValue = sidebar.offsetHeight;
-        
-        // Store for when it becomes sticky
-        sidebarInitialTop.current = sidebarNaturalTop;
-        sidebarHeight.current = sidebarHeightValue;
-      } else {
-        // Sticky - use stored natural position
-        if (sidebarInitialTop.current === null || sidebarHeight.current === null) {
-          // Fallback: calculate from container
-          const container = sidebarContainerRef.current;
-          if (container) {
-            const containerRect = container.getBoundingClientRect();
-            const containerTop = containerRect.top + window.scrollY;
-            sidebarNaturalTop = containerTop + sidebar.offsetTop;
-            sidebarHeightValue = sidebar.offsetHeight;
-            sidebarInitialTop.current = sidebarNaturalTop;
-            sidebarHeight.current = sidebarHeightValue;
-          } else {
-            return;
-          }
-        } else {
-          sidebarNaturalTop = sidebarInitialTop.current;
-          sidebarHeightValue = sidebarHeight.current;
-        }
-      }
-      
-      const sidebarNaturalBottom = sidebarNaturalTop + sidebarHeightValue;
-      const viewportHeight = window.innerHeight;
-      const scrollY = window.scrollY;
-      const viewportBottom = scrollY + viewportHeight;
-      
-      // Stick when sidebar's natural bottom reaches or goes below viewport bottom
-      // This means we've scrolled enough that the sidebar would start going off-screen
-      // Users can scroll to see the full sidebar before it becomes sticky
-      const shouldStick = sidebarNaturalBottom <= viewportBottom;
-
-      setIsSidebarSticky(shouldStick);
-    };
-
-    // Use requestAnimationFrame for smoother performance
-    let ticking = false;
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', () => {
-      // Reset stored values on resize
-      sidebarInitialTop.current = null;
-      sidebarHeight.current = null;
-      handleScroll();
-    }, { passive: true });
-    handleScroll(); // Check initial state
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, [isSidebarSticky]);
 
   const handleGetPromoClick = (e: React.MouseEvent, tableRow: any, sectionIndex: number, rowIndex: number, landingpage: string) => {
     e.preventDefault();
@@ -420,7 +333,7 @@ export default function BlogView({ blog }: BlogViewProps) {
 
       {/* Standard responsive container - narrow desktop style on large screens */}
       <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
-        <div ref={sidebarContainerRef} className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
+        <div className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
           {/* Main Content */}
           <div className="lg:col-span-3 min-w-0 overflow-x-hidden">
             {/* Article Header */}
@@ -681,13 +594,8 @@ export default function BlogView({ blog }: BlogViewProps) {
             )}
           </div>
 
-          {/* Sidebar - Scrolls with page, then sticks when bottom reaches viewport bottom */}
-          <div 
-            ref={sidebarRef}
-            className={`lg:col-span-1 lg:self-start lg:h-fit ${
-              isSidebarSticky ? 'lg:sticky lg:top-24' : ''
-            }`}
-          >
+          {/* Sidebar - Scrolls with page, stops at container bottom (no white space) */}
+          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start lg:h-fit">
             <div className="space-y-6">
               {/* Related Articles */}
               <Card>
