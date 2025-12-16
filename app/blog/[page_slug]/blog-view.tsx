@@ -730,10 +730,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                               <table className="w-full border-collapse min-w-[600px] md:min-w-0 m-0">
                                 <thead>
                                   <tr className="bg-yellow-100">
-                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠標題</th>
-                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠門檻及內容</th>
-                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">優惠期限</th>
-                                    <th className="border border-yellow-200 px-3 py-2 text-left font-bold text-sm text-foreground">專屬頁面或優惠碼</th>
+                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug">優惠標題</th>
+                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug">優惠門檻及內容</th>
+                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug">優惠期限</th>
+                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug">專屬頁面或優惠碼</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -744,16 +744,16 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     
                                     return (
                                       <tr key={tableRow.id || rowIndex} className="hover:bg-yellow-50 transition-colors">
-                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground font-medium break-words">
+                                        <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground font-medium break-words leading-snug">
                                           {tableRow.table_title || '-'}
                                         </td>
-                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground break-words">
+                                        <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug">
                                           {tableRow.table_description || '-'}
                                         </td>
-                                        <td className="border border-yellow-200 px-3 py-2 text-sm text-foreground break-words">
+                                        <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug">
                                           {tableRow.table_date || '-'}
                                         </td>
-                                        <td className="border border-yellow-200 px-3 py-2">
+                                        <td className="border border-yellow-200 px-4 py-3">
                                           <div 
                                             id={buttonId}
                                             ref={(el) => { buttonRefs.current[buttonId] = el; }}
@@ -763,7 +763,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               <Button 
                                                 size="sm" 
                                                 variant="outline"
-                                                className="text-xs"
+                                                className="text-[11px] h-8 px-3"
                                                 onClick={(e) => handleGetPromoClick(e, tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
                                               >
                                                 獲取優惠
@@ -772,7 +772,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               <span className="text-muted-foreground text-sm">-</span>
                                             )}
                                             {isRevealed && hasPromoCode && (
-                                              <Badge variant="secondary" className="font-mono text-xs">
+                                              <Badge variant="secondary" className="font-mono text-[11px]">
                                                 {tableRow.table_promo_code}
                                               </Badge>
                                             )}
