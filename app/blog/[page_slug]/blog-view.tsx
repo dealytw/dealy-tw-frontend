@@ -126,7 +126,10 @@ export default function BlogView({ blog }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
   const [revealedPromoCodes, setRevealedPromoCodes] = useState<Record<string, boolean>>({});
   const [isTOCOpen, setIsTOCOpen] = useState(false);
+  const [shouldStopScrolling, setShouldStopScrolling] = useState(false);
   const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const sidebarContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Debug: Log blog_table data
   useEffect(() => {
@@ -151,6 +154,61 @@ export default function BlogView({ blog }: BlogViewProps) {
         }
       }
     }
+  }, []);
+
+  // Handle sidebar scroll - stop when bottom reaches viewport bottom
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleScroll = () => {
+      const sidebar = sidebarRef.current;
+      const container = sidebarContainerRef.current;
+      if (!sidebar || !container) return;
+
+      // Get container's position in document
+      const containerRect = container.getBoundingClientRect();
+      const containerTop = containerRect.top + window.scrollY;
+      
+      // Calculate sidebar's natural position
+      // offsetTop gives position relative to offsetParent (container in grid)
+      const sidebarOffsetTop = sidebar.offsetTop;
+      const sidebarNaturalTop = containerTop + sidebarOffsetTop;
+      const sidebarHeight = sidebar.offsetHeight;
+      const sidebarNaturalBottom = sidebarNaturalTop + sidebarHeight;
+      
+      // Get viewport bottom in document coordinates
+      const viewportHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+      const viewportBottom = scrollY + viewportHeight;
+      
+      // Stop scrolling when sidebar's natural bottom reaches or goes below viewport bottom
+      // This prevents sidebar from scrolling into white space
+      // Sidebar scrolls normally until this point, then sticks to stop
+      const shouldStop = sidebarNaturalBottom <= viewportBottom;
+      
+      setShouldStopScrolling(shouldStop);
+    };
+
+    // Use requestAnimationFrame for smooth performance
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
 
@@ -333,7 +391,7 @@ export default function BlogView({ blog }: BlogViewProps) {
 
       {/* Standard responsive container - narrow desktop style on large screens */}
       <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
-        <div className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
+        <div ref={sidebarContainerRef} className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
           {/* Main Content */}
           <div className="lg:col-span-3 min-w-0 overflow-x-hidden">
             {/* Article Header */}
@@ -594,8 +652,13 @@ export default function BlogView({ blog }: BlogViewProps) {
             )}
           </div>
 
-          {/* Sidebar - Scrolls with page, stops at container bottom (no white space) */}
-          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          {/* Sidebar - Scrolls normally until bottom reaches viewport bottom, then stops */}
+          <div 
+            ref={sidebarRef}
+            className={`lg:col-span-1 lg:self-start lg:h-fit ${
+              shouldStopScrolling ? 'lg:sticky lg:top-24' : ''
+            }`}
+          >
             <div className="space-y-6">
               {/* Related Articles */}
               <Card>
