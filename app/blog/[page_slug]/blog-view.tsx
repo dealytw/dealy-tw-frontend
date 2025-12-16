@@ -23,6 +23,7 @@ interface Blog {
     table_h3?: string; // Table title above the table (at section level)
     banner_image: string | null;
     blog_texts: any; // Rich text blocks JSON
+    blog_texts_second?: any; // Rich text blocks JSON (below table/coupon)
     blog_table?: Array<{  // Each section has its own blog_table
       id: number;
       table_h3: string;
@@ -971,6 +972,21 @@ export default function BlogView({ blog }: BlogViewProps) {
                               </div>
                             </div>
                           </div>
+                        )}
+
+                        {/* Section Blog Texts (Second) - Below table/coupon */}
+                        {section.blog_texts_second && Array.isArray(section.blog_texts_second) && section.blog_texts_second.length > 0 && (
+                          <div
+                            className="mt-4 text-base text-foreground leading-normal break-words min-w-0"
+                            dangerouslySetInnerHTML={{
+                              __html: blocksToHTML(section.blog_texts_second)
+                            }}
+                            style={{
+                              lineHeight: '1.5',
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word',
+                            }}
+                          />
                         )}
                       </div>
                     );
