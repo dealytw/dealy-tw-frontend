@@ -119,7 +119,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
     // Each section can have its own blog_table array
     const blogId = blog.id || blog.attributes?.id;
     let sectionsWithTables: any[] = [];
-    let blogCouponComponents: any[] = [];
+    let sectionsWithCoupons: any[] = [];
     
     if (blogId) {
       try {
@@ -147,18 +147,16 @@ export default async function BlogPage({ params }: BlogPageProps) {
       }
     }
 
-    // Step 3: Fetch blog_coupon separately (repeatable component with relation+media)
-    // blog_coupon is a repeatable component: blog_coupon[] -> coupons[] + coupon_image
-    // Keep this separate to avoid nested populate issues breaking the main blog query.
+    // Step 3: Fetch blog_coupon separately (nested inside blog_sections)
+    // blog_sections.blog_coupon is a repeatable component:
+    // blog_sections[] -> blog_coupon[] -> { coupons (relation), coupon_image (media) }
     if (blogId) {
       try {
         const couponQuery = qs({
           "filters[id][$eq]": blogId,
-          // More robust populate for Strapi v5 repeatable component + nested relation/media
-          // (We previously saw nested populates be fragile; this keeps it simple and resilient.)
-          "populate[blog_coupon]": "*",
-          "populate[blog_coupon][populate][coupons]": "*",
-          "populate[blog_coupon][populate][coupon_image]": "*",
+          "populate[blog_sections][populate][blog_coupon]": "*",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons]": "*",
+          "populate[blog_sections][populate][blog_coupon][populate][coupon_image]": "*",
         });
 
         const fetchUrl = `/api/blogs?${couponQuery}`;
@@ -170,11 +168,12 @@ export default async function BlogPage({ params }: BlogPageProps) {
         });
 
         const blogWithCoupons = couponRes?.data?.[0];
-        blogCouponComponents =
-          blogWithCoupons?.blog_coupon ||
-          blogWithCoupons?.attributes?.blog_coupon ||
+        const sections =
+          blogWithCoupons?.blog_sections ||
+          blogWithCoupons?.attributes?.blog_sections ||
           [];
-        console.log('[BLOG_COUPON_FETCH] Found coupon blocks:', Array.isArray(blogCouponComponents) ? blogCouponComponents.length : 0);
+        sectionsWithCoupons = Array.isArray(sections) ? sections : [];
+        console.log('[BLOG_COUPON_FETCH] Found sections with coupons:', sectionsWithCoupons.length);
       } catch (couponError) {
         console.error('[BLOG_COUPON_FETCH] Error fetching blog_coupon:', couponError);
         // Continue without coupons rather than failing the page
@@ -255,43 +254,42 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
     // blog_table is already fetched separately above (Step 2)
 
-    // Extract blog_coupon (repeatable component) from separate fetch:
-    // blog_coupon[] -> { coupon_image, coupons[] }
-    const blogCouponSections = (Array.isArray(blogCouponComponents) ? blogCouponComponents : []).map((block: any) => {
-      const blockData = block?.attributes || block;
-      const imgUrl =
-        blockData?.coupon_image?.url ||
-        blockData?.coupon_image?.attributes?.url ||
-        blockData?.coupon_image?.data?.attributes?.url ||
-        blockData?.coupon_image?.data?.url ||
-        blockData?.attributes?.coupon_image?.url;
+    // We'll merge coupons into each section by index (same approach as blog_table)
+    const mapCouponBlocks = (sectionWithCoupons: any) => {
+      const secData = sectionWithCoupons?.attributes || sectionWithCoupons;
+      const blocksRaw = secData?.blog_coupon || secData?.blog_coupon?.data || [];
+      const blocksArr = Array.isArray(blocksRaw) ? blocksRaw : (blocksRaw?.data || []);
 
-      const couponsRaw =
-        blockData?.coupons?.data ||
-        blockData?.coupons ||
-        [];
+      return blocksArr.map((block: any) => {
+        const blockData = block?.attributes || block;
+        const imgUrl =
+          blockData?.coupon_image?.url ||
+          blockData?.coupon_image?.attributes?.url ||
+          blockData?.coupon_image?.data?.attributes?.url ||
+          blockData?.coupon_image?.data?.url;
 
-      const couponsArray = Array.isArray(couponsRaw) ? couponsRaw : [];
+        const couponsRaw = blockData?.coupons?.data || blockData?.coupons || [];
+        const couponsArr = Array.isArray(couponsRaw) ? couponsRaw : [];
 
-      const coupons = couponsArray.map((c: any) => {
-        const cd = c?.attributes || c;
+        const coupons = couponsArr.map((c: any) => {
+          const cd = c?.attributes || c;
+          return {
+            id: (cd?.id || c?.id || '').toString(),
+            coupon_title: cd?.coupon_title || '',
+            value: cd?.value || '',
+            code: cd?.code || '',
+            affiliate_link: cd?.affiliate_link || '',
+            coupon_type: cd?.coupon_type || (cd?.code ? 'promo_code' : 'coupon'),
+            expires_at: cd?.expires_at || '',
+          };
+        }).filter((c: any) => c.id && (c.coupon_title || c.value || c.affiliate_link));
+
         return {
-          id: (cd?.id || c?.id || '').toString(),
-          coupon_title: cd?.coupon_title || '',
-          value: cd?.value || '',
-          code: cd?.code || '',
-          affiliate_link: cd?.affiliate_link || '',
-          coupon_type: cd?.coupon_type || (cd?.code ? 'promo_code' : 'coupon'),
-          expires_at: cd?.expires_at || '',
+          coupon_image: imgUrl ? absolutizeMedia(imgUrl) : null,
+          coupons,
         };
-      }).filter((c: any) => c.id && (c.coupon_title || c.value || c.affiliate_link));
-
-      return {
-        coupon_image: imgUrl ? absolutizeMedia(imgUrl) : null,
-        coupons,
-      };
-    }).filter((s: any) => s.coupons?.length > 0);
-    console.log('[BLOG_COUPON_FETCH] Total coupons mapped:', blogCouponSections.reduce((n: number, s: any) => n + (s.coupons?.length || 0), 0));
+      }).filter((b: any) => b.coupons?.length > 0);
+    };
 
     const transformedBlog = {
       id: blogData.id,
@@ -327,6 +325,12 @@ export default async function BlogPage({ params }: BlogPageProps) {
             table_date: tableItem.table_date || '',
           };
         });
+
+        // Merge blog_coupon from separate fetch (sectionsWithCoupons) if available
+        let sectionCouponBlocks: any[] = [];
+        if (sectionsWithCoupons.length > index) {
+          sectionCouponBlocks = mapCouponBlocks(sectionsWithCoupons[index]);
+        }
         
         return {
           id: sectionData.id || section.id || 0,
@@ -335,9 +339,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
           banner_image: '', // Will be populated in Step 6 with separate fetch
           blog_texts: sectionData.blog_texts || [], // Rich text JSON
           blog_table: blogTable, // Each section has its own blog_table array
+          blog_coupon_blocks: sectionCouponBlocks, // Each section can have coupon blocks
         };
       }),
-      blog_coupon_sections: blogCouponSections,
       related_merchants: relatedMerchants,
       related_blogs: relatedBlogs,
     };

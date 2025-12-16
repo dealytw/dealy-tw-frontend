@@ -32,6 +32,18 @@ interface Blog {
       landingpage: string;
       table_date: string;
     }>;
+    blog_coupon_blocks?: Array<{
+      coupon_image: string | null;
+      coupons: Array<{
+        id: string;
+        coupon_title: string;
+        value: string;
+        code?: string;
+        affiliate_link: string;
+        coupon_type?: "promo_code" | "coupon" | "discount" | string;
+        expires_at?: string;
+      }>;
+    }>;
   }>;
   blog_table?: Array<{  // Keep for backward compatibility, but should use section.blog_table
     id: number;
@@ -55,18 +67,6 @@ interface Blog {
     createdAt: string;
     updatedAt: string;
     thumbnail: string | null;
-  }>;
-  blog_coupon_sections?: Array<{
-    coupon_image: string | null;
-    coupons: Array<{
-      id: string;
-      coupon_title: string;
-      value: string;
-      code?: string;
-      affiliate_link: string;
-      coupon_type?: "promo_code" | "coupon" | "discount" | string;
-      expires_at?: string;
-    }>;
   }>;
 }
 
@@ -182,17 +182,21 @@ export default function BlogView({ blog }: BlogViewProps) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Find coupon data from blog_coupon_sections
+    // Find coupon data from section coupon blocks
     const allCoupons =
-      (blog.blog_coupon_sections || [])
-        .flatMap((s) => s.coupons || []);
+      (blog.sections || [])
+        .flatMap((s) => s.blog_coupon_blocks || [])
+        .flatMap((b) => b.coupons || []);
 
     const c = allCoupons.find((x) => x.id === couponId);
     if (!c) return;
 
     // Transform into CouponModal shape (merchant logo uses component-level coupon_image if available)
-    const sectionWithCoupon = (blog.blog_coupon_sections || []).find((s) => (s.coupons || []).some((x) => x.id === couponId));
-    const logo = sectionWithCoupon?.coupon_image || "/placeholder.svg";
+    const blockWithCoupon =
+      (blog.sections || [])
+        .flatMap((s) => s.blog_coupon_blocks || [])
+        .find((b) => (b.coupons || []).some((x) => x.id === couponId));
+    const logo = blockWithCoupon?.coupon_image || "/placeholder.svg";
 
     const transformed = {
       id: c.id,
@@ -215,7 +219,7 @@ export default function BlogView({ blog }: BlogViewProps) {
 
     setSelectedCoupon(transformed);
     setIsCouponModalOpen(true);
-  }, [blog.blog_coupon_sections]);
+  }, [blog.sections]);
 
   const handleGetPromoClick = (e: React.MouseEvent, tableRow: any, sectionIndex: number, rowIndex: number, landingpage: string) => {
     e.preventDefault();
@@ -862,6 +866,76 @@ export default function BlogView({ blog }: BlogViewProps) {
                           </div>
                         </div>
                         )}
+
+                        {/* Coupon tickets (blog_sections.blog_coupon) */}
+                        {section.blog_coupon_blocks && section.blog_coupon_blocks.length > 0 && (
+                          <div className="my-6 not-prose">
+                            {section.blog_coupon_blocks.map((block, blockIdx) => (
+                              <div key={blockIdx} className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                <div className="flex gap-4 min-w-max py-2">
+                                  {block.coupons.map((c) => (
+                                    <div
+                                      key={c.id}
+                                      id={`coupon-${c.id}`}
+                                      className="relative w-[320px] sm:w-[360px] bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
+                                    >
+                                      {/* Ticket cut-outs */}
+                                      <div className="absolute left-[92px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                                      <div className="absolute left-[92px] top-1/2 -translate-y-1/2 -ml-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+
+                                      <div className="flex h-full">
+                                        {/* Left value block */}
+                                        <div className="w-[110px] px-4 py-4 flex flex-col justify-between">
+                                          <div className="text-xs text-orange-600 font-semibold">
+                                            適用於全部活動
+                                          </div>
+                                          <div className="mt-2 text-2xl font-extrabold text-orange-600 leading-none">
+                                            {c.value || ''}
+                                          </div>
+                                          {block.coupon_image ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                              src={block.coupon_image}
+                                              alt="coupon"
+                                              className="mt-3 w-7 h-7 rounded-full object-cover border border-orange-200 bg-white"
+                                            />
+                                          ) : (
+                                            <div className="mt-3 w-7 h-7 rounded-full bg-white border border-orange-200 flex items-center justify-center text-xs text-orange-400">
+                                              券
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Dashed divider */}
+                                        <div className="relative w-px bg-transparent">
+                                          <div className="absolute inset-y-4 left-0 border-l border-dashed border-orange-200" />
+                                        </div>
+
+                                        {/* Right content */}
+                                        <div className="flex-1 px-4 py-4">
+                                          <div className="text-sm font-semibold text-gray-900 leading-snug break-words">
+                                            {c.coupon_title || '-'}
+                                          </div>
+                                          <div className="mt-1 text-xs text-gray-600">
+                                            {c.code ? `優惠碼：${c.code}` : ''}
+                                          </div>
+                                          <div className="mt-3 flex justify-end">
+                                            <Button
+                                              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-8 px-4 text-sm"
+                                              onClick={() => handleBlogCouponClick(c)}
+                                            >
+                                              領取
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -898,55 +972,9 @@ export default function BlogView({ blog }: BlogViewProps) {
               )}
             </div>
 
-            {/* Blog Coupon Section (blog_coupon component) */}
-            {blog.blog_coupon_sections && blog.blog_coupon_sections.length > 0 && (
-              <div className="my-10 not-prose">
-                {blog.blog_coupon_sections.map((section, sectionIdx) => (
-                  <div key={sectionIdx} className="mb-8">
-                    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                      <div className="flex gap-4 min-w-max">
-                        {section.coupons.map((c) => (
-                          <div
-                            key={c.id}
-                            id={`coupon-${c.id}`}
-                            className="w-[280px] sm:w-[320px] bg-white border border-orange-200 rounded-xl overflow-hidden shadow-sm"
-                          >
-                            <div className="p-4 flex items-start gap-3">
-                              {/* Image (component-level coupon_image) */}
-                              <div className="w-10 h-10 rounded-full bg-orange-50 border border-orange-100 overflow-hidden flex items-center justify-center flex-shrink-0">
-                                {section.coupon_image ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={section.coupon_image} alt="coupon" className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-xs text-orange-400 font-semibold">券</span>
-                                )}
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm font-semibold text-gray-900 leading-snug break-words">
-                                  {c.coupon_title || '-'}
-                                </div>
-                                <div className="mt-1 text-xs text-gray-600">
-                                  {c.value || ''}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="px-4 pb-4">
-                              <Button
-                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg h-9 text-sm"
-                                onClick={() => handleBlogCouponClick(c)}
-                              >
-                                領取
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* Blog Coupon Section (ticket style) - rendered inside each blog section */}
+            {blog.sections?.some((s) => (s.blog_coupon_blocks || []).length > 0) && (
+              <div className="my-6 not-prose" />
             )}
 
             {/* Related Blog Posts */}
