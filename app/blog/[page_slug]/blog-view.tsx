@@ -945,18 +945,18 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               id={`coupon-${c.id}`}
                                               className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
                                             >
-                                              {c._coupon_tag ? (
-                                                <Badge className="absolute left-3 top-2 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none">
-                                                  {c._coupon_tag}
-                                                </Badge>
-                                              ) : null}
                                               <div className="flex h-full">
                                                 {/* Left content */}
                                                 <div className="flex-1 px-5 py-4 min-w-0">
                                                   <div className="text-xs text-orange-600 font-semibold mb-2">
                                                     適用於全部活動
                                                   </div>
-                                                  <div className={`text-[14px] font-semibold text-gray-900 leading-snug break-words line-clamp-2 ${c._coupon_tag ? 'mt-4' : ''}`}>
+                                                  {c._coupon_tag ? (
+                                                    <Badge className="mb-1 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none inline-flex w-fit">
+                                                      {c._coupon_tag}
+                                                    </Badge>
+                                                  ) : null}
+                                                  <div className="text-[14px] font-semibold text-gray-900 leading-snug break-words line-clamp-2">
                                                     {c.coupon_title || '-'}
                                                   </div>
 
@@ -1021,11 +1021,6 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               id={`coupon-${c.id}`}
                                               className="relative flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
                                             >
-                                              {c._coupon_tag ? (
-                                                <Badge className="absolute left-3 top-2 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none">
-                                                  {c._coupon_tag}
-                                                </Badge>
-                                              ) : null}
                                               <div className="relative w-44 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                                                 <Image
                                                   src={c._coupon_image || "/placeholder.svg"}
@@ -1038,7 +1033,12 @@ export default function BlogView({ blog }: BlogViewProps) {
 
                                               <div className="flex-1 min-w-0 flex flex-col justify-between">
                                                 <div>
-                                                  <div className={`text-base font-bold text-foreground line-clamp-2 ${c._coupon_tag ? 'mt-4' : ''}`}>
+                                                  {c._coupon_tag ? (
+                                                    <Badge className="mb-1 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none inline-flex w-fit">
+                                                      {c._coupon_tag}
+                                                    </Badge>
+                                                  ) : null}
+                                                  <div className="text-base font-bold text-foreground line-clamp-2">
                                                     {c.coupon_title || '-'}
                                                   </div>
                                                 </div>
