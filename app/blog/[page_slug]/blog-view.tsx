@@ -907,10 +907,6 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     id={`coupon-${c.id}`}
                                     className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
                                   >
-                                    {/* Ticket cut-outs */}
-                                    <div className="absolute right-[108px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
-                                    <div className="absolute right-[108px] top-1/2 -translate-y-1/2 -mr-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
-
                                     <div className="flex h-full">
                                       {/* Left content */}
                                       <div className="flex-1 px-5 py-4 min-w-0">
