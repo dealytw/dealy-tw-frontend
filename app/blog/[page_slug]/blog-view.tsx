@@ -1018,7 +1018,8 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               key={c.id}
                                               id={`coupon-${c.id}`}
                                               // Keep top padding tight (reduce space above tag), but make the card taller via bottom padding.
-                                              className="relative flex gap-4 px-4 pt-2 pb-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
+                                              // Keep the tag close to the top (smaller pt), but keep the card tall via larger pb.
+                                              className="relative flex gap-4 px-4 pt-1 pb-5 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
                                             >
                                               <div className="relative w-44 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                                                 <Image
