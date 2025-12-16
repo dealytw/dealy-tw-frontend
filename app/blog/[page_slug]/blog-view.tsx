@@ -870,69 +870,69 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Coupon tickets (blog_sections.blog_coupon) */}
                         {section.blog_coupon_blocks && section.blog_coupon_blocks.length > 0 && (
                           <div className="my-6 not-prose">
-                            {section.blog_coupon_blocks.map((block, blockIdx) => (
-                              <div key={blockIdx} className="py-2">
-                                {/* Wrap layout: up to 3 per row on desktop, overflow goes to next row */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                  {block.coupons.map((c) => (
-                                    <div
-                                      key={c.id}
-                                      id={`coupon-${c.id}`}
-                                      className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
-                                    >
-                                      {/* Ticket cut-outs */}
-                                      <div className="absolute left-[84px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
-                                      <div className="absolute left-[84px] top-1/2 -translate-y-1/2 -ml-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                            {/* Flatten all coupon blocks into one grid so they fill the row before wrapping */}
+                            <div className="py-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {section.blog_coupon_blocks.flatMap((block) =>
+                                  (block.coupons || []).map((c) => ({ ...c, _coupon_image: block.coupon_image }))
+                                ).map((c: any) => (
+                                  <div
+                                    key={c.id}
+                                    id={`coupon-${c.id}`}
+                                    className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
+                                  >
+                                    {/* Ticket cut-outs */}
+                                    <div className="absolute left-[84px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                                    <div className="absolute left-[84px] top-1/2 -translate-y-1/2 -ml-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
 
-                                      <div className="flex h-full">
-                                        {/* Left value block */}
-                                        <div className="w-[96px] px-3 py-3 flex flex-col justify-between">
-                                          <div className="text-[11px] text-orange-600 font-semibold leading-tight">
-                                            適用於全部活動
-                                          </div>
-                                          <div className="mt-1 text-lg font-extrabold text-orange-600 leading-none">
-                                            {c.value || ''}
-                                          </div>
-                                          {block.coupon_image ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                              src={block.coupon_image}
-                                              alt="coupon"
-                                              className="mt-2 w-6 h-6 rounded-full object-cover border border-orange-200 bg-white"
-                                            />
-                                          ) : (
-                                            <div className="mt-2 w-6 h-6 rounded-full bg-white border border-orange-200 flex items-center justify-center text-[11px] text-orange-400">
-                                              券
-                                            </div>
-                                          )}
+                                    <div className="flex h-full">
+                                      {/* Left value block */}
+                                      <div className="w-[96px] px-3 py-3 flex flex-col justify-between">
+                                        <div className="text-[11px] text-orange-600 font-semibold leading-tight">
+                                          適用於全部活動
                                         </div>
-
-                                        {/* Dashed divider */}
-                                        <div className="relative w-px bg-transparent">
-                                          <div className="absolute inset-y-4 left-0 border-l border-dashed border-orange-200" />
+                                        <div className="mt-1 text-lg font-extrabold text-orange-600 leading-none">
+                                          {c.value || ''}
                                         </div>
+                                        {c._coupon_image ? (
+                                          // eslint-disable-next-line @next/next/no-img-element
+                                          <img
+                                            src={c._coupon_image}
+                                            alt="coupon"
+                                            className="mt-2 w-6 h-6 rounded-full object-cover border border-orange-200 bg-white"
+                                          />
+                                        ) : (
+                                          <div className="mt-2 w-6 h-6 rounded-full bg-white border border-orange-200 flex items-center justify-center text-[11px] text-orange-400">
+                                            券
+                                          </div>
+                                        )}
+                                      </div>
 
-                                        {/* Right content */}
-                                        <div className="flex-1 px-3 py-3 min-w-0">
-                                          <div className="text-[12px] font-semibold text-gray-900 leading-snug break-words">
-                                            {c.coupon_title || '-'}
-                                          </div>
-                                          {/* Do not reveal code here; code is shown inside the popup modal */}
-                                          <div className="mt-2 flex justify-end">
-                                            <Button
-                                              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-7 px-3 text-[11px]"
-                                              onClick={() => handleBlogCouponClick(c)}
-                                            >
-                                              領取
-                                            </Button>
-                                          </div>
+                                      {/* Dashed divider */}
+                                      <div className="relative w-px bg-transparent">
+                                        <div className="absolute inset-y-4 left-0 border-l border-dashed border-orange-200" />
+                                      </div>
+
+                                      {/* Right content */}
+                                      <div className="flex-1 px-3 py-3 min-w-0">
+                                        <div className="text-[12px] font-semibold text-gray-900 leading-snug break-words">
+                                          {c.coupon_title || '-'}
+                                        </div>
+                                        {/* Do not reveal code here; code is shown inside the popup modal */}
+                                        <div className="mt-2 flex justify-end">
+                                          <Button
+                                            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-7 px-3 text-[11px]"
+                                            onClick={() => handleBlogCouponClick(c)}
+                                          >
+                                            領取
+                                          </Button>
                                         </div>
                                       </div>
                                     </div>
-                                  ))}
-                                </div>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
                           </div>
                         )}
                       </div>
