@@ -872,7 +872,8 @@ export default function BlogView({ blog }: BlogViewProps) {
                           <div className="my-6 not-prose">
                             {/* Flatten all coupon blocks into one grid so they fill the row before wrapping */}
                             <div className="py-2">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {/* Desktop: 2 per row (bigger tickets). More than 2 wraps to next row. */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5">
                                 {section.blog_coupon_blocks.flatMap((block) =>
                                   (block.coupons || []).map((c) => ({ ...c, _coupon_image: block.coupon_image }))
                                 ).map((c: any) => (
@@ -882,30 +883,35 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
                                   >
                                     {/* Ticket cut-outs */}
-                                    <div className="absolute left-[84px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
-                                    <div className="absolute left-[84px] top-1/2 -translate-y-1/2 -ml-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                                    <div className="absolute right-[108px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                                    <div className="absolute right-[108px] top-1/2 -translate-y-1/2 -mr-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
 
                                     <div className="flex h-full">
-                                      {/* Left value block */}
-                                      <div className="w-[96px] px-3 py-3 flex flex-col justify-between">
-                                        <div className="text-[11px] text-orange-600 font-semibold leading-tight">
+                                      {/* Left content */}
+                                      <div className="flex-1 px-5 py-4 min-w-0">
+                                        <div className="text-xs text-orange-600 font-semibold mb-2">
                                           適用於全部活動
                                         </div>
-                                        <div className="mt-1 text-lg font-extrabold text-orange-600 leading-none">
-                                          {c.value || ''}
+                                        <div className="text-[14px] font-semibold text-gray-900 leading-snug break-words">
+                                          {c.coupon_title || '-'}
                                         </div>
-                                        {c._coupon_image ? (
-                                          // eslint-disable-next-line @next/next/no-img-element
-                                          <img
-                                            src={c._coupon_image}
-                                            alt="coupon"
-                                            className="mt-2 w-6 h-6 rounded-full object-cover border border-orange-200 bg-white"
-                                          />
-                                        ) : (
-                                          <div className="mt-2 w-6 h-6 rounded-full bg-white border border-orange-200 flex items-center justify-center text-[11px] text-orange-400">
-                                            券
-                                          </div>
-                                        )}
+
+                                        {/* Keep code hidden on card; shown in popup modal */}
+                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                                          {c._coupon_image ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                              src={c._coupon_image}
+                                              alt="coupon"
+                                              className="w-5 h-5 rounded-full object-cover border border-orange-200 bg-white"
+                                            />
+                                          ) : (
+                                            <span className="w-5 h-5 rounded-full bg-white border border-orange-200 flex items-center justify-center text-[10px] text-orange-400">
+                                              券
+                                            </span>
+                                          )}
+                                          <span className="truncate">點擊「領取」查看詳情</span>
+                                        </div>
                                       </div>
 
                                       {/* Dashed divider */}
@@ -913,20 +919,22 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         <div className="absolute inset-y-4 left-0 border-l border-dashed border-orange-200" />
                                       </div>
 
-                                      {/* Right content */}
-                                      <div className="flex-1 px-3 py-3 min-w-0">
-                                        <div className="text-[12px] font-semibold text-gray-900 leading-snug break-words">
-                                          {c.coupon_title || '-'}
+                                      {/* Right value + button */}
+                                      <div className="w-[140px] bg-[#ffeedd] px-4 py-4 flex flex-col justify-between">
+                                        <div className="text-right">
+                                          <div className="text-lg font-extrabold text-orange-600 leading-none">
+                                            {c.value || ''}
+                                          </div>
+                                          {/* We don't have minimum spend in CMS; keep layout but don't fabricate data */}
+                                          <div className="mt-1 text-[11px] text-orange-700/80 min-h-[14px]" />
                                         </div>
-                                        {/* Do not reveal code here; code is shown inside the popup modal */}
-                                        <div className="mt-2 flex justify-end">
-                                          <Button
-                                            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-7 px-3 text-[11px]"
-                                            onClick={() => handleBlogCouponClick(c)}
-                                          >
-                                            領取
-                                          </Button>
-                                        </div>
+
+                                        <Button
+                                          className="ml-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-8 px-5 text-sm"
+                                          onClick={() => handleBlogCouponClick(c)}
+                                        >
+                                          領取
+                                        </Button>
                                       </div>
                                     </div>
                                   </div>
