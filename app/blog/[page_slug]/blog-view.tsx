@@ -871,25 +871,30 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {section.blog_coupon_blocks && section.blog_coupon_blocks.length > 0 && (
                           <div className="my-6 not-prose">
                             {section.blog_coupon_blocks.map((block, blockIdx) => (
-                              <div key={blockIdx} className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                                <div className="flex gap-4 min-w-max py-2">
+                              <div
+                                key={blockIdx}
+                                className="overflow-x-auto lg:overflow-visible"
+                                style={{ WebkitOverflowScrolling: 'touch' }}
+                              >
+                                {/* Mobile: horizontal swipe. Desktop: 3 columns in one row */}
+                                <div className="flex gap-3 min-w-max py-2 lg:min-w-0 lg:grid lg:grid-cols-3 lg:gap-4">
                                   {block.coupons.map((c) => (
                                     <div
                                       key={c.id}
                                       id={`coupon-${c.id}`}
-                                      className="relative w-[320px] sm:w-[360px] bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
+                                      className="relative w-[260px] sm:w-[280px] lg:w-auto bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
                                     >
                                       {/* Ticket cut-outs */}
-                                      <div className="absolute left-[92px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
-                                      <div className="absolute left-[92px] top-1/2 -translate-y-1/2 -ml-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                                      <div className="absolute left-[84px] top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
+                                      <div className="absolute left-[84px] top-1/2 -translate-y-1/2 -ml-2.5 w-5 h-5 bg-white rounded-full border border-[#ffd8b3]" />
 
                                       <div className="flex h-full">
                                         {/* Left value block */}
-                                        <div className="w-[110px] px-4 py-4 flex flex-col justify-between">
-                                          <div className="text-xs text-orange-600 font-semibold">
+                                        <div className="w-[96px] px-3 py-3 flex flex-col justify-between">
+                                          <div className="text-[11px] text-orange-600 font-semibold leading-tight">
                                             適用於全部活動
                                           </div>
-                                          <div className="mt-2 text-2xl font-extrabold text-orange-600 leading-none">
+                                          <div className="mt-1 text-xl font-extrabold text-orange-600 leading-none">
                                             {c.value || ''}
                                           </div>
                                           {block.coupon_image ? (
@@ -897,10 +902,10 @@ export default function BlogView({ blog }: BlogViewProps) {
                                             <img
                                               src={block.coupon_image}
                                               alt="coupon"
-                                              className="mt-3 w-7 h-7 rounded-full object-cover border border-orange-200 bg-white"
+                                              className="mt-2 w-6 h-6 rounded-full object-cover border border-orange-200 bg-white"
                                             />
                                           ) : (
-                                            <div className="mt-3 w-7 h-7 rounded-full bg-white border border-orange-200 flex items-center justify-center text-xs text-orange-400">
+                                            <div className="mt-2 w-6 h-6 rounded-full bg-white border border-orange-200 flex items-center justify-center text-[11px] text-orange-400">
                                               券
                                             </div>
                                           )}
@@ -912,16 +917,16 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         </div>
 
                                         {/* Right content */}
-                                        <div className="flex-1 px-4 py-4">
-                                          <div className="text-sm font-semibold text-gray-900 leading-snug break-words">
+                                        <div className="flex-1 px-3 py-3 min-w-0">
+                                          <div className="text-[13px] font-semibold text-gray-900 leading-snug break-words">
                                             {c.coupon_title || '-'}
                                           </div>
-                                          <div className="mt-1 text-xs text-gray-600">
+                                          <div className="mt-1 text-[11px] text-gray-600">
                                             {c.code ? `優惠碼：${c.code}` : ''}
                                           </div>
-                                          <div className="mt-3 flex justify-end">
+                                          <div className="mt-2 flex justify-end">
                                             <Button
-                                              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-8 px-4 text-sm"
+                                              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-7 px-3 text-[12px]"
                                               onClick={() => handleBlogCouponClick(c)}
                                             >
                                               領取
