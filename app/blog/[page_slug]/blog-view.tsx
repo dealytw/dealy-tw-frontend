@@ -261,6 +261,31 @@ export default function BlogView({ blog }: BlogViewProps) {
     }
   };
 
+  // Best-effort: derive "最低消費" from coupon title (no fabrication).
+  // Examples it can catch:
+  // - "最低消費：HKD 500"
+  // - "滿HKD500"
+  // - "滿 HK$1,500"
+  const extractMinSpendFromTitle = (title?: string) => {
+    if (!title) return '';
+    const t = title.replace(/\s+/g, ' ').trim();
+    // Explicit "最低消費" pattern
+    const explicit = t.match(/最低消費[:：]?\s*([A-Z]{2,4}|HKD|TWD|NT\$|HK\$)?\s*([\d,]+)/i);
+    if (explicit) {
+      const cur = (explicit[1] || '').toUpperCase();
+      const amt = explicit[2];
+      return `${cur ? cur + ' ' : ''}${amt}`.trim();
+    }
+    // "滿" pattern
+    const man = t.match(/滿\s*([A-Z]{2,4}|HKD|TWD|NT\$|HK\$)?\s*([\d,]+)/i);
+    if (man) {
+      const cur = (man[1] || '').toUpperCase();
+      const amt = man[2];
+      return `${cur ? cur + ' ' : ''}${amt}`.trim();
+    }
+    return '';
+  };
+
   // Dummy data for design - will be replaced with actual CMS data later
   const dummyCategories = ["旅遊", "優惠", "折扣碼", "日本"];
   
@@ -920,17 +945,25 @@ export default function BlogView({ blog }: BlogViewProps) {
                                       </div>
 
                                       {/* Right value + button */}
-                                      <div className="w-[140px] bg-[#ffeedd] px-4 py-4 flex flex-col justify-between">
-                                        <div className="text-right">
-                                          <div className="text-lg font-extrabold text-orange-600 leading-none">
+                                      <div className="w-[160px] bg-[#ffedd5] px-4 py-4 flex flex-col items-center justify-center gap-2">
+                                        <div className="text-center w-full">
+                                          <div className="text-xl font-extrabold text-orange-600 leading-tight break-words">
                                             {c.value || ''}
                                           </div>
-                                          {/* We don't have minimum spend in CMS; keep layout but don't fabricate data */}
-                                          <div className="mt-1 text-[11px] text-orange-700/80 min-h-[14px]" />
+                                          {/* Only show min spend if we can derive it from title (no fabrication) */}
+                                          {(() => {
+                                            const ms = extractMinSpendFromTitle(c.coupon_title);
+                                            if (!ms) return null;
+                                            return (
+                                              <div className="mt-1 text-[11px] text-orange-700/80">
+                                                最低消費：{ms}
+                                              </div>
+                                            );
+                                          })()}
                                         </div>
 
                                         <Button
-                                          className="ml-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-8 px-5 text-sm"
+                                          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-9 px-6 text-sm"
                                           onClick={() => handleBlogCouponClick(c)}
                                         >
                                           領取
