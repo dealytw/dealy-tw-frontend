@@ -126,7 +126,10 @@ export default function BlogView({ blog }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
   const [revealedPromoCodes, setRevealedPromoCodes] = useState<Record<string, boolean>>({});
   const [isTOCOpen, setIsTOCOpen] = useState(false);
+  const [isSidebarSticky, setIsSidebarSticky] = useState(false);
   const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const sidebarContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Debug: Log blog_table data
   useEffect(() => {
@@ -151,6 +154,55 @@ export default function BlogView({ blog }: BlogViewProps) {
         }
       }
     }
+  }, []);
+
+  // Handle sidebar sticky behavior - stick when bottom reaches viewport bottom
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleScroll = () => {
+      const sidebar = sidebarRef.current;
+      const container = sidebarContainerRef.current;
+      if (!sidebar || !container) return;
+
+      const sidebarRect = sidebar.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 96; // top-24 = 6rem = 96px
+
+      // Calculate sidebar's position relative to viewport
+      const sidebarBottom = sidebarRect.bottom;
+      const sidebarTop = sidebarRect.top;
+      
+      // Sidebar should stick when:
+      // 1. Its bottom reaches or would go below viewport bottom
+      // 2. Container top has scrolled past header (we're in the content area)
+      // 3. Sidebar top is above or at the sticky position (headerHeight)
+      const shouldStick = sidebarBottom >= viewportHeight && 
+                         containerRect.top <= headerHeight &&
+                         sidebarTop <= headerHeight;
+
+      setIsSidebarSticky(shouldStick);
+    };
+
+    // Use requestAnimationFrame for smoother performance
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    handleScroll(); // Check initial state
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   const handleGetPromoClick = (e: React.MouseEvent, tableRow: any, sectionIndex: number, rowIndex: number, landingpage: string) => {
@@ -332,7 +384,7 @@ export default function BlogView({ blog }: BlogViewProps) {
 
       {/* Standard responsive container - narrow desktop style on large screens */}
       <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
-        <div className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
+        <div ref={sidebarContainerRef} className="grid lg:grid-cols-4 gap-8 lg:items-start lg:content-start">
           {/* Main Content */}
           <div className="lg:col-span-3 min-w-0 overflow-x-hidden">
             {/* Article Header */}
@@ -593,8 +645,13 @@ export default function BlogView({ blog }: BlogViewProps) {
             )}
           </div>
 
-          {/* Sidebar - Scrolls with page, then sticks when reaching end */}
-          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          {/* Sidebar - Scrolls with page, then sticks when bottom reaches viewport bottom */}
+          <div 
+            ref={sidebarRef}
+            className={`lg:col-span-1 lg:self-start lg:h-fit ${
+              isSidebarSticky ? 'lg:sticky lg:top-24' : ''
+            }`}
+          >
             <div className="space-y-6">
               {/* Related Articles */}
               <Card>
