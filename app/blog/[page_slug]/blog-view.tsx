@@ -817,6 +817,23 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {/* Comparison Table - Render after this section's blog_texts */}
                         {section.blog_table && section.blog_table.length > 0 && (
                         <div className="my-8">
+                          {(() => {
+                            const showTitleCol = section.blog_table.some((r) => (r.table_title || '').toString().trim() !== '');
+                            const showDescCol = section.blog_table.some((r) => (r.table_description || '').toString().trim() !== '');
+                            const showDateCol = section.blog_table.some((r) => (r.table_date || '').toString().trim() !== '');
+                            const showActionCol = section.blog_table.some((r) =>
+                              ((r.landingpage || '').toString().trim() !== '') ||
+                              ((r.table_promo_code || '').toString().trim() !== '')
+                            );
+
+                            // If a column has no data at all, hide it.
+                            // (Title/Description are usually present, but keep the logic consistent.)
+                            const cols = { showTitleCol, showDescCol, showDateCol, showActionCol };
+                            const visibleCount = Object.values(cols).filter(Boolean).length;
+                            const minWidth = visibleCount <= 2 ? 'min-w-[420px]' : visibleCount === 3 ? 'min-w-[520px]' : 'min-w-[600px]';
+
+                            return (
+                              <>
                           {section.table_h3 && (
                             <h3 className="font-bold text-lg text-foreground mb-4 break-words">
                               {section.table_h3}
@@ -832,13 +849,29 @@ export default function BlogView({ blog }: BlogViewProps) {
                               }}
                             >
                               {/* `prose` adds default margins to tables; remove to avoid white space above header */}
-                              <table className="w-full border-collapse min-w-[600px] md:min-w-0 m-0">
+                              <table className={`w-full border-collapse ${minWidth} md:min-w-0 m-0`}>
                                 <thead>
                                   <tr className="bg-yellow-100">
-                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">優惠標題</th>
-                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">優惠門檻及內容</th>
-                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">優惠期限</th>
-                                    <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">專屬頁面或優惠碼</th>
+                                    {showTitleCol && (
+                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                        優惠標題
+                                      </th>
+                                    )}
+                                    {showDescCol && (
+                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                        優惠門檻及內容
+                                      </th>
+                                    )}
+                                    {showDateCol && (
+                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                        優惠期限
+                                      </th>
+                                    )}
+                                    {showActionCol && (
+                                      <th className="border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6">
+                                        專屬頁面或優惠碼
+                                      </th>
+                                    )}
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -849,40 +882,48 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     
                                     return (
                                       <tr key={tableRow.id || rowIndex} className="hover:bg-yellow-50 transition-colors">
-                                        <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6">
-                                          {tableRow.table_title || '-'}
-                                        </td>
-                                        <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6">
-                                          {tableRow.table_description || '-'}
-                                        </td>
-                                        <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6">
-                                          {tableRow.table_date || '-'}
-                                        </td>
-                                        <td className="border border-yellow-200 px-4 py-3 first:pl-6">
-                                          <div 
-                                            id={buttonId}
-                                            ref={(el) => { buttonRefs.current[buttonId] = el; }}
-                                            className="flex items-center gap-2 flex-wrap"
-                                          >
-                                            {tableRow.landingpage ? (
-                                              <Button 
-                                                size="sm" 
-                                                variant="outline"
-                                                className="text-[11px] h-8 px-3"
-                                                onClick={(e) => handleGetPromoClick(e, tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
-                                              >
-                                                獲取優惠
-                                              </Button>
-                                            ) : (
-                                              <span className="text-muted-foreground text-sm">-</span>
-                                            )}
-                                            {isRevealed && hasPromoCode && (
-                                              <Badge variant="secondary" className="font-mono text-[11px]">
-                                                {tableRow.table_promo_code}
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </td>
+                                        {showTitleCol && (
+                                          <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6">
+                                            {tableRow.table_title || '-'}
+                                          </td>
+                                        )}
+                                        {showDescCol && (
+                                          <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6">
+                                            {tableRow.table_description || '-'}
+                                          </td>
+                                        )}
+                                        {showDateCol && (
+                                          <td className="border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6">
+                                            {tableRow.table_date || '-'}
+                                          </td>
+                                        )}
+                                        {showActionCol && (
+                                          <td className="border border-yellow-200 px-4 py-3 first:pl-6">
+                                            <div 
+                                              id={buttonId}
+                                              ref={(el) => { buttonRefs.current[buttonId] = el; }}
+                                              className="flex items-center gap-2 flex-wrap"
+                                            >
+                                              {tableRow.landingpage ? (
+                                                <Button 
+                                                  size="sm" 
+                                                  variant="outline"
+                                                  className="text-[11px] h-8 px-3"
+                                                  onClick={(e) => handleGetPromoClick(e, tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
+                                                >
+                                                  獲取優惠
+                                                </Button>
+                                              ) : (
+                                                <span className="text-muted-foreground text-sm">-</span>
+                                              )}
+                                              {isRevealed && hasPromoCode && (
+                                                <Badge variant="secondary" className="font-mono text-[11px]">
+                                                  {tableRow.table_promo_code}
+                                                </Badge>
+                                              )}
+                                            </div>
+                                          </td>
+                                        )}
                                       </tr>
                                     );
                                   })}
@@ -890,6 +931,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                               </table>
                             </div>
                           </div>
+                              </>
+                            );
+                          })()}
                         </div>
                         )}
 
