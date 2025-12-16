@@ -68,6 +68,7 @@ interface Blog {
     createdAt: string;
     updatedAt: string;
     thumbnail: string | null;
+    first_h2?: string;
   }>;
 }
 
@@ -327,27 +328,7 @@ export default function BlogView({ blog }: BlogViewProps) {
     }
   ];
 
-  // Dummy related articles
-  const dummyRelatedArticles = [
-    {
-      id: 1,
-      title: "2025日本入境｜Visit Japan Web教學，台灣人入境日本免排隊",
-      date: "2024年7月24日",
-      image: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      title: "2025台中東勢推薦｜38個台中必訪景點！遺產古蹟、文化園區",
-      date: "2024年4月22日",
-      image: "/placeholder.svg"
-    },
-    {
-      id: 3,
-      title: "2025台北buffet吃到飽｜32間推薦餐廳，五星飯店自助餐廳",
-      date: "2024年5月7日",
-      image: "/placeholder.svg"
-    }
-  ];
+  const sidebarMerchants = blog.related_merchants || [];
 
   useEffect(() => {
     // Generate table of contents from actual blog sections
@@ -1089,30 +1070,31 @@ export default function BlogView({ blog }: BlogViewProps) {
                       href={`/blog/${relatedBlog.slug}`}
                       className="flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow cursor-pointer"
                     >
-                      {relatedBlog.thumbnail && (
-                        <div className="relative w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                          <Image
-                            src={relatedBlog.thumbnail}
-                            alt={relatedBlog.title}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                          <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-full text-xs font-medium">
-                            部落格
-                          </div>
+                      <div className="relative w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                        <Image
+                          src={relatedBlog.thumbnail || "/placeholder.svg"}
+                          alt={relatedBlog.title}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                        <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-full text-xs font-medium">
+                          部落格
                         </div>
-                      )}
+                      </div>
                       <div className="flex-1">
                         <h4 className="text-lg font-bold text-foreground mb-2 line-clamp-2">
                           {relatedBlog.title}
                         </h4>
-                        <p className="text-muted-foreground text-sm">
-                          {formatDate(relatedBlog.updatedAt)}
-                        </p>
+                        {relatedBlog.first_h2 ? (
+                          <p className="text-muted-foreground text-sm line-clamp-2">
+                            {relatedBlog.first_h2}
+                          </p>
+                        ) : (
+                          <p className="text-muted-foreground text-sm">
+                            {formatDate(relatedBlog.updatedAt)}
+                          </p>
+                        )}
                       </div>
                     </Link>
                   ))}
@@ -1130,25 +1112,33 @@ export default function BlogView({ blog }: BlogViewProps) {
                 <CardContent className="p-6">
                   <h3 className="font-bold text-lg mb-4 text-foreground">私心推薦</h3>
                   <div className="space-y-4">
-                    {dummyRelatedArticles.map((article) => (
-                      <div key={article.id} className="flex gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors">
-                        <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                          <Image
-                            src={article.image}
-                            alt={article.title}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-foreground leading-tight mb-1 line-clamp-2">
-                            {article.title}
-                          </h4>
-                          <p className="text-xs text-muted-foreground">{article.date}</p>
-                        </div>
-                      </div>
-                    ))}
+                    {sidebarMerchants.length > 0 ? (
+                      sidebarMerchants.slice(0, 6).map((m) => (
+                        <Link
+                          key={m.id}
+                          href={`/shop/${m.slug}`}
+                          className="flex gap-3 hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                        >
+                          <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                            <Image
+                              src={m.logo || "/placeholder.svg"}
+                              alt={m.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-foreground leading-tight mb-1 line-clamp-2">
+                              {m.name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">查看優惠</p>
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">尚未設定推薦商店</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>

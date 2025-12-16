@@ -103,6 +103,17 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[blog_sections][fields][1]": "blog_texts",
       "populate[blog_sections][fields][2]": "table_h3",
       "populate[blog_sections][fields][3]": "blog_texts_second",
+      // Relations (basic fields only)
+      "populate[related_merchants][fields][0]": "id",
+      "populate[related_merchants][fields][1]": "merchant_name",
+      "populate[related_merchants][fields][2]": "page_slug",
+      // Logo is media: request only url (avoid `*`)
+      "populate[related_merchants][populate][logo][fields][0]": "url",
+
+      "populate[related_blogs][fields][0]": "id",
+      "populate[related_blogs][fields][1]": "blog_title",
+      "populate[related_blogs][fields][2]": "page_slug",
+      "populate[related_blogs][fields][3]": "updatedAt",
       // Step 2: blog_table will be fetched separately (causes 404 even when alone in main query)
     })}`, { 
       revalidate: 60, // 1 minute for development
@@ -270,6 +281,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
     // Extract related blogs - handle all possible formats (same pattern as merchant pages)
     let relatedBlogs: any[] = [];
+    const relatedBlogIds: number[] = [];
     if (blogData.related_blogs) {
       let relatedFromCMS = [];
       if (Array.isArray(blogData.related_blogs)) {
@@ -282,14 +294,19 @@ export default async function BlogPage({ params }: BlogPageProps) {
         relatedFromCMS = blogData.related_blogs.data;
       }
       
-      relatedBlogs = relatedFromCMS.map((relatedBlog: any) => ({
-        id: relatedBlog.id || relatedBlog.attributes?.id,
-        title: relatedBlog.blog_title || relatedBlog.attributes?.blog_title || '',
-        slug: relatedBlog.page_slug || relatedBlog.attributes?.page_slug || '',
-        createdAt: relatedBlog.createdAt || relatedBlog.attributes?.createdAt || '',
-        updatedAt: relatedBlog.updatedAt || relatedBlog.attributes?.updatedAt || '',
-        thumbnail: null,
-      }));
+      relatedBlogs = relatedFromCMS.map((relatedBlog: any) => {
+        const id = relatedBlog.id || relatedBlog.attributes?.id;
+        if (id) relatedBlogIds.push(Number(id));
+        return {
+          id,
+          title: relatedBlog.blog_title || relatedBlog.attributes?.blog_title || '',
+          slug: relatedBlog.page_slug || relatedBlog.attributes?.page_slug || '',
+          createdAt: relatedBlog.createdAt || relatedBlog.attributes?.createdAt || '',
+          updatedAt: relatedBlog.updatedAt || relatedBlog.attributes?.updatedAt || '',
+          thumbnail: '/placeholder.svg', // placeholder for now
+          first_h2: '',
+        };
+      });
     }
 
     // blog_table is already fetched separately above (Step 2)
@@ -330,6 +347,43 @@ export default async function BlogPage({ params }: BlogPageProps) {
         };
       }).filter((b: any) => b.coupons?.length > 0);
     };
+
+    // Step 4: Fetch first H2 for related blogs (title + first section H2 only)
+    if (relatedBlogIds.length > 0) {
+      try {
+        const query = qs({
+          // qs helper typing doesn't accept arrays; Strapi accepts comma-separated values for $in
+          "filters[id][$in]": relatedBlogIds.join(','),
+          "fields[0]": "id",
+          "fields[1]": "blog_title",
+          "fields[2]": "page_slug",
+          "fields[3]": "updatedAt",
+          "populate[blog_sections][fields][0]": "h2_blog_section_title",
+          "pagination[pageSize]": Math.min(relatedBlogIds.length, 50),
+        });
+        const relRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${query}`, {
+          revalidate: 60,
+          tag: `blog-related-h2:${page_slug}`,
+        });
+
+        const mapById = new Map<number, string>();
+        for (const item of (relRes?.data || [])) {
+          const id = Number(item?.id || item?.attributes?.id);
+          const sections = item?.attributes?.blog_sections || item?.blog_sections || [];
+          const first = Array.isArray(sections) ? sections[0] : null;
+          const firstData = first?.attributes || first;
+          const firstH2 = firstData?.h2_blog_section_title || '';
+          if (id && firstH2) mapById.set(id, firstH2);
+        }
+
+        relatedBlogs = relatedBlogs.map((b) => ({
+          ...b,
+          first_h2: mapById.get(Number(b.id)) || '',
+        }));
+      } catch (e) {
+        console.error('[RELATED_BLOGS_H2_FETCH] Error fetching related blog h2:', e);
+      }
+    }
 
     const transformedBlog = {
       id: blogData.id,
