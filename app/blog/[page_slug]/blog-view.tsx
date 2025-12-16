@@ -946,7 +946,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               className="relative w-full bg-[#fff7ef] border border-[#ffd8b3] rounded-2xl overflow-hidden shadow-sm"
                                             >
                                               {c._coupon_tag ? (
-                                                <Badge className="absolute left-4 top-3 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none">
+                                                <Badge className="absolute left-3 top-2 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none">
                                                   {c._coupon_tag}
                                                 </Badge>
                                               ) : null}
@@ -956,7 +956,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                   <div className="text-xs text-orange-600 font-semibold mb-2">
                                                     適用於全部活動
                                                   </div>
-                                                  <div className={`text-[14px] font-semibold text-gray-900 leading-snug break-words line-clamp-2 ${c._coupon_tag ? 'mt-5' : ''}`}>
+                                                  <div className={`text-[14px] font-semibold text-gray-900 leading-snug break-words line-clamp-2 ${c._coupon_tag ? 'mt-4' : ''}`}>
                                                     {c.coupon_title || '-'}
                                                   </div>
 
@@ -1022,7 +1022,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               className="relative flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
                                             >
                                               {c._coupon_tag ? (
-                                                <Badge className="absolute left-4 top-3 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none">
+                                                <Badge className="absolute left-3 top-2 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] px-2 py-0.5 rounded-full leading-none">
                                                   {c._coupon_tag}
                                                 </Badge>
                                               ) : null}
@@ -1038,7 +1038,7 @@ export default function BlogView({ blog }: BlogViewProps) {
 
                                               <div className="flex-1 min-w-0 flex flex-col justify-between">
                                                 <div>
-                                                  <div className={`text-base font-bold text-foreground line-clamp-2 ${c._coupon_tag ? 'mt-5' : ''}`}>
+                                                  <div className={`text-base font-bold text-foreground line-clamp-2 ${c._coupon_tag ? 'mt-4' : ''}`}>
                                                     {c.coupon_title || '-'}
                                                   </div>
                                                 </div>
