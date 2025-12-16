@@ -114,6 +114,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[related_blogs][fields][1]": "blog_title",
       "populate[related_blogs][fields][2]": "page_slug",
       "populate[related_blogs][fields][3]": "updatedAt",
+      // Related blog thumbnail (media url only)
+      "populate[related_blogs][populate][thumbnail][fields][0]": "url",
       // Categories (relation)
       "populate[categories][fields][0]": "id",
       "populate[categories][fields][1]": "name",
@@ -330,13 +332,24 @@ export default async function BlogPage({ params }: BlogPageProps) {
       relatedBlogs = relatedFromCMS.map((relatedBlog: any) => {
         const id = relatedBlog.id || relatedBlog.attributes?.id;
         if (id) relatedBlogIds.push(Number(id));
+        const thumbRaw =
+          relatedBlog.thumbnail ||
+          relatedBlog.attributes?.thumbnail ||
+          relatedBlog.thumbnail?.data ||
+          relatedBlog.attributes?.thumbnail?.data;
+        const thumbUrl =
+          thumbRaw?.url ||
+          thumbRaw?.attributes?.url ||
+          thumbRaw?.data?.attributes?.url ||
+          relatedBlog.thumbnail?.data?.attributes?.url ||
+          relatedBlog.attributes?.thumbnail?.data?.attributes?.url;
         return {
           id,
           title: relatedBlog.blog_title || relatedBlog.attributes?.blog_title || '',
           slug: relatedBlog.page_slug || relatedBlog.attributes?.page_slug || '',
           createdAt: relatedBlog.createdAt || relatedBlog.attributes?.createdAt || '',
           updatedAt: relatedBlog.updatedAt || relatedBlog.attributes?.updatedAt || '',
-          thumbnail: '/placeholder.svg', // placeholder for now
+          thumbnail: thumbUrl ? absolutizeMedia(thumbUrl) : '/placeholder.svg',
           first_h2: '',
         };
       });
