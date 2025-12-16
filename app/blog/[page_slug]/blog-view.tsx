@@ -914,19 +914,19 @@ export default function BlogView({ blog }: BlogViewProps) {
                         {section.blog_coupon_blocks && section.blog_coupon_blocks.length > 0 && (
                           <div className="my-6 not-prose">
                             {(() => {
-                              // Group by style + tag so multiple blocks (each with 1 coupon) still fill rows nicely.
-                              const groups = new Map<string, { tag: string; long: boolean; items: any[] }>();
+                              // Group by style only; each coupon can have its own tag (from its blog_coupon block).
+                              const groups = new Map<string, { long: boolean; items: any[] }>();
                               for (const block of section.blog_coupon_blocks || []) {
-                                const tag = (block.coupon_tag || '').trim();
                                 const long = Boolean(block.short_or_long);
-                                const key = `${long ? 'long' : 'short'}::${tag}`;
+                                const key = `${long ? 'long' : 'short'}`;
                                 const list = (block.coupons || []).map((c) => ({
                                   ...c,
                                   _coupon_image: block.coupon_image, // IMPORTANT: long style uses blog_coupon.coupon_image
+                                  _coupon_tag: (block.coupon_tag || '').trim(),
                                 }));
                                 const existing = groups.get(key);
                                 if (existing) existing.items.push(...list);
-                                else groups.set(key, { tag, long, items: list });
+                                else groups.set(key, { long, items: list });
                               }
 
                               const entries = Array.from(groups.values()).filter((g) => g.items.length > 0);
@@ -935,15 +935,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                               return (
                                 <div className="space-y-4">
                                   {entries.map((g, gi) => (
-                                    <div key={`${g.long}-${g.tag}-${gi}`}>
-                                      {g.tag ? (
-                                        <div className="mb-3">
-                                          <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
-                                            {g.tag}
-                                          </Badge>
-                                        </div>
-                                      ) : null}
-
+                                    <div key={`${g.long}-${gi}`}>
                                       {/* short_or_long = false: current ticket design */}
                                       {!g.long ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5">
@@ -959,6 +951,13 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                   <div className="text-xs text-orange-600 font-semibold mb-2">
                                                     適用於全部活動
                                                   </div>
+                                                  {c._coupon_tag ? (
+                                                    <div className="mb-2">
+                                                      <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+                                                        {c._coupon_tag}
+                                                      </Badge>
+                                                    </div>
+                                                  ) : null}
                                                   <div className="text-[14px] font-semibold text-gray-900 leading-snug break-words line-clamp-2">
                                                     {c.coupon_title || '-'}
                                                   </div>
@@ -1036,6 +1035,13 @@ export default function BlogView({ blog }: BlogViewProps) {
 
                                               <div className="flex-1 min-w-0 flex flex-col justify-between">
                                                 <div>
+                                                  {c._coupon_tag ? (
+                                                    <div className="mb-2">
+                                                      <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+                                                        {c._coupon_tag}
+                                                      </Badge>
+                                                    </div>
+                                                  ) : null}
                                                   <div className="text-base font-bold text-foreground line-clamp-2">
                                                     {c.coupon_title || '-'}
                                                   </div>
