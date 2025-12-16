@@ -890,7 +890,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                           <div className="text-[11px] text-orange-600 font-semibold leading-tight">
                                             適用於全部活動
                                           </div>
-                                          <div className="mt-1 text-xl font-extrabold text-orange-600 leading-none">
+                                          <div className="mt-1 text-lg font-extrabold text-orange-600 leading-none">
                                             {c.value || ''}
                                           </div>
                                           {block.coupon_image ? (
@@ -914,15 +914,13 @@ export default function BlogView({ blog }: BlogViewProps) {
 
                                         {/* Right content */}
                                         <div className="flex-1 px-3 py-3 min-w-0">
-                                          <div className="text-[13px] font-semibold text-gray-900 leading-snug break-words">
+                                          <div className="text-[12px] font-semibold text-gray-900 leading-snug break-words">
                                             {c.coupon_title || '-'}
                                           </div>
-                                          <div className="mt-1 text-[11px] text-gray-600">
-                                            {c.code ? `優惠碼：${c.code}` : ''}
-                                          </div>
+                                          {/* Do not reveal code here; code is shown inside the popup modal */}
                                           <div className="mt-2 flex justify-end">
                                             <Button
-                                              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-7 px-3 text-[12px]"
+                                              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full h-7 px-3 text-[11px]"
                                               onClick={() => handleBlogCouponClick(c)}
                                             >
                                               領取
