@@ -24,9 +24,8 @@ import BlogView from './blog-view';
  * Next Steps: Add blog_sections populate incrementally with better error handling
  */
 
-// Revalidate every 1 minute - temporarily for development/mapping work
-// TODO: Change back to 86400 (24 hours) after development is complete
-export const revalidate = 60;
+// Revalidate once per day
+export const revalidate = 86400;
 // Changed to force-dynamic to test if static generation is causing 404
 // Repeatable components with nested populate may timeout during build-time static generation
 // force-dynamic renders on-demand, avoiding build-time route generation issues
@@ -43,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ page_slug
       'fields[0]': 'blog_title',
       'fields[1]': 'page_slug',
     })}`, {
-      revalidate: 60, // 1 minute for development
+      revalidate: 86400,
       tag: `blog:${page_slug}`
     });
     
@@ -123,7 +122,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[categories][fields][2]": "page_slug",
       // Step 2: blog_table will be fetched separately (causes 404 even when alone in main query)
     })}`, { 
-      revalidate: 60, // 1 minute for development
+      revalidate: 86400,
       tag: `blog:${page_slug}` 
     });
 
@@ -152,7 +151,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
         
         const tableRes = await strapiFetch<{ data: any[] }>(fetchUrl, { 
-          revalidate: 60,
+          revalidate: 86400,
           tag: `blog-table:${page_slug}` 
         });
         
@@ -180,7 +179,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         console.log('[BLOG_IMAGES_FETCH] Fetch URL:', fetchUrl);
 
         const imageRes = await strapiFetch<{ data: any[] }>(fetchUrl, {
-          revalidate: 60,
+          revalidate: 86400,
           tag: `blog-images:${page_slug}`,
         });
 
@@ -224,7 +223,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         console.log('[BLOG_COUPON_FETCH] Fetch URL:', fetchUrl);
 
         const couponRes = await strapiFetch<{ data: any[] }>(fetchUrl, {
-          revalidate: 60,
+          revalidate: 86400,
           tag: `blog-coupon:${page_slug}`,
         });
 
@@ -414,7 +413,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           "pagination[pageSize]": Math.min(relatedBlogIds.length, 50),
         });
         const relRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${query}`, {
-          revalidate: 60,
+          revalidate: 86400,
           tag: `blog-related-h2:${page_slug}`,
         });
 
