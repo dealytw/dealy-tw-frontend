@@ -203,6 +203,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
           // Do NOT use `*` for media here. It can expand into invalid keys like `coupon_image.related`.
           // Fetch only the media fields we need (url), same style as homepage logo populates.
           "populate[blog_sections][populate][blog_coupon][populate][coupon_image][fields][0]": "url",
+          // blog_coupon component scalar fields (new)
+          "populate[blog_sections][populate][blog_coupon][fields][0]": "coupon_tag",
+          "populate[blog_sections][populate][blog_coupon][fields][1]": "short_or_long",
 
           // Coupons relation fields (text-only)
           "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][0]": "id",
@@ -349,6 +352,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
       return blocksArr.map((block: any) => {
         const blockData = block?.attributes || block;
+        const coupon_tag = blockData?.coupon_tag || '';
+        const short_or_long = Boolean(blockData?.short_or_long);
         const imgUrl =
           blockData?.coupon_image?.url ||
           blockData?.coupon_image?.attributes?.url ||
@@ -373,6 +378,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
         return {
           coupon_image: imgUrl ? absolutizeMedia(imgUrl) : null,
+          coupon_tag,
+          short_or_long,
           coupons,
         };
       }).filter((b: any) => b.coupons?.length > 0);
