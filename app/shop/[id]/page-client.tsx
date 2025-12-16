@@ -930,7 +930,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                     id={`${merchant.slug}-expired-heading`}
                     className="text-lg md:text-xl font-bold mb-4"
                   >
-                    已過期優惠碼
+                    已過期但仍可嘗試
                   </h2>
                   <div className="relative">
                     <Card className="shadow-md relative">
@@ -1022,7 +1022,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
                       )}
                       </CardContent>
                       {/* Grey overlay on top to make all colors pale */}
-                      <div className="absolute inset-0 bg-white/70 rounded-lg pointer-events-none z-10"></div>
+                      <div className="absolute inset-0 bg-white/35 rounded-lg pointer-events-none z-10"></div>
                     </Card>
                   </div>
                 </section>
