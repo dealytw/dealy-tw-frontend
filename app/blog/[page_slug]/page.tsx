@@ -154,9 +154,19 @@ export default async function BlogPage({ params }: BlogPageProps) {
       try {
         const couponQuery = qs({
           "filters[id][$eq]": blogId,
-          "populate[blog_sections][populate][blog_coupon]": "*",
-          "populate[blog_sections][populate][blog_coupon][populate][coupons]": "*",
-          "populate[blog_sections][populate][blog_coupon][populate][coupon_image]": "*",
+          // IMPORTANT (Strapi v5):
+          // Do NOT use `*` for media here. It can expand into invalid keys like `coupon_image.related`.
+          // Fetch only the media fields we need (url), same style as homepage logo populates.
+          "populate[blog_sections][populate][blog_coupon][populate][coupon_image][fields][0]": "url",
+
+          // Coupons relation fields (text-only)
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][0]": "id",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][1]": "coupon_title",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][2]": "value",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][3]": "code",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][4]": "affiliate_link",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][5]": "coupon_type",
+          "populate[blog_sections][populate][blog_coupon][populate][coupons][fields][6]": "expires_at",
         });
 
         const fetchUrl = `/api/blogs?${couponQuery}`;
