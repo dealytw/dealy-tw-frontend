@@ -1028,13 +1028,25 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     });
     
     // Use site_url from merchant collection (real merchant URL, not affiliate link)
-    // Only fallback to merchantUrl if site_url is not available
+    // Normalize URL to ensure it has https:// protocol
+    const normalizeUrl = (url: string | undefined): string => {
+      if (!url) return merchantUrl;
+      // If URL doesn't start with http:// or https://, add https://
+      if (!url.match(/^https?:\/\//i)) {
+        return `https://${url}`;
+      }
+      return url;
+    };
+    
+    const merchantSiteUrl = normalizeUrl(merchant.site_url);
+    
+    // Create single merchant Organization schema (ensure no duplicates)
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
-      url: merchant.site_url || merchantUrl, // Use site_url from merchant collection (real URL, not affiliate)
+      url: merchantSiteUrl, // Normalized URL with https:// protocol
       logo: schemaLogo,
       // Removed sameAs - was pointing to HK URLs which is semantically wrong for TW merchants
-      id: merchantId, // Use #merchant for proper referencing
+      id: merchantId, // Use #merchant for proper referencing (single source of truth)
     });
     
     const breadcrumb = breadcrumbJsonLd([
