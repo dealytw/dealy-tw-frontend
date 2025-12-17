@@ -32,10 +32,14 @@ export const revalidate = 86400;
 export async function generateMetadata({ params }: { params: Promise<{ page_slug: string }> }) {
   const { page_slug } = await params;
   
+  // Get market key for filtering (same pattern as merchant pages)
+  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  
   try {
     // Fetch blog with basic fields only (same pattern as merchant pages)
     const blogData = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
       'filters[page_slug][$eq]': page_slug,
+      'filters[market][key][$eq]': marketKey, // Filter by market (TW only)
       'fields[0]': 'blog_title',
       'fields[1]': 'page_slug',
     })}`, {
@@ -79,6 +83,9 @@ interface BlogPageProps {
 export default async function BlogPage({ params }: BlogPageProps) {
   const { page_slug } = await params;
 
+  // Get market key for filtering (same pattern as merchant pages)
+  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+
   // Get siteUrl early
   const domainConfig = getDomainConfigServer();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
@@ -89,6 +96,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
     // Media fields (blog_image) will be fetched separately to avoid route 404
     const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
       "filters[page_slug][$eq]": page_slug,
+      "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
       "fields[0]": "id",
       "fields[1]": "blog_title",
       "fields[2]": "page_slug",
@@ -144,6 +152,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         // blog_table is nested inside blog_sections, so we need nested populate
         const queryString = qs({
           "filters[id][$eq]": blogId,
+          "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
           "populate[blog_sections][populate][blog_table]": "*",  // Nested populate: blog_sections -> blog_table
         });
         const fetchUrl = `/api/blogs?${queryString}`;
@@ -171,6 +180,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       try {
         const queryString = qs({
           "filters[id][$eq]": blogId,
+          "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
           // Media: only request url (avoid `*` which can expand invalid keys like `.related`)
           "populate[blog_sections][populate][blog_images][fields][0]": "url",
         });
@@ -200,6 +210,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       try {
         const couponQuery = qs({
           "filters[id][$eq]": blogId,
+          "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
           // IMPORTANT (Strapi v5):
           // Do NOT use `*` for media here. It can expand into invalid keys like `coupon_image.related`.
           // Fetch only the media fields we need (url), same style as homepage logo populates.
@@ -404,6 +415,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         const query = qs({
           // qs helper typing doesn't accept arrays; Strapi accepts comma-separated values for $in
           "filters[id][$in]": relatedBlogIds.join(','),
+          "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
           "fields[0]": "id",
           "fields[1]": "blog_title",
           "fields[2]": "page_slug",

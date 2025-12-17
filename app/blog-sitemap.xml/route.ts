@@ -11,13 +11,17 @@ export async function GET() {
   const domainConfig = getDomainConfigServer()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
+  
+  // Get market key for filtering (same pattern as merchant pages)
+  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
 
   // Fetch all blog posts dynamically from CMS
-  // Only include published posts (publishedAt exists)
+  // Only include published posts (publishedAt exists) and filter by market (TW only)
   let blogPages: Array<{ url: string; lastmod: string }> = []
   try {
     const blogParams = {
       "filters[publishedAt][$notNull]": true, // Only published posts
+      "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
       "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "fields[2]": "publishedAt",
