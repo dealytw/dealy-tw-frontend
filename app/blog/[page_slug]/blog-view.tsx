@@ -246,20 +246,24 @@ export default function BlogView({ blog }: BlogViewProps) {
     
     if (hasPromoCode) {
       // If promo code exists:
-      // 1. Open landing page in current tab
+      // 1. Open affiliate link in new tab
       if (landingpage) {
-        window.location.href = landingpage;
+        window.open(landingpage, '_blank');
       }
       
-      // 2. Open new tab to same blog page with hash, scroll to button, reveal promo code
-      const currentUrl = window.location.href.split('#')[0];
-      const newTabUrl = `${currentUrl}#${buttonId}`;
-      window.open(newTabUrl, '_blank');
+      // 2. In current tab: scroll to the clicked row, reveal the code, and hide the button
+      const buttonElement = buttonRefs.current[buttonId];
+      if (buttonElement) {
+        // Scroll to the row
+        setTimeout(() => {
+          buttonElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
       
-      // Also reveal in current tab before navigation
+      // Reveal the promo code (this will hide the button and show the code)
       setRevealedPromoCodes(prev => ({ ...prev, [buttonId]: true }));
     } else {
-      // If no promo code: open link in new tab
+      // If no promo code: open link in new tab straightly
       if (landingpage) {
         window.open(landingpage, '_blank');
       }
@@ -923,7 +927,8 @@ export default function BlogView({ blog }: BlogViewProps) {
                                               ref={(el) => { buttonRefs.current[buttonId] = el; }}
                                               className="flex items-center gap-2 flex-wrap"
                                             >
-                                              {tableRow.landingpage ? (
+                                              {/* Show button only if not revealed (or if no promo code) */}
+                                              {tableRow.landingpage && !(isRevealed && hasPromoCode) && (
                                                 <Button 
                                                   size="sm" 
                                                   variant="outline"
@@ -932,9 +937,8 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                 >
                                                   獲取優惠
                                                 </Button>
-                                              ) : (
-                                                <span className="text-muted-foreground text-sm"></span>
                                               )}
+                                              {/* Show promo code when revealed */}
                                               {isRevealed && hasPromoCode && (
                                                 <Badge variant="secondary" className="font-mono text-[11px]">
                                                   {tableRow.table_promo_code}
