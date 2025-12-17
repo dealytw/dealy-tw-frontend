@@ -1018,9 +1018,11 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       locale: marketLocale,
     });
     
+    // Use site_url from merchant collection (real merchant URL, not affiliate link)
+    // Only fallback to merchantUrl if site_url is not available
     const merchantOrg = organizationJsonLd({
       name: merchant.name,
-      url: merchant.site_url || merchant.website || merchantUrl, // Use site_url from merchant collection
+      url: merchant.site_url || merchantUrl, // Use site_url from merchant collection (real URL, not affiliate)
       logo: schemaLogo,
       sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
       id: merchantId, // Use #merchant for proper referencing
