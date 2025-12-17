@@ -1018,6 +1018,15 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       locale: marketLocale,
     });
     
+    // Site Organization (Dealy) - publisher for WebPage
+    const siteOrgId = `${siteUrl}#organization`;
+    const siteOrg = organizationJsonLd({
+      name: 'Dealy.TW 最新優惠平台',
+      url: siteUrl,
+      logo: `${siteUrl}/favicon.svg`,
+      id: siteOrgId,
+    });
+    
     // Use site_url from merchant collection (real merchant URL, not affiliate link)
     // Only fallback to merchantUrl if site_url is not available
     const merchantOrg = organizationJsonLd({
@@ -1082,6 +1091,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       siteId: `${siteUrl}#website`,
       breadcrumbId: breadcrumbId,
       merchantId: merchantId, // Use #merchant for proper referencing in about field
+      publisherId: siteOrgId, // Publisher points to site Organization (Dealy)
     });
     
     // Store schema (separate script tag, not in @graph - matching HK format)
@@ -1096,6 +1106,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Combine schemas into @graph array (matching HK format exactly)
     // Note: Store and BreadcrumbList are separate script tags, not in @graph
     const graphItems: any[] = [
+      siteOrg, // Site Organization (Dealy) - publisher
       merchantOrg,
       website,
       webPage,

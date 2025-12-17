@@ -271,8 +271,8 @@ export function imageObjectJsonLd(opts: { url: UrlString; width?: number; height
   };
 }
 
-export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; datePublished?: string; locale?: string; siteId?: UrlString; breadcrumbId?: UrlString; merchantId?: UrlString }) {
-  const { name, url, description, image, dateModified, locale, siteId, breadcrumbId, merchantId } = opts;
+export function webPageJsonLd(opts: { name: string; url: UrlString; description?: string; image?: UrlString; dateModified?: string; datePublished?: string; locale?: string; siteId?: UrlString; breadcrumbId?: UrlString; merchantId?: UrlString; publisherId?: UrlString }) {
+  const { name, url, description, image, dateModified, locale, siteId, breadcrumbId, merchantId, publisherId } = opts;
   
   // Convert Market.defaultLocale to schema.org format
   let inLanguage = 'zh-TW'; // Default fallback
@@ -326,6 +326,10 @@ export function webPageJsonLd(opts: { name: string; url: UrlString; description?
   
   if (merchantId) {
     page.about = { '@id': merchantId };
+  }
+  
+  if (publisherId) {
+    page.publisher = { '@id': publisherId };
   }
   
   return page;
