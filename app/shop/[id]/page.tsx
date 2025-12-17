@@ -1024,7 +1024,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       name: merchant.name,
       url: merchant.site_url || merchantUrl, // Use site_url from merchant collection (real URL, not affiliate)
       logo: schemaLogo,
-      sameAs: (merchant.useful_links || []).map((l: any) => l?.url).filter(Boolean),
+      // Removed sameAs - was pointing to HK URLs which is semantically wrong for TW merchants
       id: merchantId, // Use #merchant for proper referencing
     });
     
