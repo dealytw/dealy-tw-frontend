@@ -66,12 +66,74 @@ function extractTextFromRichText(richText: any): string {
   return "";
 }
 
+// Helper function to convert Strapi rich text blocks to HTML (same as blog view)
+function blocksToHTML(blocks: any): string {
+  if (!blocks) return '';
+  if (typeof blocks === 'string') return blocks; // If it's already a string, return it
+  if (!Array.isArray(blocks)) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text' || child.text !== undefined) {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  return blocks.map((block: any) => {
+    if (block.type === 'paragraph') {
+      const content = processChildren(block.children || []);
+      // If paragraph is empty or just whitespace, treat as line break
+      if (!content || content.trim() === '') {
+        return '<br>';
+      }
+      // Use p with minimal margin to preserve line breaks without extra spacing
+      return `<p style="margin: 0; margin-bottom: 0.5em;">${content}</p>`;
+    }
+    
+    if (block.type === 'heading') {
+      const level = block.level || 2;
+      const content = processChildren(block.children || []);
+      return `<h${level}>${content}</h${level}>`;
+    }
+    
+    if (block.type === 'list') {
+      const isOrdered = block.format === 'ordered';
+      const items = (block.children || []).map((item: any) => {
+        const content = processChildren(item.children || []);
+        return `<li>${content}</li>`;
+      }).join('');
+      return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+    }
+    
+    return '';
+  }).join('\n');
+}
+
 // Helper function to render rich text as HTML
 function renderRichText(richText: any): string {
   if (!richText) return "";
   if (typeof richText === "string") return richText;
-  // For now, return the extracted text. Can be enhanced to return formatted HTML if needed.
-  return extractTextFromRichText(richText);
+  // Use blocksToHTML for rich text arrays
+  return blocksToHTML(richText);
 }
 
 const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: SpecialOffersClientProps) => {
@@ -161,9 +223,15 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
             {specialOffer.title || '✨ 限時搶購！最新快閃優惠一覽 🔔'}
           </h1>
           {specialOffer.intro && (
-            <p className="text-muted-foreground mb-4">
-              {specialOffer.intro}
-            </p>
+            <div 
+              className="text-muted-foreground mb-4 leading-relaxed"
+              style={{
+                lineHeight: '1.6'
+              }}
+              dangerouslySetInnerHTML={{ 
+                __html: blocksToHTML(specialOffer.intro)
+              }}
+            />
           )}
         </div>
 
