@@ -224,7 +224,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
           </h1>
           {specialOffer.intro && (
             <div 
-              className="text-muted-foreground mb-4 leading-relaxed whitespace-pre-line"
+              className="text-muted-foreground mb-4 leading-relaxed whitespace-pre-line text-left"
               style={{
                 lineHeight: '1.6'
               }}
