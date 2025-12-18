@@ -224,14 +224,15 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
           </h1>
           {specialOffer.intro && (
             <div 
-              className="text-muted-foreground mb-4 leading-relaxed"
+              className="text-muted-foreground mb-4 leading-relaxed whitespace-pre-line"
               style={{
                 lineHeight: '1.6'
               }}
-              dangerouslySetInnerHTML={{ 
-                __html: blocksToHTML(specialOffer.intro)
-              }}
-            />
+            >
+              {typeof specialOffer.intro === 'string' 
+                ? specialOffer.intro 
+                : blocksToHTML(specialOffer.intro)}
+            </div>
           )}
         </div>
 
