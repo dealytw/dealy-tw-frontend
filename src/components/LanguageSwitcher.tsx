@@ -135,6 +135,7 @@ export function LanguageSwitcher() {
       setIsLoadingAlternateUrl(true);
       fetchMerchantAlternateUrl(merchantSlug)
         .then((url) => {
+          console.log(`[LanguageSwitcher] Fetched alternate URL for ${merchantSlug}:`, url);
           setAlternateUrl(url);
           setIsLoadingAlternateUrl(false);
         })
@@ -162,34 +163,39 @@ export function LanguageSwitcher() {
     }
   }, [isOpen]);
 
-  const handleLanguageChange = (language: LanguageOption) => {
+  // Get the URL for a language option
+  const getLanguageUrl = (language: LanguageOption): string => {
     if (language.code === currentLanguage.code) {
-      setIsOpen(false);
-      return;
+      return '#';
     }
 
     // For merchant pages, use alternate URL from CMS if available
     const isMerchantPage = pathname.startsWith('/shop/') && pathname !== '/shop';
     if (isMerchantPage && alternateUrl) {
-      // Check if alternateUrl matches the target domain
+      // Check if alternateUrl matches the target domain (for switching to alternate language)
       try {
         const urlObj = new URL(alternateUrl);
-        if (urlObj.hostname === language.domain || urlObj.hostname.includes(language.domain)) {
-          // Use the alternate URL directly
-          window.location.href = alternateUrl;
-          return;
+        // If we're switching to the alternate language and have an alternate URL, use it
+        // The alternate URL should be for the other domain (e.g., if on TW, alternate is HK)
+        if (urlObj.hostname === language.domain || urlObj.hostname.endsWith('.' + language.domain)) {
+          console.log(`[LanguageSwitcher] Using alternate URL for ${language.code}: ${alternateUrl}`);
+          return alternateUrl;
+        } else {
+          console.log(`[LanguageSwitcher] Alternate URL domain mismatch: ${urlObj.hostname} vs ${language.domain}`);
         }
-      } catch {
+      } catch (error) {
+        console.warn('[LanguageSwitcher] Invalid alternate URL:', alternateUrl, error);
         // Invalid URL, fall through to default mapping
       }
+    } else if (isMerchantPage && !alternateUrl) {
+      console.log(`[LanguageSwitcher] No alternate URL found for merchant page, using fallback`);
     }
 
     // Map current path to alternate domain path (fallback for main pages or when no alternate URL)
     const alternatePath = mapPathToAlternateDomain(pathname, language.domain);
-    const alternateUrlFallback = `https://${language.domain}${alternatePath}`;
-
-    // Navigate to alternate domain
-    window.location.href = alternateUrlFallback;
+    const fallbackUrl = `https://${language.domain}${alternatePath}`;
+    console.log(`[LanguageSwitcher] Using fallback URL for ${language.code}: ${fallbackUrl}`);
+    return fallbackUrl;
   };
 
   return (
@@ -209,19 +215,33 @@ export function LanguageSwitcher() {
 
       {isOpen && (
         <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-          {LANGUAGES.map((language) => (
-            <button
-              key={language.code}
-              onClick={() => handleLanguageChange(language)}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                language.code === currentLanguage.code
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {language.label}
-            </button>
-          ))}
+          {LANGUAGES.map((language) => {
+            const languageUrl = getLanguageUrl(language);
+            const isCurrent = language.code === currentLanguage.code;
+            
+            if (isCurrent) {
+              return (
+                <div
+                  key={language.code}
+                  className={`w-full text-left px-4 py-2 text-sm ${
+                    "bg-primary/10 text-primary font-medium"
+                  }`}
+                >
+                  {language.label}
+                </div>
+              );
+            }
+            
+            return (
+              <a
+                key={language.code}
+                href={languageUrl}
+                className="w-full text-left px-4 py-2 text-sm block text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                {language.label}
+              </a>
+            );
+          })}
         </div>
       )}
     </div>
