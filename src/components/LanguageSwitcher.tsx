@@ -28,8 +28,76 @@ const LANGUAGES: LanguageOption[] = [
 ];
 
 /**
- * Maps current TW site path to equivalent HK site path
- * Since pages differ, we map to main pages only
+ * Extract URL from Strapi rich text field (hreflang_alternate) - Client-side version
+ * Handles string, link blocks, and paragraph blocks with links
+ */
+function extractUrlFromRichText(richText: any): string | null {
+  if (!richText) return null;
+  
+  // If it's already a string URL, return it
+  if (typeof richText === 'string') {
+    // Check if it's a valid URL
+    if (richText.startsWith('http://') || richText.startsWith('https://')) {
+      return richText.trim();
+    }
+    return null;
+  }
+  
+  // If it's an array of blocks (Strapi rich text format)
+  if (Array.isArray(richText)) {
+    for (const block of richText) {
+      // Check for link block
+      if (block.type === 'link' && block.url) {
+        return block.url;
+      }
+      
+      // Check for paragraph with link
+      if (block.type === 'paragraph' && block.children) {
+        for (const child of block.children) {
+          if (child.type === 'link' && child.url) {
+            return child.url;
+          }
+          // Also check nested children
+          if (child.children) {
+            for (const nested of child.children) {
+              if (nested.type === 'link' && nested.url) {
+                return nested.url;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Fetch merchant hreflang_alternate URL from API route
+ */
+async function fetchMerchantAlternateUrl(merchantSlug: string): Promise<string | null> {
+  try {
+    const response = await fetch(`/api/merchant-alternate-url?slug=${encodeURIComponent(merchantSlug)}`, {
+      cache: 'force-cache', // Cache for better performance
+    });
+
+    if (!response.ok) {
+      console.warn(`[LanguageSwitcher] Failed to fetch merchant alternate URL: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.alternateUrl || null;
+  } catch (error) {
+    console.warn('[LanguageSwitcher] Error fetching merchant alternate URL:', error);
+    return null;
+  }
+}
+
+/**
+ * Maps current path to equivalent alternate domain path
+ * Uses hreflang_alternate field for merchant pages if available
  */
 function mapPathToAlternateDomain(currentPath: string, targetDomain: string): string {
   // Main pages that exist on both domains
@@ -45,17 +113,40 @@ function mapPathToAlternateDomain(currentPath: string, targetDomain: string): st
     return mainPages[currentPath];
   }
 
-  // For specific merchant/coupon pages, just go to homepage
-  // since pages are different between domains
+  // For merchant/coupon pages, fallback to homepage
+  // (The actual alternate URL will be fetched from merchant data)
   return "/";
 }
 
 export function LanguageSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
+  const [alternateUrl, setAlternateUrl] = useState<string | null>(null);
+  const [isLoadingAlternateUrl, setIsLoadingAlternateUrl] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const domainConfig = getDomainConfig();
   const currentLanguage = LANGUAGES.find((lang) => lang.domain === domainConfig.domain) || LANGUAGES[0];
+
+  // Check if we're on a merchant page and fetch alternate URL
+  useEffect(() => {
+    const isMerchantPage = pathname.startsWith('/shop/') && pathname !== '/shop';
+    if (isMerchantPage) {
+      const merchantSlug = pathname.replace('/shop/', '');
+      setIsLoadingAlternateUrl(true);
+      fetchMerchantAlternateUrl(merchantSlug)
+        .then((url) => {
+          setAlternateUrl(url);
+          setIsLoadingAlternateUrl(false);
+        })
+        .catch((error) => {
+          console.warn('[LanguageSwitcher] Failed to fetch alternate URL:', error);
+          setAlternateUrl(null);
+          setIsLoadingAlternateUrl(false);
+        });
+    } else {
+      setAlternateUrl(null);
+    }
+  }, [pathname]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -77,12 +168,28 @@ export function LanguageSwitcher() {
       return;
     }
 
-    // Map current path to alternate domain path
+    // For merchant pages, use alternate URL from CMS if available
+    const isMerchantPage = pathname.startsWith('/shop/') && pathname !== '/shop';
+    if (isMerchantPage && alternateUrl) {
+      // Check if alternateUrl matches the target domain
+      try {
+        const urlObj = new URL(alternateUrl);
+        if (urlObj.hostname === language.domain || urlObj.hostname.includes(language.domain)) {
+          // Use the alternate URL directly
+          window.location.href = alternateUrl;
+          return;
+        }
+      } catch {
+        // Invalid URL, fall through to default mapping
+      }
+    }
+
+    // Map current path to alternate domain path (fallback for main pages or when no alternate URL)
     const alternatePath = mapPathToAlternateDomain(pathname, language.domain);
-    const alternateUrl = `https://${language.domain}${alternatePath}`;
+    const alternateUrlFallback = `https://${language.domain}${alternatePath}`;
 
     // Navigate to alternate domain
-    window.location.href = alternateUrl;
+    window.location.href = alternateUrlFallback;
   };
 
   return (
