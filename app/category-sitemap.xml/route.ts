@@ -12,8 +12,8 @@ export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
   
-  // Get market key for filtering (same pattern as other sitemaps)
-  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
+  // Hardcode market to 'tw' - this is the TW frontend, always filter for TW market only
+  const marketKey = 'tw'
 
   // Fetch all categories dynamically from CMS
   // Only include categories for the current market (TW only)
@@ -23,6 +23,7 @@ export async function GET() {
       "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
       "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
+      "populate[market][fields][0]": "key", // Populate market relation for filtering
       "pagination[pageSize]": "100",
       "sort[0]": "name:asc",
     }
@@ -31,6 +32,9 @@ export async function GET() {
       `/api/categories?${qs(categoryParams)}`,
       { revalidate: 604800, tag: 'sitemap:categories' }
     )
+
+    // Debug: Log market filter and results
+    console.log(`[CategorySitemap] Market filter: ${marketKey}, Found ${categoriesData?.data?.length || 0} categories`)
 
     categoryPages = (categoriesData?.data || []).map((category: any) => ({
       url: `${baseUrl}/category/${category.page_slug}`,

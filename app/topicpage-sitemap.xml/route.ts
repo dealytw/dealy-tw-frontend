@@ -12,8 +12,8 @@ export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
   
-  // Get market key for filtering (same pattern as other sitemaps)
-  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
+  // Hardcode market to 'tw' - this is the TW frontend, always filter for TW market only
+  const marketKey = 'tw'
 
   // Fetch all special offers (topicpage) from CMS
   // Only include published special offers (publishedAt exists) and filter by market (TW only)

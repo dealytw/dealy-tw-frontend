@@ -11,7 +11,8 @@ export async function GET() {
   const domainConfig = getDomainConfigServer()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
+  // Hardcode market to 'tw' - this is the TW frontend, always filter for TW market only
+  const market = 'tw'
 
   // Fetch all merchants dynamically from CMS
   // Only include published merchants (publishedAt exists)
