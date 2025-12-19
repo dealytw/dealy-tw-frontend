@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { strapiFetch, qs } from '@/lib/strapi.server';
-import { extractUrlFromRichText } from '@/src/seo/meta';
+import { extractUrlFromRichText } from '@/seo/meta';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
