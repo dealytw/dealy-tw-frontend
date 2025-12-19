@@ -16,6 +16,34 @@ export default function MerchantRating({ merchantName }: MerchantRatingProps) {
   const defaultRating = 5;
   const displayRating = selectedRating ?? defaultRating;
 
+  // Generate deterministic random rating count based on merchant name
+  // This ensures the same merchant always shows the same count
+  const generateRatingCount = (name: string): number => {
+    // Simple hash function to convert merchant name to a number
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      const char = name.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Use absolute value and normalize
+    const normalizedHash = Math.abs(hash);
+    
+    // Check if merchant is Taobao (case insensitive)
+    const isTaobao = name.toLowerCase().includes('taobao') || name.toLowerCase().includes('淘寶');
+    
+    if (isTaobao) {
+      // Taobao: 1000-1500 range
+      return 1000 + (normalizedHash % 501); // 501 = 1500 - 1000 + 1
+    } else {
+      // Others: 20-200 range
+      return 20 + (normalizedHash % 181); // 181 = 200 - 20 + 1
+    }
+  };
+
+  const ratingCount = generateRatingCount(merchantName);
+
   const handleStarClick = (rating: number) => {
     if (hasVoted) return;
     
@@ -75,7 +103,7 @@ export default function MerchantRating({ merchantName }: MerchantRatingProps) {
       </div>
       
       <span className="text-sm text-gray-500 whitespace-nowrap">
-        平均評分:{displayRating}/5
+        平均評分:{displayRating}/5 {ratingCount}人已評分
       </span>
       
       {hasVoted && (

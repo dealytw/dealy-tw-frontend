@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getDailyUpdatedTime } from "@/lib/jsonld";
 
 // Helper function to extract text from Strapi rich text
 function extractTextFromRichText(richText: any): string {
@@ -65,8 +66,10 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
     return best;
   }, null);
 
-  // Get today's date
-  const today = new Date().toISOString().split('T')[0];
+  // Get daily updated time (same as merchant page) and format consistently
+  const dailyUpdatedTime = getDailyUpdatedTime();
+  // Format date as YYYY/MM/DD to match merchant page format
+  const lastUpdatedDate = merchant.lastUpdatedDate || dailyUpdatedTime.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
 
   return (
     <div className="space-y-6 -mt-2">
@@ -104,7 +107,7 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
             <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
             <span className="text-sm font-semibold">今日已驗證有效優惠</span>
           </div>
-          <p className="text-xs text-gray-500">最近更新日期：{today}</p>
+          <p className="text-xs text-gray-500">最近更新日期：{lastUpdatedDate}</p>
         </div>
 
         {/* Stats */}
