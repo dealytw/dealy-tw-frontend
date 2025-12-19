@@ -11,12 +11,16 @@ export async function GET() {
   const domainConfig = getDomainConfigServer()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
+  
+  // Get market key for filtering (same pattern as other sitemaps)
+  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
 
   // Fetch all special offers (topicpage) from CMS
-  // Only include published special offers (publishedAt exists)
+  // Only include published special offers (publishedAt exists) and filter by market (TW only)
   let topicPages: Array<{ url: string; lastmod: string }> = []
   try {
     const topicParams = {
+      "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
       "filters[publishedAt][$notNull]": true, // Only published special offers
       "fields[0]": "page_slug",
       "fields[1]": "updatedAt",

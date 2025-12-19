@@ -11,11 +11,16 @@ export async function GET() {
   const domainConfig = getDomainConfigServer()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
   const currentDate = new Date()
+  
+  // Get market key for filtering (same pattern as other sitemaps)
+  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw'
 
   // Fetch all categories dynamically from CMS
+  // Only include categories for the current market (TW only)
   let categoryPages: Array<{ url: string; lastmod: string }> = []
   try {
     const categoryParams = {
+      "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
       "fields[0]": "page_slug",
       "fields[1]": "updatedAt",
       "pagination[pageSize]": "100",
