@@ -670,6 +670,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[8]": "how_to",
         "fields[9]": "createdAt",
         "fields[10]": "updatedAt",
+        "fields[11]": "hreflang_alternate",
         "populate[logo][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
@@ -877,6 +878,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
+
+    // Extract alternate URL from hreflang_alternate field (same as in generateMetadata)
+    const hreflangAlternateField = merchantData.attributes?.hreflang_alternate || merchantData.hreflang_alternate;
+    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
 
     // Transform merchant data to match frontend structure
     const merchant = {

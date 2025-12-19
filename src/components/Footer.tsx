@@ -2,7 +2,11 @@ import { Separator } from "@/components/ui/separator";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import Link from "next/link";
 
-const Footer = () => {
+interface FooterProps {
+  alternateUrl?: string | null;
+}
+
+const Footer = ({ alternateUrl }: FooterProps = {}) => {
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-16">
       <div className="container mx-auto px-4 py-12">
@@ -57,7 +61,7 @@ const Footer = () => {
           </p>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             {/* Language Switcher */}
-            <LanguageSwitcher />
+            <LanguageSwitcher alternateUrl={alternateUrl} />
           </div>
         </div>
         

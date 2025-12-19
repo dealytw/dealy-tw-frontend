@@ -73,27 +73,6 @@ function extractUrlFromRichText(richText: any): string | null {
   return null;
 }
 
-/**
- * Fetch merchant hreflang_alternate URL from API route
- */
-async function fetchMerchantAlternateUrl(merchantSlug: string): Promise<string | null> {
-  try {
-    const response = await fetch(`/api/merchant-alternate-url?slug=${encodeURIComponent(merchantSlug)}`, {
-      cache: 'force-cache', // Cache for better performance
-    });
-
-    if (!response.ok) {
-      console.warn(`[LanguageSwitcher] Failed to fetch merchant alternate URL: ${response.status}`);
-      return null;
-    }
-
-    const data = await response.json();
-    return data.alternateUrl || null;
-  } catch (error) {
-    console.warn('[LanguageSwitcher] Error fetching merchant alternate URL:', error);
-    return null;
-  }
-}
 
 /**
  * Maps current path to equivalent alternate domain path
@@ -118,36 +97,19 @@ function mapPathToAlternateDomain(currentPath: string, targetDomain: string): st
   return "/";
 }
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  alternateUrl?: string | null;
+}
+
+export function LanguageSwitcher({ alternateUrl: propAlternateUrl }: LanguageSwitcherProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [alternateUrl, setAlternateUrl] = useState<string | null>(null);
-  const [isLoadingAlternateUrl, setIsLoadingAlternateUrl] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const domainConfig = getDomainConfig();
   const currentLanguage = LANGUAGES.find((lang) => lang.domain === domainConfig.domain) || LANGUAGES[0];
 
-  // Check if we're on a merchant page and fetch alternate URL
-  useEffect(() => {
-    const isMerchantPage = pathname.startsWith('/shop/') && pathname !== '/shop';
-    if (isMerchantPage) {
-      const merchantSlug = pathname.replace('/shop/', '');
-      setIsLoadingAlternateUrl(true);
-      fetchMerchantAlternateUrl(merchantSlug)
-        .then((url) => {
-          console.log(`[LanguageSwitcher] Fetched alternate URL for ${merchantSlug}:`, url);
-          setAlternateUrl(url);
-          setIsLoadingAlternateUrl(false);
-        })
-        .catch((error) => {
-          console.warn('[LanguageSwitcher] Failed to fetch alternate URL:', error);
-          setAlternateUrl(null);
-          setIsLoadingAlternateUrl(false);
-        });
-    } else {
-      setAlternateUrl(null);
-    }
-  }, [pathname]);
+  // Use alternate URL from props (passed from merchant page) or null
+  const alternateUrl = propAlternateUrl || null;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -169,33 +131,24 @@ export function LanguageSwitcher() {
       return '#';
     }
 
-    // For merchant pages, use alternate URL from CMS if available
+    // For merchant pages, use alternate URL from props if available
     const isMerchantPage = pathname.startsWith('/shop/') && pathname !== '/shop';
     if (isMerchantPage && alternateUrl) {
       // Check if alternateUrl matches the target domain (for switching to alternate language)
       try {
         const urlObj = new URL(alternateUrl);
         // If we're switching to the alternate language and have an alternate URL, use it
-        // The alternate URL should be for the other domain (e.g., if on TW, alternate is HK)
         if (urlObj.hostname === language.domain || urlObj.hostname.endsWith('.' + language.domain)) {
-          console.log(`[LanguageSwitcher] Using alternate URL for ${language.code}: ${alternateUrl}`);
           return alternateUrl;
-        } else {
-          console.log(`[LanguageSwitcher] Alternate URL domain mismatch: ${urlObj.hostname} vs ${language.domain}`);
         }
-      } catch (error) {
-        console.warn('[LanguageSwitcher] Invalid alternate URL:', alternateUrl, error);
+      } catch {
         // Invalid URL, fall through to default mapping
       }
-    } else if (isMerchantPage && !alternateUrl) {
-      console.log(`[LanguageSwitcher] No alternate URL found for merchant page, using fallback`);
     }
 
     // Map current path to alternate domain path (fallback for main pages or when no alternate URL)
     const alternatePath = mapPathToAlternateDomain(pathname, language.domain);
-    const fallbackUrl = `https://${language.domain}${alternatePath}`;
-    console.log(`[LanguageSwitcher] Using fallback URL for ${language.code}: ${fallbackUrl}`);
-    return fallbackUrl;
+    return `https://${language.domain}${alternatePath}`;
   };
 
   return (

@@ -381,9 +381,10 @@ interface MerchantProps {
     title: string;
     slug: string;
   }>;
+  alternateUrl?: string | null;
 }
 
-const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
@@ -1249,7 +1250,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, hotstor
       <CouponModal open={isModalOpen} onOpenChange={setIsModalOpen} coupon={selectedCoupon} />
       
       {/* Footer */}
-      <Footer />
+      <Footer alternateUrl={alternateUrl} />
     </div>
   );
 };
