@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { strapiFetch, qs } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
+import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -47,6 +48,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const domainConfig = getDomainConfigServer();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+  const ogImageUrl = `${siteUrl}/dealytwlogo.svg`;
+  const ogImageAlt = 'Dealy TW 台灣最新優惠平台';
   
   // Check if slug is reserved
   if (RESERVED_SLUGS.includes(slug)) {
@@ -54,6 +59,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: `${slug} | Dealy.TW`,
       description: '',
       path: `/${slug}`,
+      ogImageUrl,
+      ogImageAlt,
     });
   }
   
@@ -79,6 +86,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         title: `${slug} | Dealy.TW`,
         description: '',
         path: `/${slug}`,
+        ogImageUrl,
+        ogImageAlt,
       });
     }
 
@@ -89,6 +98,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title,
       description,
       path: `/${slug}`,
+      ogImageUrl,
+      ogImageAlt,
     });
   } catch (error) {
     console.error('Error generating metadata:', error);
@@ -96,6 +107,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: `${slug} | Dealy.TW`,
       description: '',
       path: `/${slug}`,
+      ogImageUrl,
+      ogImageAlt,
     });
   }
 }

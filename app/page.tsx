@@ -13,6 +13,10 @@ export const dynamic = 'auto'; // Allow ISR revalidation
 // Generate metadata for SEO
 export async function generateMetadata() {
   const MARKET = process.env.NEXT_PUBLIC_MARKET_KEY || "tw";
+  const domainConfig = getDomainConfigServer();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+  const ogImageUrl = `${siteUrl}/dealytwlogo.svg`;
+  const ogImageAlt = 'Dealy TW 台灣最新優惠平台';
   
   try {
     // Fetch homepage data to get SEO fields
@@ -22,6 +26,8 @@ export async function generateMetadata() {
       title: homepageData.seo.title,
       description: homepageData.seo.description,
       path: '/',
+      ogImageUrl,
+      ogImageAlt,
     });
   } catch (error) {
     console.error('Error fetching homepage metadata:', error);
@@ -30,6 +36,8 @@ export async function generateMetadata() {
       title: 'Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠',
       description: '精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。',
       path: '/',
+      ogImageUrl,
+      ogImageAlt,
     });
   }
 }

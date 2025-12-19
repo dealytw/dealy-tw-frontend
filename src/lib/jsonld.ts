@@ -36,6 +36,36 @@ export function getDailyUpdatedTime(): Date {
   return taiwanUpdatedDate;
 }
 
+/**
+ * Generate deterministic random rating count based on merchant name.
+ * This ensures the same merchant always shows the same count.
+ * Taobao merchants: 1000-1500 range
+ * Other merchants: 20-200 range
+ */
+export function generateRatingCount(merchantName: string): number {
+  // Simple hash function to convert merchant name to a number
+  let hash = 0;
+  for (let i = 0; i < merchantName.length; i++) {
+    const char = merchantName.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Use absolute value and normalize
+  const normalizedHash = Math.abs(hash);
+  
+  // Check if merchant is Taobao (case insensitive)
+  const isTaobao = merchantName.toLowerCase().includes('taobao') || merchantName.toLowerCase().includes('淘寶');
+  
+  if (isTaobao) {
+    // Taobao: 1000-1500 range
+    return 1000 + (normalizedHash % 501); // 501 = 1500 - 1000 + 1
+  } else {
+    // Others: 20-200 range
+    return 20 + (normalizedHash % 181); // 181 = 200 - 20 + 1
+  }
+}
+
 export function websiteJsonLd(opts: { 
   siteName: string; 
   siteUrl: UrlString; 

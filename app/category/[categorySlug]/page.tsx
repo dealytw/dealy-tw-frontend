@@ -17,6 +17,10 @@ export async function generateMetadata({
   const { categorySlug } = await params;
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   const marketKey = market.toLowerCase();
+  const domainConfig = getDomainConfigServer();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+  const ogImageUrl = `${siteUrl}/dealytwlogo.svg`;
+  const ogImageAlt = 'Dealy TW 台灣最新優惠平台';
   
   try {
     // Fetch category data for SEO - use page_slug (unique identifier)
@@ -42,6 +46,8 @@ export async function generateMetadata({
         title,
         description,
         path: `/category/${categorySlug}`,
+        ogImageUrl,
+        ogImageAlt,
       });
     }
   } catch (error) {
@@ -53,6 +59,8 @@ export async function generateMetadata({
     title: `${categorySlug} 優惠與折扣`,
     description: `精選 ${categorySlug} 最新優惠與折扣合集。`,
     path: `/category/${categorySlug}`,
+    ogImageUrl,
+    ogImageAlt,
   });
 }
 

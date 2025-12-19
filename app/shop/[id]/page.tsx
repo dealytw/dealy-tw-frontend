@@ -3,7 +3,7 @@ import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterPar
 import { pageMeta, extractUrlFromRichText } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
-import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime } from '@/lib/jsonld';
+import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, generateRatingCount } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
 /**
@@ -1111,13 +1111,16 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       publisherId: siteOrgId, // Publisher points to site Organization (Dealy)
     });
     
+    // Generate rating count (matches UI display)
+    const ratingCount = generateRatingCount(merchant.name);
+    
     // Store schema (separate script tag, not in @graph - matching HK format)
     const store = storeJsonLd({
       name: merchant.name,
       url: merchantUrl,
       image: pageImage || undefined,
       ratingValue: "5",
-      reviewCount: "24",
+      reviewCount: ratingCount.toString(),
     });
     
     // Combine schemas into @graph array (matching HK format exactly)
