@@ -265,10 +265,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     siteUrl: siteUrl, 
                     searchUrl: `${siteUrl}/search`,
                     locale: marketLocale,
-                    image: `${siteUrl}/favicon.svg`,
-                    logo: `${siteUrl}/favicon.svg`,
-                    description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
-                    publisher: domainConfig.name
+                    image: `${siteUrl}/dealytwlogo.svg`, // Use image instead of logo (WebSite doesn't support logo)
+                    description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。"
+                    // Note: publisher removed - WebSite doesn't support publisher property (use publisherId in webPageJsonLd instead)
                   })
                 ),
               }}
@@ -281,7 +280,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     name: domainConfig.name, 
                     url: siteUrl, 
                     logo: `${siteUrl}/favicon.svg`,
-                    sameAs: sameAs
+                    sameAs: sameAs,
+                    id: `${siteUrl}#organization` // Use same @id as merchant page to avoid duplication
                   })
                 ),
               }}

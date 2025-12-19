@@ -66,7 +66,7 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
     return best;
   }, null);
 
-  // Get daily updated time (same as merchant page) and format consistently
+  // Get daily updated time (server-side, always today's date)
   const dailyUpdatedTime = getDailyUpdatedTime();
   // Format date as YYYY/MM/DD to match merchant page format
   const lastUpdatedDate = merchant.lastUpdatedDate || dailyUpdatedTime.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');

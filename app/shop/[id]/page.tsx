@@ -1016,21 +1016,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Use rewritten logo for schema (already rewritten above)
     const schemaLogo = merchant.logo || undefined;
     
-    // Build all schema objects with @id (using # suffix for proper referencing)
-    const website = websiteJsonLd({
-      siteName: 'Dealy.TW 最新優惠平台',
-      siteUrl: siteUrl,
-      locale: marketLocale,
-    });
-    
-    // Site Organization (Dealy) - publisher for WebPage
+    // Note: WebSite and Site Organization schemas are already in layout.tsx (global)
+    // Do NOT duplicate them here - only generate page-specific schemas
+    // Reference site Organization by @id: ${siteUrl}#organization
     const siteOrgId = `${siteUrl}#organization`;
-    const siteOrg = organizationJsonLd({
-      name: 'Dealy.TW 最新優惠平台',
-      url: siteUrl,
-      logo: `${siteUrl}/favicon.svg`,
-      id: siteOrgId,
-    });
     
     // Use site_url from merchant collection (real merchant URL, not affiliate link)
     // Normalize URL to ensure it has https:// protocol
@@ -1125,11 +1114,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     
     // Combine schemas into @graph array (matching HK format exactly)
     // Note: Store and BreadcrumbList are separate script tags, not in @graph
+    // Note: WebSite and Site Organization schemas are in layout.tsx (global), don't duplicate here
     const graphItems: any[] = [
-      siteOrg, // Site Organization (Dealy) - publisher
-      merchantOrg,
-      website,
-      webPage,
+      merchantOrg, // Merchant-specific Organization
+      webPage, // Page-specific schema (references siteOrg by @id)
     ];
     
     // Add optional schemas

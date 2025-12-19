@@ -925,7 +925,6 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   id="expired-coupons"
                   aria-labelledby={`${merchant.slug}-expired-heading`}
                   className="mb-10"
-                  data-nosnippet="true"
                 >
                   <h2
                     id={`${merchant.slug}-expired-heading`}
@@ -1034,7 +1033,6 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                 id="related-store-coupons"
                 aria-labelledby={`${merchant.slug}-related-heading`}
                 className="mb-10"
-                data-nosnippet="true"
               >
                 <h2
                   id={`${merchant.slug}-related-heading`}

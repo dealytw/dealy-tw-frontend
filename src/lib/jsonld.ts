@@ -108,15 +108,13 @@ export function websiteJsonLd(opts: {
   if (image) {
     obj.image = image;
   }
-  if (logo) {
-    obj.logo = logo;
-  }
+  // Note: WebSite schema does not support 'logo' property - removed
+  // Use 'image' property instead for site logo
   if (description) {
     obj.description = description;
   }
-  if (publisher) {
-    obj.publisher = publisher;
-  }
+  // Note: publisher should be Organization/Person object, not string
+  // Removed - use publisherId in webPageJsonLd instead
   return obj;
 }
 
@@ -162,6 +160,31 @@ export function breadcrumbJsonLd(items: Array<{ name: string; url: UrlString }>,
   };
 }
 
+/**
+ * Extract plain text from rich text (removes paragraph/children structure)
+ */
+function extractPlainText(richText: any): string | undefined {
+  if (!richText) return undefined;
+  if (typeof richText === 'string') {
+    // If it's HTML string, strip tags
+    return richText.replace(/<[^>]*>/g, '').trim() || undefined;
+  }
+  if (Array.isArray(richText)) {
+    // Extract text from all blocks and children
+    const extractText = (item: any): string => {
+      if (typeof item === 'string') return item;
+      if (item.text) return item.text;
+      if (item.children && Array.isArray(item.children)) {
+        return item.children.map(extractText).filter(Boolean).join(' ');
+      }
+      return '';
+    };
+    const text = richText.map(extractText).filter(Boolean).join(' ').trim();
+    return text || undefined;
+  }
+  return undefined;
+}
+
 export function offersItemListJsonLd(coupons: Array<{
   value?: string;
   title?: string;
@@ -169,19 +192,24 @@ export function offersItemListJsonLd(coupons: Array<{
   status?: 'active' | 'expired';
   expires_at?: string | null;
   url: UrlString;
-  description?: string;
+  description?: string | any; // Can be string or rich text object
 }>, listId?: UrlString) {
-  const items = coupons.map((c, i) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'WebPage',
-      name: c.title || c.value || '優惠', // Use coupon_title as name (from top)
-      url: c.url || `${listId}#coupon-active-${i + 1}`,
-      description: c.description || undefined, // Use description from coupon card
-      ...(c.expires_at && { expires: c.expires_at.split('T')[0] }), // Format: YYYY-MM-DD
-    },
-  }));
+  const items = coupons.map((c, i) => {
+    // Extract plain text from description (schema.org expects Text, not rich text structure)
+    const plainDescription = extractPlainText(c.description);
+    
+    return {
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'WebPage',
+        name: c.title || c.value || '優惠', // Use coupon_title as name
+        url: c.url || `${listId}#coupon-active-${i + 1}`,
+        ...(plainDescription && { description: plainDescription }), // Only include if we have plain text
+        ...(c.expires_at && { expires: c.expires_at.split('T')[0] }), // Format: YYYY-MM-DD
+      },
+    };
+  });
   const list: any = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
