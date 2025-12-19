@@ -1154,6 +1154,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
         specialOffers={merchant.special_offers || []}
+        alternateUrl={alternateUrl || null}
       />
       {/* JSON-LD scripts - Matching HK site format exactly */}
       {/* eslint-disable @next/next/no-sync-scripts */}
