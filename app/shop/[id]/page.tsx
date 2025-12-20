@@ -600,7 +600,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     
     // Fallback to default OG image if no merchant image available
     if (!ogImageUrl) {
-      ogImageUrl = `${siteUrl}/favicon.svg`; // Use favicon as last resort
+      ogImageUrl = `${siteUrl}/dealytwlogo.svg`; // Use logo as fallback, not favicon
       console.warn(`[generateMetadata] No OG image found for ${id}, using fallback`);
     } else {
       console.log(`[generateMetadata] OG image for ${id}:`, ogImageUrl);

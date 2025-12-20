@@ -18,34 +18,30 @@ export const metadata: Metadata = {
   description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
   authors: [{ name: "Dealy TW" }],
   icons: {
-    // Primary ICO for Google Search Results and maximum compatibility
-    // Note: favicon.ico should be created from favicon.png (see docs/FAVICON_SETUP.md)
+    // Primary ICO for Google Search Results - MUST be first and explicit
+    // Google requires: minimum 48x48 pixels, accessible at /favicon.ico
     icon: [
-      { url: "/favicon.ico", sizes: "any" }, // Primary - Google Search Results looks for this first
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }, // Available size
-      // Note: favicon-32x32.png and favicon-16x16.png not needed - ICO contains these sizes internally
-      { url: "/favicon1-01.png", sizes: "any", type: "image/png" }, // Source file fallback
-      { url: "/favicon.png", sizes: "any", type: "image/png" }, // Legacy fallback
-      { url: "/favicon.svg", type: "image/svg+xml" }, // Modern browsers
+      { url: "/favicon.ico", type: "image/x-icon" }, // PRIMARY - Google Search Results looks for this first (explicit type)
+      { url: "/favicon.ico", sizes: "any" }, // Alternative format for browser compatibility
+      // Removed SVG and redundant PNGs - they create noise and confuse Google
+      // ICO file contains all needed sizes (16x16, 32x32, 48x48) internally
     ],
     shortcut: "/favicon.ico", // Legacy support
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }, // iOS devices
-      { url: "/favicon1-01.png", sizes: "180x180", type: "image/png" }, // Source file fallback
-      { url: "/favicon.png", sizes: "180x180", type: "image/png" }, // Legacy fallback
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }, // iOS devices only
     ],
   },
   openGraph: {
     title: "Dealy TW 台灣最新優惠平台",
     description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
     type: "website",
-    images: ["/favicon.svg"],
+    images: ["/dealytwlogo.svg"], // Use logo, not favicon for OpenGraph
   },
   twitter: {
     card: "summary_large_image",
     title: "Dealy TW 台灣最新優惠平台",
     description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
-    images: ["/favicon.svg"],
+    images: ["/dealytwlogo.svg"], // Use logo, not favicon for OpenGraph
   },
 };
 
@@ -210,27 +206,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Preload primary favicon for faster loading (critical for first paint) */}
         <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
         
-        {/* Favicon links - comprehensive set for Google Search Results and browser compatibility */}
-        {/* Primary ICO - Google Search Results primarily looks for this (MUST EXIST) */}
+        {/* Favicon links - Optimized for Google Search Results */}
+        {/* PRIMARY: ICO with explicit type - Google's preferred format (MUST be first) */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        {/* Alternative format for maximum browser compatibility */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        {/* PNG fallbacks for different sizes */}
-        {/* Note: favicon.ico contains 16x16, 32x32, 48x48 internally, so separate PNGs are optional */}
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-        {/* Note: favicon-32x32.png and favicon-16x16.png not needed - ICO contains these sizes */}
-        {/* Source file fallback */}
-        <link rel="icon" type="image/png" href="/favicon1-01.png" />
-        {/* Legacy fallback */}
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        {/* SVG for modern browsers */}
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        {/* Apple touch icon for iOS devices */}
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        {/* Source file fallback for Apple touch icon */}
-        <link rel="apple-touch-icon" href="/favicon1-01.png" />
-        {/* Legacy fallback */}
-        <link rel="apple-touch-icon" href="/favicon.png" />
         {/* Legacy shortcut icon */}
         <link rel="shortcut icon" href="/favicon.ico" />
+        {/* Apple touch icon for iOS devices only */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        {/* 
+          REMOVED: SVG and redundant PNG fallbacks
+          - SVG creates noise and Google prefers ICO
+          - Multiple PNGs confuse crawlers
+          - ICO file contains all needed sizes (16x16, 32x32, 48x48) internally
+        */}
         
         {/* Web Manifest for PWA support */}
         <link rel="manifest" href="/site.webmanifest" />
@@ -279,7 +269,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   organizationJsonLd({ 
                     name: domainConfig.name, 
                     url: siteUrl, 
-                    logo: `${siteUrl}/favicon.svg`,
+                    logo: `${siteUrl}/dealytwlogo.svg`, // Use logo, not favicon for structured data
                     sameAs: sameAs,
                     id: `${siteUrl}#organization` // Use same @id as merchant page to avoid duplication
                   })
