@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * URL Normalization Middleware
+ * URL Normalization Middleware + Cache Headers
  * 
  * Handles:
  * 1. Trailing slash removal (except root) - 301 redirect
  * 2. Lowercase path enforcement - 301 redirect
  * 3. Preserves query parameters and hash
+ * 4. Adds proper cache headers for ISR pages
  */
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
@@ -45,7 +46,53 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
-  return NextResponse.next();
+  // 3. Add cache headers for ISR pages (only for HTML pages, not during revalidation)
+  const response = NextResponse.next();
+  
+  // Skip cache headers if this is a revalidation request
+  const isRevalidation = 
+    request.headers.get('x-vercel-revalidate') !== null ||
+    request.headers.get('x-prerender-revalidate') !== null ||
+    request.nextUrl.searchParams.has('x-vercel-revalidate');
+  
+  if (!isRevalidation) {
+    // Determine cache time based on page type
+    let sMaxAge = 28800; // Default: 8 hours (homepage)
+    let staleWhileRevalidate = 86400; // 24 hours
+    
+    // Homepage: 8 hours
+    if (pathname === '/') {
+      sMaxAge = 28800;
+    }
+    // Merchant pages: 8 hours
+    else if (pathname.startsWith('/shop/')) {
+      sMaxAge = 28800; // 8 hours
+    }
+    // Blog pages: 24 hours
+    else if (pathname.startsWith('/blog/')) {
+      sMaxAge = 86400; // 24 hours
+    }
+    // Category pages: 24 hours
+    else if (pathname.startsWith('/category/')) {
+      sMaxAge = 86400;
+    }
+    // Other content pages: 8 hours
+    else if (!pathname.startsWith('/search') && !pathname.startsWith('/api/')) {
+      sMaxAge = 28800;
+    }
+    // Search pages: no cache (SSR)
+    else {
+      return response; // Don't add cache headers for search/API
+    }
+    
+    // Set cache headers for Cloudflare and Vercel Edge
+    response.headers.set(
+      'Cache-Control',
+      `public, s-maxage=${sMaxAge}, stale-while-revalidate=${staleWhileRevalidate}, max-age=0`
+    );
+  }
+  
+  return response;
 }
 
 export const config = {
