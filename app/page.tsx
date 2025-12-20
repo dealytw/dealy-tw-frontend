@@ -8,7 +8,10 @@ import { getDomainConfig as getDomainConfigServer, getMarketLocale } from "@/lib
 
 // Enable ISR for this page
 export const revalidate = 3600; // Revalidate every hour
-export const dynamic = 'auto'; // Allow ISR revalidation
+// IMPORTANT: Force static ISR so the homepage is cacheable at Cloudflare/Vercel.
+// If this page becomes dynamic (e.g. due to cookies()/headers() or no-store fetch),
+// Vercel will emit `Cache-Control: private, no-store...` which makes Cloudflare BYPASS.
+export const dynamic = 'force-static';
 
 // Generate metadata for SEO
 export async function generateMetadata() {
