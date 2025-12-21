@@ -1164,7 +1164,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                           key={imgIndex}
                           src={imageUrl}
                           alt={`如何於${merchant.name}使用優惠碼 - 步驟 ${imgIndex + 1}`}
-                          className="w-full h-auto rounded-lg border border-gray-200"
+                          className="w-full max-w-[320px] h-auto rounded-lg border border-gray-200"
                           loading="lazy"
                           decoding="async"
                         />
