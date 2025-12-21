@@ -193,8 +193,6 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
         <div className="text-sm text-gray-700 leading-relaxed">
           {merchant.store_description ? (
             <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}></div>
-          ) : merchant.description ? (
-            merchant.description
           ) : (
             ""
           )}

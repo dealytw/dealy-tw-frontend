@@ -640,7 +640,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
               </div>
             </div>
             <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-6">
-              {merchant.description ? merchant.description : `${merchant.name}優惠碼限時登場！透過信用卡專屬折扣或指定 Promo Code，即享機票、酒店、高鐵優惠，助你即省更多。`}
+              {merchant.description || ""}
             </p>
             
             {/* Continued Content */}
