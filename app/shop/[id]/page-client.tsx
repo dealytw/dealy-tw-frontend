@@ -1156,6 +1156,22 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* How To Images */}
+                  {merchant.how_to_image && Array.isArray(merchant.how_to_image) && merchant.how_to_image.length > 0 && (
+                    <div className="mb-4">
+                      {merchant.how_to_image.map((imageUrl: string, imgIndex: number) => (
+                        <img
+                          key={imgIndex}
+                          src={imageUrl}
+                          alt={`如何於${merchant.name}使用優惠碼 - 步驟 ${imgIndex + 1}`}
+                          className="w-full h-auto rounded-lg border border-gray-200"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
                   {merchant.how_to && Array.isArray(merchant.how_to) && merchant.how_to.length > 0 ? (
                     merchant.how_to.map((item: any, index: number) => {
                       // Handle both parsed format {step, descriptions} and raw blocks format

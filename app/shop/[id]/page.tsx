@@ -673,6 +673,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[11]": "updatedAt",
         "fields[12]": "hreflang_alternate",
         "populate[logo][fields][0]": "url",
+        "populate[how_to_image][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
         "populate[useful_links][fields][1]": "url",
         "populate[related_merchants][fields][0]": "id",
@@ -876,6 +877,22 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Rewrite logo URL to custom domain (for both client component and schema)
     const originalLogoUrl = merchantData.logo?.url ? absolutizeMedia(merchantData.logo.url) : null;
     const rewrittenLogoUrl = originalLogoUrl ? rewriteImageUrl(originalLogoUrl, siteUrl) : null;
+    
+    // Process how_to_image (can be single image or array)
+    let howToImages: string[] = [];
+    if (merchantData.how_to_image) {
+      const images = Array.isArray(merchantData.how_to_image) ? merchantData.how_to_image : [merchantData.how_to_image];
+      howToImages = images
+        .map((img: any) => {
+          const url = img?.url || img?.data?.url || img;
+          if (url && typeof url === 'string') {
+            const absoluteUrl = absolutizeMedia(url);
+            return rewriteImageUrl(absoluteUrl, siteUrl);
+          }
+          return null;
+        })
+        .filter((url: string | null): url is string => url !== null);
+    }
 
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
@@ -894,6 +911,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       store_description: merchantData.store_description || null, // Rich text blocks (JSON array)
       faqs: parsedFAQs,
       how_to: parseHowToFromRichText(merchantData.how_to),
+      how_to_image: howToImages,
       useful_links: merchantData.useful_links || [],
       website: merchantData.website || "",
       site_url: merchantData.site_url || "",
