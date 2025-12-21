@@ -3,7 +3,42 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getDailyUpdatedTime } from "@/lib/jsonld";
 
-// Helper function to extract text from Strapi rich text
+// Helper function to render rich text with formatting preserved (same as page-client)
+function renderRichText(richText: any): string {
+  if (!richText) return "";
+  if (typeof richText === "string") return richText;
+  if (Array.isArray(richText)) {
+    return richText.map(item => {
+      if (item.type === "paragraph") {
+        let paragraphContent = "";
+        if (item.children && Array.isArray(item.children)) {
+          paragraphContent = item.children.map((child: any) => {
+            if (child.bold) return `<strong>${child.text || ""}</strong>`;
+            if (child.italic) return `<em>${child.text || ""}</em>`;
+            return child.text || "";
+          }).join("");
+        } else {
+          paragraphContent = item.text || "";
+        }
+        // Wrap paragraph content in <p> tag for proper line breaks
+        return `<p>${paragraphContent}</p>`;
+      }
+      if (item.type === "list") {
+        const listItems = item.children?.map((child: any) => {
+          if (child.children && Array.isArray(child.children)) {
+            return child.children.map((grandChild: any) => grandChild.text || "").join("");
+          }
+          return child.text || "";
+        }).join("</li><li>") || "";
+        return `<ul><li>${listItems}</li></ul>`;
+      }
+      return item.text || "";
+    }).join("");
+  }
+  return "";
+}
+
+// Helper function to extract text from Strapi rich text (for fallback)
 function extractTextFromRichText(richText: any): string {
   if (!richText) return "";
   if (typeof richText === "string") return richText;
@@ -155,9 +190,15 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
 
       {/* Description Card */}
       <Card className="p-4">
-        <p className="text-sm text-gray-700 leading-relaxed">
-          {merchant.store_description ? extractTextFromRichText(merchant.store_description) : merchant.description || ""}
-        </p>
+        <div className="text-sm text-gray-700 leading-relaxed">
+          {merchant.store_description ? (
+            <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}></div>
+          ) : merchant.description ? (
+            merchant.description
+          ) : (
+            ""
+          )}
+        </div>
       </Card>
 
       {/* Popular Merchants Section */}
