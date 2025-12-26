@@ -524,15 +524,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
     const name = (merchant.attributes?.merchant_name || merchant.merchant_name || id).trim();
     
-    // Extract alternate URL from hreflang_alternate field (rich text JSON)
-    // This field contains a direct URL like "https://dealy.hk/shop/trip-com"
-    const hreflangAlternateField = merchant.attributes?.hreflang_alternate || merchant.hreflang_alternate;
-    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
+    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+    // This field contains URL(s) like "https://dealy.hk/shop/trip-com" or "https://dealy.hk/shop/trip-com, https://dealy.sg/shop/trip-com"
+    const hreflangAlternateUrl = merchant.attributes?.hreflang_alternate_url || merchant.hreflang_alternate_url;
+    const alternateUrl = hreflangAlternateUrl || null; // Use directly (comma-separated URLs will be parsed in getHreflangLinks)
     
     if (alternateUrl) {
-      console.log(`[generateMetadata] ✅ Found alternate URL for merchant "${id}": ${alternateUrl}`);
+      console.log(`[generateMetadata] ✅ Found alternate URL(s) for merchant "${id}": ${alternateUrl}`);
     } else {
-      console.log(`[generateMetadata] No alternate URL found for merchant "${id}" (hreflang_alternate field is empty or null)`);
+      console.log(`[generateMetadata] No alternate URL found for merchant "${id}" (hreflang_alternate_url field is empty or null)`);
     }
     let title: string;
     let description: string;
@@ -671,7 +671,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[9]": "how_to",
         "fields[10]": "createdAt",
         "fields[11]": "updatedAt",
-        "fields[12]": "hreflang_alternate",
+        "fields[12]": "hreflang_alternate_url",
         "populate[logo][fields][0]": "url",
         "populate[how_to_image][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
@@ -897,9 +897,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
 
-    // Extract alternate URL from hreflang_alternate field (same as in generateMetadata)
-    const hreflangAlternateField = merchantData.attributes?.hreflang_alternate || merchantData.hreflang_alternate;
-    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
+    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+    // Same as in generateMetadata - use directly, parsing happens in getHreflangLinks
+    const alternateUrl = merchantData.attributes?.hreflang_alternate_url || merchantData.hreflang_alternate_url || null;
 
     // Transform merchant data to match frontend structure
     const merchant = {

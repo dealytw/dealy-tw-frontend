@@ -14,7 +14,7 @@ export async function getMerchantSEO(slug: string, revalidate = 21600) {
     'fields[5]': 'seo_description',
     'fields[6]': 'canonical_url',
     'fields[7]': 'robots',
-    'fields[8]': 'hreflang_alternate',
+    'fields[8]': 'hreflang_alternate_url',
   };
 
   return strapiFetch<{ data: any[] }>(`/api/merchants?${qs(params)}`, {

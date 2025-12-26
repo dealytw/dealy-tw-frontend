@@ -10,7 +10,29 @@ export function canonical(pathOrAbs?: string) {
 }
 
 /**
- * Extract URL from Strapi rich text field (hreflang_alternate)
+ * Parse comma-separated URLs from hreflang_alternate_url field
+ * Returns array of valid URLs (trimmed and filtered)
+ * 
+ * @param urlString - Comma-separated URLs (e.g., "https://dealy.hk/category/sports, https://dealy.sg/category/sports")
+ * @returns Array of valid URLs
+ */
+export function parseHreflangUrls(urlString: string | null | undefined): string[] {
+  if (!urlString || typeof urlString !== 'string') {
+    return [];
+  }
+  
+  return urlString
+    .split(',')
+    .map(url => url.trim())
+    .filter(url => {
+      // Only keep valid URLs
+      return url.startsWith('http://') || url.startsWith('https://');
+    });
+}
+
+/**
+ * Extract URL from Strapi rich text field (hreflang_alternate) - DEPRECATED
+ * Kept for backward compatibility, but prefer using hreflang_alternate_url
  * Handles string, link blocks, and paragraph blocks with links
  */
 export function extractUrlFromRichText(richText: any): string | null {
@@ -86,10 +108,10 @@ function getHreflangFromUrl(url: string): string | null {
 
 /**
  * Generate hreflang links for cross-domain SEO
- * Supports both main pages and merchant pages with alternate URL from CMS
+ * Supports both main pages and merchant pages with alternate URL(s) from CMS
  * 
  * @param currentPath - Current page path (e.g., "/shop/farfetch")
- * @param alternateUrl - Optional: direct URL from CMS hreflang_alternate field (e.g., "https://dealy.hk/shop/trip-com")
+ * @param alternateUrl - Optional: URL(s) from CMS hreflang_alternate_url field (comma-separated, e.g., "https://dealy.hk/shop/trip-com, https://dealy.sg/shop/trip-com")
  */
 export function getHreflangLinks(
   currentPath: string,
@@ -99,14 +121,41 @@ export function getHreflangLinks(
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${config.domain}`;
   const alternateDomainUrl = `https://${config.alternateDomain}`;
   
-  // Main pages that exist on both domains
+  // Main pages that exist on both domains (index pages)
   const mainPages = ['/', '/shop', '/special-offers', '/blog'];
   
-  // Check if this is a main page
+  // Check if this is a main page (index page)
   const isMainPage = mainPages.includes(currentPath) || currentPath === '';
   
-  // Check if this is a merchant page (starts with /shop/)
+  // Check if this is a merchant page (starts with /shop/ but not /shop)
   const isMerchantPage = currentPath.startsWith('/shop/') && currentPath !== '/shop';
+  
+  // Pages that have same slugs on both domains (should get hreflang)
+  // These are dynamic routes where the slug is the same on both TW and HK sites
+  // Note: Blog posts are excluded - no related blog posts should be created across markets
+  const pagesWithSameSlug = [
+    '/category/',      // Category pages: /category/[categorySlug]
+    '/special-offers/', // Special offers detail: /special-offers/[id] (not /special-offers index)
+  ];
+  
+  // Check if this is a page with same slug on both domains
+  // Exclude index pages (already handled by isMainPage)
+  const isPageWithSameSlug = pagesWithSameSlug.some(prefix => {
+    if (currentPath === prefix.replace('/', '')) return false; // Exclude index pages
+    return currentPath.startsWith(prefix);
+  });
+  
+  // Check if this is a legal page (root level slug like /about, /privacy, etc.)
+  // Legal pages may have same slugs on both domains
+  const isLegalPage = !currentPath.startsWith('/shop') && 
+                      !currentPath.startsWith('/category') && 
+                      !currentPath.startsWith('/blog') && 
+                      !currentPath.startsWith('/special-offers') &&
+                      !currentPath.startsWith('/search') &&
+                      !currentPath.startsWith('/submit-coupons') &&
+                      !currentPath.startsWith('/api') &&
+                      currentPath !== '/' &&
+                      currentPath.split('/').length === 2; // Only one level deep (e.g., /about, not /about/terms)
   
   // Build hreflang links
   const links: Array<{ hreflang: string; href: string }> = [];
@@ -117,7 +166,7 @@ export function getHreflangLinks(
     href: `${baseUrl}${currentPath}`
   });
   
-  // For main pages, add alternate domain with same path
+  // For main pages (index pages), add alternate domain with same path
   if (isMainPage) {
     links.push({
       hreflang: config.alternateHreflang,
@@ -125,7 +174,24 @@ export function getHreflangLinks(
     });
   }
   
+  // For pages with same slugs (category, blog posts, special offers detail), add alternate domain with same path
+  if (isPageWithSameSlug) {
+    links.push({
+      hreflang: config.alternateHreflang,
+      href: `${alternateDomainUrl}${currentPath}`
+    });
+  }
+  
+  // For legal pages, add alternate domain with same path (assume they exist on both domains)
+  if (isLegalPage) {
+    links.push({
+      hreflang: config.alternateHreflang,
+      href: `${alternateDomainUrl}${currentPath}`
+    });
+  }
+  
   // For merchant pages, use alternate URL from CMS if provided
+  // Note: Merchant pages may have different slugs on TW vs HK, so we use CMS alternate URL
   if (isMerchantPage && alternateUrl) {
     const hreflangCode = getHreflangFromUrl(alternateUrl);
     if (hreflangCode) {
