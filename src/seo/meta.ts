@@ -190,18 +190,22 @@ export function getHreflangLinks(
     });
   }
   
-  // For merchant pages, use alternate URL from CMS if provided
-  // Note: Merchant pages may have different slugs on TW vs HK, so we use CMS alternate URL
+  // For merchant pages, use alternate URL(s) from CMS if provided
+  // Support comma-separated URLs for multiple alternate markets
+  // Note: Merchant pages may have different slugs on TW vs HK, so we use CMS alternate URL(s)
   if (isMerchantPage && alternateUrl) {
-    const hreflangCode = getHreflangFromUrl(alternateUrl);
-    if (hreflangCode) {
-      links.push({
-        hreflang: hreflangCode,
-        href: alternateUrl
-      });
-      console.log(`[getHreflangLinks] Added alternate hreflang for merchant page: ${hreflangCode} -> ${alternateUrl}`);
-    } else {
-      console.warn(`[getHreflangLinks] Could not determine hreflang code from URL: ${alternateUrl}`);
+    const alternateUrls = parseHreflangUrls(alternateUrl);
+    for (const url of alternateUrls) {
+      const hreflangCode = getHreflangFromUrl(url);
+      if (hreflangCode) {
+        links.push({
+          hreflang: hreflangCode,
+          href: url
+        });
+        console.log(`[getHreflangLinks] Added alternate hreflang for merchant page: ${hreflangCode} -> ${url}`);
+      } else {
+        console.warn(`[getHreflangLinks] Could not determine hreflang code from URL: ${url}`);
+      }
     }
   }
   
