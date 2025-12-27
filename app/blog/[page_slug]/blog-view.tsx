@@ -166,17 +166,26 @@ function blocksToHTML(blocks: any): string {
     
     // Handle image blocks (URLs already rewritten in server component)
     if (block.type === 'image' && block.image) {
-      const imageData = block.image?.data || block.image;
-      const imageUrl = imageData?.attributes?.url || imageData?.url || imageData?.url || '';
+      // Handle different Strapi data structures
+      let imageData = block.image;
+      if (imageData?.data) {
+        imageData = imageData.data;
+      }
+      
+      // Extract URL and alt text from various possible structures
+      const imageUrl = imageData?.attributes?.url || imageData?.url || '';
       const altText = imageData?.attributes?.alternativeText || imageData?.alternativeText || block.caption || '';
       
       if (imageUrl) {
+        // Escape HTML in alt text
+        const escapedAlt = altText.replace(/"/g, '&quot;');
+        
         // Wrap in figure if there's a caption
         if (block.caption) {
           const caption = processChildren(block.caption || []);
-          return `<figure style="margin: 1em 0;"><img src="${imageUrl}" alt="${altText}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" /><figcaption style="margin-top: 0.5em; font-size: 0.875em; color: #666; text-align: center;">${caption}</figcaption></figure>`;
+          return `<figure style="margin: 1em 0;"><img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" /><figcaption style="margin-top: 0.5em; font-size: 0.875em; color: #666; text-align: center;">${caption}</figcaption></figure>`;
         }
-        return `<img src="${imageUrl}" alt="${altText}" style="max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1em 0;" />`;
+        return `<img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1em 0;" />`;
       }
     }
     
