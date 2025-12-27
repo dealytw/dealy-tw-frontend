@@ -166,7 +166,7 @@ export function getHreflangLinks(
   }
   
   // For pages with alternate URLs from CMS (merchant, category, special offer, legal)
-  // Use CMS alternate URL(s) if provided, otherwise fall back to same-slug logic
+  // Use CMS alternate URL(s) if provided, otherwise fall back to homepage
   if (alternateUrl) {
     // Use alternate URL(s) from CMS (supports comma-separated URLs for multiple markets)
     const alternateUrls = parseHreflangUrls(alternateUrl);
@@ -183,29 +183,14 @@ export function getHreflangLinks(
       }
     }
   } else {
-    // Fallback: Use same-slug logic for pages that typically have same slugs on both domains
-    // For category pages, add alternate domain with same path
-    if (isCategoryPage) {
+    // Fallback: If no alternate URL provided, link to homepage of alternate domain
+    // This applies to merchant, category, special offer, and legal pages
+    if (isMerchantPage || isCategoryPage || isSpecialOfferPage || isLegalPage) {
       links.push({
         hreflang: config.alternateHreflang,
-        href: `${alternateDomainUrl}${currentPath}`
+        href: `${alternateDomainUrl}/`
       });
-    }
-    
-    // For special offer detail pages, add alternate domain with same path
-    if (isSpecialOfferPage) {
-      links.push({
-        hreflang: config.alternateHreflang,
-        href: `${alternateDomainUrl}${currentPath}`
-      });
-    }
-    
-    // For legal pages, add alternate domain with same path (assume they exist on both domains)
-    if (isLegalPage) {
-      links.push({
-        hreflang: config.alternateHreflang,
-        href: `${alternateDomainUrl}${currentPath}`
-      });
+      console.log(`[getHreflangLinks] No alternate URL provided, falling back to homepage: ${alternateDomainUrl}/`);
     }
   }
   
