@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         "fields[0]": "title",
         "fields[1]": "seo_title",
         "fields[2]": "seo_description",
+        "fields[3]": "hreflang_alternate_url",
       })}`,
       { revalidate: 3600, tag: `special-offer:${slug}` }
     );
@@ -30,10 +31,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       const title = specialOffer.seo_title || `${specialOffer.title}｜Dealy`;
       const description = specialOffer.seo_description || '精選特別優惠與限時活動';
       
+      // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+      const alternateUrl = specialOffer.attributes?.hreflang_alternate_url || specialOffer.hreflang_alternate_url || null;
+      
       return pageMeta({
         title,
         description,
         path: `/special-offers/${slug}`,
+        alternateUrl, // Pass alternate URL(s) from CMS hreflang_alternate_url field (comma-separated)
       });
     }
   } catch (error) {
@@ -45,6 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title: '特別優惠｜Dealy',
     description: '精選特別優惠與限時活動',
     path: `/special-offers/${slug}`,
+    alternateUrl: null, // No alternate URL for fallback
   });
 }
 
@@ -65,6 +71,7 @@ export default async function SpecialOfferPage({
       "fields[3]": "intro",
       "fields[4]": "seo_title",
       "fields[5]": "seo_description",
+      "fields[6]": "hreflang_alternate_url",
       "populate[logo][fields][0]": "url",
       "populate[featured_merchants][fields][0]": "id",
       "populate[featured_merchants][fields][1]": "merchant_name",
@@ -187,12 +194,16 @@ export default async function SpecialOfferPage({
       { name: specialOffer.title, url: specialOfferUrl },
     ]);
 
+    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+    const alternateUrl = specialOffer.attributes?.hreflang_alternate_url || specialOffer.hreflang_alternate_url || null;
+
     return (
       <>
         <SpecialOffersClient 
           specialOffer={specialOffer}
           featuredMerchants={featuredMerchants}
           flashDeals={flashDeals}
+          alternateUrl={alternateUrl}
         />
         {/* Breadcrumb JSON-LD */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />

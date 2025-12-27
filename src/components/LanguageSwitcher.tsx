@@ -28,7 +28,9 @@ const LANGUAGES: LanguageOption[] = [
 ];
 
 /**
- * Extract URL from Strapi rich text field (hreflang_alternate) - Client-side version
+ * Extract URL from Strapi rich text field (hreflang_alternate) - DEPRECATED
+ * This function is kept for backward compatibility only.
+ * The new hreflang_alternate_url field is plain text (comma-separated URLs), so this function is no longer needed.
  * Handles string, link blocks, and paragraph blocks with links
  */
 function extractUrlFromRichText(richText: any): string | null {
@@ -75,8 +77,26 @@ function extractUrlFromRichText(richText: any): string | null {
 
 
 /**
+ * Parse comma-separated URLs from hreflang_alternate_url field
+ * Returns array of valid URLs (trimmed and filtered)
+ */
+function parseHreflangUrls(urlString: string | null | undefined): string[] {
+  if (!urlString || typeof urlString !== 'string') {
+    return [];
+  }
+  
+  return urlString
+    .split(',')
+    .map(url => url.trim())
+    .filter(url => {
+      // Only keep valid URLs
+      return url.startsWith('http://') || url.startsWith('https://');
+    });
+}
+
+/**
  * Maps current path to equivalent alternate domain path
- * Uses hreflang_alternate field for merchant pages if available
+ * Uses hreflang_alternate_url field for merchant, category, special offer, and legal pages if available (comma-separated URLs)
  */
 function mapPathToAlternateDomain(currentPath: string, targetDomain: string): string {
   // Main pages that exist on both domains
@@ -92,8 +112,32 @@ function mapPathToAlternateDomain(currentPath: string, targetDomain: string): st
     return mainPages[currentPath];
   }
 
-  // For merchant/coupon pages, fallback to homepage
-  // (The actual alternate URL will be fetched from merchant data)
+  // For pages with same slugs (category, special offer detail, legal), use same path
+  // Category pages: /category/[slug]
+  if (currentPath.startsWith('/category/')) {
+    return currentPath;
+  }
+  
+  // Special offer detail pages: /special-offers/[slug]
+  if (currentPath.startsWith('/special-offers/')) {
+    return currentPath;
+  }
+  
+  // Legal pages: /[slug] (root level, one level deep)
+  if (!currentPath.startsWith('/shop') && 
+      !currentPath.startsWith('/category') && 
+      !currentPath.startsWith('/blog') && 
+      !currentPath.startsWith('/special-offers') &&
+      !currentPath.startsWith('/search') &&
+      !currentPath.startsWith('/submit-coupons') &&
+      !currentPath.startsWith('/api') &&
+      currentPath !== '/' &&
+      currentPath.split('/').length === 2) {
+    return currentPath;
+  }
+
+  // For merchant pages or unknown pages, fallback to homepage
+  // (The actual alternate URL should be fetched from CMS data)
   return "/";
 }
 
@@ -131,22 +175,28 @@ export function LanguageSwitcher({ alternateUrl: propAlternateUrl }: LanguageSwi
       return '#';
     }
 
-    // For merchant pages, use alternate URL from props if available
-    const isMerchantPage = pathname.startsWith('/shop/') && pathname !== '/shop';
-    if (isMerchantPage && alternateUrl) {
-      // Check if alternateUrl matches the target domain (for switching to alternate language)
-      try {
-        const urlObj = new URL(alternateUrl);
-        // If we're switching to the alternate language and have an alternate URL, use it
-        if (urlObj.hostname === language.domain || urlObj.hostname.endsWith('.' + language.domain)) {
-          return alternateUrl;
+    // For pages with alternate URLs from CMS (merchant, category, special offer, legal)
+    // Check if alternateUrl matches the target domain
+    if (alternateUrl) {
+      const alternateUrls = parseHreflangUrls(alternateUrl);
+      
+      // Find the URL that matches the target language domain
+      for (const url of alternateUrls) {
+        try {
+          const urlObj = new URL(url);
+          // Check if this URL matches the target language domain
+          if (urlObj.hostname === language.domain || urlObj.hostname.endsWith('.' + language.domain)) {
+            return url;
+          }
+        } catch {
+          // Invalid URL, skip it
+          continue;
         }
-      } catch {
-        // Invalid URL, fall through to default mapping
       }
     }
 
-    // Map current path to alternate domain path (fallback for main pages or when no alternate URL)
+    // Fallback: Map current path to alternate domain path
+    // This works for main pages and pages with same slugs (category, special offer, legal)
     const alternatePath = mapPathToAlternateDomain(pathname, language.domain);
     return `https://${language.domain}${alternatePath}`;
   };

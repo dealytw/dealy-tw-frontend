@@ -618,7 +618,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       ogImageUrl,
       ogImageAlt,
       ogType: 'article', // Change from 'website' to 'article' for merchant pages
-      alternateUrl, // Pass alternate URL from CMS hreflang_alternate field
+      alternateUrl, // Pass alternate URL(s) from CMS hreflang_alternate_url field (comma-separated)
       ogUpdatedTime: (() => {
         // Use the same daily updated time function to ensure consistency
         const dailyTime = getDailyUpdatedTime();

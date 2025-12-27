@@ -48,6 +48,7 @@ interface SpecialOffersClientProps {
   specialOffer: SpecialOffer;
   featuredMerchants: FeaturedMerchant[];
   flashDeals: FlashDeal[];
+  alternateUrl?: string | null;
 }
 
 // Helper function to extract text from Strapi rich text
@@ -136,7 +137,7 @@ function renderRichText(richText: any): string {
   return blocksToHTML(richText);
 }
 
-const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: SpecialOffersClientProps) => {
+const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals, alternateUrl }: SpecialOffersClientProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
@@ -327,7 +328,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals }: Sp
         coupon={selectedCoupon}
       />
       
-      <Footer />
+      <Footer alternateUrl={alternateUrl} />
     </div>
   );
 };

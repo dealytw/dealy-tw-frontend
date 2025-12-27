@@ -31,6 +31,7 @@ export async function generateMetadata({
         "filters[market][key][$eq]": marketKey,
         "fields[0]": "name",
         "fields[1]": "page_slug",
+        "fields[2]": "hreflang_alternate_url",
         "populate[market][fields][0]": "key",
       })}`,
       { revalidate: 3600, tag: `category:${categorySlug}` }
@@ -42,12 +43,16 @@ export async function generateMetadata({
       const title = `${category.name} 優惠與折扣`;
       const description = `精選 ${category.name} 最新優惠與折扣合集。`;
       
+      // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+      const alternateUrl = category.attributes?.hreflang_alternate_url || category.hreflang_alternate_url || null;
+      
       return pageMeta({
         title,
         description,
         path: `/category/${categorySlug}`,
         ogImageUrl,
         ogImageAlt,
+        alternateUrl, // Pass alternate URL(s) from CMS hreflang_alternate_url field (comma-separated)
       });
     }
   } catch (error) {
@@ -61,6 +66,7 @@ export async function generateMetadata({
     path: `/category/${categorySlug}`,
     ogImageUrl,
     ogImageAlt,
+    alternateUrl: null, // No alternate URL for fallback
   });
 }
 
@@ -82,6 +88,7 @@ export default async function CategoryPage({
       "fields[0]": "id",
       "fields[1]": "name",
       "fields[2]": "page_slug",
+      "fields[3]": "hreflang_alternate_url",
       "populate[market][fields][0]": "key",
       "populate[merchants][fields][0]": "id",
       "populate[merchants][fields][1]": "merchant_name",
@@ -250,6 +257,9 @@ export default async function CategoryPage({
       { name: categoryData.name, url: categoryUrl },
     ]);
 
+    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+    const alternateUrl = categoryData.attributes?.hreflang_alternate_url || categoryData.hreflang_alternate_url || null;
+
     return (
       <>
         <CategoryView 
@@ -262,6 +272,7 @@ export default async function CategoryPage({
           merchants={merchants}
           coupons={coupons}
           categorySlug={categorySlug}
+          alternateUrl={alternateUrl}
         />
         {/* Breadcrumb JSON-LD */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />

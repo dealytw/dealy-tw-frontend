@@ -2,7 +2,7 @@
 import 'server-only';
 import { strapiFetch, qs, getStartsAtFilterParams } from '@/lib/strapi.server';
 
-// MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex, hreflang_alternate)
+// MERCHANT SEO (seo_title, seo_description, seo_canonical, seo_noindex, hreflang_alternate_url)
 export async function getMerchantSEO(slug: string, revalidate = 21600) {
   const params = {
     'filters[page_slug][$eq]': slug,

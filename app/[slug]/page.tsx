@@ -61,6 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       path: `/${slug}`,
       ogImageUrl,
       ogImageAlt,
+      alternateUrl: null, // No alternate URL for reserved slugs
     });
   }
   
@@ -72,6 +73,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       "fields[1]": "title",
       "fields[2]": "seo_title",
       "fields[3]": "seo_description",
+      "fields[4]": "hreflang_alternate_url",
     };
 
     const pageData = await strapiFetch<{ data: any[] }>(
@@ -88,11 +90,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         path: `/${slug}`,
         ogImageUrl,
         ogImageAlt,
+        alternateUrl: null, // No alternate URL for fallback
       });
     }
 
     const title = page.seo_title || page.title || `${slug} | Dealy.TW`;
     const description = page.seo_description || '';
+    
+    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+    const alternateUrl = page.attributes?.hreflang_alternate_url || page.hreflang_alternate_url || null;
 
     return pageMeta({
       title,
@@ -100,6 +106,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       path: `/${slug}`,
       ogImageUrl,
       ogImageAlt,
+      alternateUrl, // Pass alternate URL(s) from CMS hreflang_alternate_url field (comma-separated)
     });
   } catch (error) {
     console.error('Error generating metadata:', error);
@@ -109,6 +116,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       path: `/${slug}`,
       ogImageUrl,
       ogImageAlt,
+      alternateUrl: null, // No alternate URL for error fallback
     });
   }
 }
@@ -134,6 +142,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
       "fields[1]": "title",
       "fields[2]": "content",
       "fields[3]": "page_slug",
+      "fields[4]": "hreflang_alternate_url",
       "pagination[pageSize]": "1",
     };
 
@@ -147,6 +156,9 @@ export default async function LegalPage({ params }: LegalPageProps) {
     if (!page) {
       notFound();
     }
+
+    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
+    const alternateUrl = page.attributes?.hreflang_alternate_url || page.hreflang_alternate_url || null;
 
     return (
       <div className="min-h-screen bg-white">
@@ -162,7 +174,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
           </div>
         </main>
         
-        <Footer />
+        <Footer alternateUrl={alternateUrl} />
       </div>
     );
   } catch (error) {

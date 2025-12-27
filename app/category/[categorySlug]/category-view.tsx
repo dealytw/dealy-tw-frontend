@@ -41,13 +41,15 @@ interface CategoryViewProps {
   merchants: Merchant[];
   coupons: Coupon[];
   categorySlug: string;
+  alternateUrl?: string | null;
 }
 
 export default function CategoryView({ 
   category, 
   merchants, 
   coupons, 
-  categorySlug 
+  categorySlug,
+  alternateUrl
 }: CategoryViewProps) {
 
 
@@ -138,7 +140,7 @@ export default function CategoryView({
         </section>
       </main>
       
-      <Footer />
+      <Footer alternateUrl={alternateUrl} />
     </div>
   );
 }
