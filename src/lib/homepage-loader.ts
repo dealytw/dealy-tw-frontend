@@ -159,7 +159,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
   // Process special-offers from topicpage.special_offers (for 2025優惠主題一覽)
   const specialOffers = a.topicpage?.special_offers?.map((specialOffer: any) => ({
     id: specialOffer.id,
-    name: specialOffer.title,
+    name: specialOffer.homepage_title || specialOffer.title, // Use homepage_title, fallback to title
     slug: specialOffer.page_slug,
     iconUrl: specialOffer.logo?.url ? rewriteImageUrl(specialOffer.logo.url) : "",
   })) || [];

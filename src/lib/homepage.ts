@@ -104,6 +104,10 @@ export async function getHomePageByMarket(market = 'tw', revalidate = HOME_REVAL
     'populate[category][populate][categories][populate][market][fields][0]': 'key',
     // Filter special offers by market (using key)
     'populate[topicpage][populate][special_offers][filters][market][key][$eq]': market,
+    'populate[topicpage][populate][special_offers][fields][0]': 'id',
+    'populate[topicpage][populate][special_offers][fields][1]': 'title',
+    'populate[topicpage][populate][special_offers][fields][2]': 'homepage_title',
+    'populate[topicpage][populate][special_offers][fields][3]': 'page_slug',
     'populate[topicpage][populate][special_offers][populate][logo][fields][0]': 'url',
     'populate[topicpage][populate][special_offers][populate][market][fields][0]': 'key',
     // Populate market relation for homepage itself (like merchant page does)
