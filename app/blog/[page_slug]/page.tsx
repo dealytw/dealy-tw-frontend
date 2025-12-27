@@ -330,7 +330,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           id: merchantId,
           name: merchantName,
           slug: merchantSlug,
-          logo: logoUrl ? absolutizeMedia(logoUrl) : null,
+          logo: logoUrl ? rewriteImageUrl(absolutizeMedia(logoUrl), siteUrl) : null,
         };
       });
     }
@@ -370,7 +370,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           slug: relatedBlog.page_slug || relatedBlog.attributes?.page_slug || '',
           createdAt: relatedBlog.createdAt || relatedBlog.attributes?.createdAt || '',
           updatedAt: relatedBlog.updatedAt || relatedBlog.attributes?.updatedAt || '',
-          thumbnail: thumbUrl ? absolutizeMedia(thumbUrl) : '/placeholder.svg',
+          thumbnail: thumbUrl ? rewriteImageUrl(absolutizeMedia(thumbUrl), siteUrl) : '/placeholder.svg',
           first_h2: '',
         };
       });
@@ -411,7 +411,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         }).filter((c: any) => c.id && (c.coupon_title || c.value || c.affiliate_link));
 
         return {
-          coupon_image: imgUrl ? absolutizeMedia(imgUrl) : null,
+          coupon_image: imgUrl ? rewriteImageUrl(absolutizeMedia(imgUrl), siteUrl) : null,
           coupon_tag,
           short_or_long,
           coupons,
@@ -541,7 +541,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           const first = imgDataArr?.[0];
           const firstData = first?.attributes || first?.data?.attributes || first?.data || first;
           const url = firstData?.url;
-          if (url) bannerImageUrl = absolutizeMedia(url);
+          if (url) bannerImageUrl = rewriteImageUrl(absolutizeMedia(url), siteUrl);
         }
         
         // Process rich text blocks to rewrite image URLs (server-side only)
