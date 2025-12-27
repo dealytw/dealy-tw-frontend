@@ -3,7 +3,7 @@ import FloatingActionButtons from "./FloatingActionButtons";
 
 export default async function FloatingActionContainer() {
   // Fetch floating buttons server-side with ISR - filter by market
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const market = (process.env.NEXT_PUBLIC_MARKET_KEY || 'tw').toLowerCase();
   const { data: buttons } = await getFloatingButtons(market);
   
   // Don't render if no buttons for this market
