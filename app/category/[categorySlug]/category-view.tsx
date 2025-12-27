@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryCouponCard from "@/components/CategoryCouponCard";
+import { Clock } from "lucide-react";
 // Removed Next.js Image import - using regular img tags for fixed resolution
 
 interface Merchant {
@@ -31,6 +33,15 @@ interface Coupon {
   };
 }
 
+interface CategoryBlog {
+  id: number | string;
+  title: string;
+  subtitle: string;
+  image: string;
+  slug: string;
+  publishedAt?: string;
+}
+
 interface CategoryViewProps {
   category: {
     id: number;
@@ -42,6 +53,7 @@ interface CategoryViewProps {
   coupons: Coupon[];
   categorySlug: string;
   alternateUrl?: string | null;
+  categoryBlogs?: CategoryBlog[];
 }
 
 export default function CategoryView({ 
@@ -49,8 +61,24 @@ export default function CategoryView({
   merchants, 
   coupons, 
   categorySlug,
-  alternateUrl
+  alternateUrl,
+  categoryBlogs = []
 }: CategoryViewProps) {
+  // Format date helper
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 1) return '剛剛';
+    if (diffHours < 24) return `${diffHours} 小時前`;
+    if (diffDays < 7) return `${diffDays} 天前`;
+    
+    return date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+  };
 
 
   return (
@@ -102,39 +130,121 @@ export default function CategoryView({
           </section>
         )}
 
-        {/* Coupons Section */}
+        {/* Coupons Section with Blog Sidebar */}
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-6">
             本分類熱門優惠
           </h2>
           
-          {coupons.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {coupons.map((coupon) => (
-                  <CategoryCouponCard
-                    key={coupon.id}
-                    coupon={{
-                      id: coupon.id,
-                      title: coupon.title,
-                      code: coupon.code,
-                      discount: coupon.discount,
-                      coupon_type: coupon.coupon_type,
-                      affiliate_link: coupon.affiliate_link,
-                      merchant: {
-                        name: coupon.merchant.name,
-                        logo: coupon.merchant.logo,
-                        slug: coupon.merchant.slug,
-                      },
-                    }}
-                  />
-                ))}
+          {coupons.length > 0 || categoryBlogs.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - Coupons */}
+              <div className={`${categoryBlogs.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+                {coupons.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {coupons.map((coupon) => (
+                      <CategoryCouponCard
+                        key={coupon.id}
+                        coupon={{
+                          id: coupon.id,
+                          title: coupon.title,
+                          code: coupon.code,
+                          discount: coupon.discount,
+                          coupon_type: coupon.coupon_type,
+                          affiliate_link: coupon.affiliate_link,
+                          merchant: {
+                            name: coupon.merchant.name,
+                            logo: coupon.merchant.logo,
+                            slug: coupon.merchant.slug,
+                          },
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600 text-lg">暫無優惠券</p>
+                    <p className="text-gray-500 text-sm mt-2">請稍後再來查看</p>
+                  </div>
+                )}
               </div>
-            </>
+
+              {/* Right Column - Blog Sidebar (Desktop) */}
+              {categoryBlogs.length > 0 && (
+                <aside className="lg:col-span-1">
+                  <div className="sticky top-8">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">
+                      相關文章
+                    </h3>
+                    <div className="space-y-4">
+                      {categoryBlogs.map((blog, index) => (
+                        <Link key={blog.id} href={`/blog/${blog.slug}`} className="block group">
+                          <article className="space-y-3">
+                            <div className="relative h-32 rounded-lg overflow-hidden">
+                              <Image
+                                src={blog.image}
+                                alt={blog.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                                {blog.title}
+                              </h4>
+                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">{blog.subtitle}</p>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatDate(blog.publishedAt)}</span>
+                              </div>
+                            </div>
+                          </article>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </aside>
+              )}
+            </div>
           ) : (
             <div className="text-center py-12">
               <p className="text-gray-600 text-lg">暫無優惠券</p>
               <p className="text-gray-500 text-sm mt-2">請稍後再來查看</p>
+            </div>
+          )}
+
+          {/* Blog Sidebar (Mobile - Stacked at bottom) */}
+          {categoryBlogs.length > 0 && (
+            <div className="mt-8 lg:hidden">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">
+                相關文章
+              </h3>
+              <div className="space-y-4">
+                {categoryBlogs.map((blog) => (
+                  <Link key={blog.id} href={`/blog/${blog.slug}`} className="block group">
+                    <article className="space-y-3">
+                      <div className="relative h-40 rounded-lg overflow-hidden">
+                        <Image
+                          src={blog.image}
+                          alt={blog.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                          {blog.title}
+                        </h4>
+                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">{blog.subtitle}</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatDate(blog.publishedAt)}</span>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </section>
