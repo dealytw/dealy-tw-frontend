@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
 
 // Long cache: sitemaps are heavily crawled; keep edge-cached to reduce Strapi API calls.
-export const revalidate = 604800 // 7 days
+export const revalidate = 259200 // 72 hours (3 days)
 
-const SITEMAP_CACHE_CONTROL = 'public, s-maxage=604800, stale-while-revalidate=86400'
+const SITEMAP_CACHE_CONTROL = 'public, s-maxage=259200, stale-while-revalidate=86400' // 72 hours
 
 export async function GET() {
   const domainConfig = getDomainConfigServer()

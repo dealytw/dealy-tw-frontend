@@ -56,29 +56,29 @@ export function middleware(request: NextRequest) {
     request.nextUrl.searchParams.has('x-vercel-revalidate');
   
   if (!isRevalidation) {
-    // Determine cache time based on page type
-    let sMaxAge = 28800; // Default: 8 hours (homepage)
-    let staleWhileRevalidate = 86400; // 24 hours
+    // Determine cache time based on page type (matching ISR revalidate times)
+    let sMaxAge = 86400; // Default: 24 hours (homepage)
+    let staleWhileRevalidate = 2592000; // 30 days - serve stale content while revalidating
     
-    // Homepage: 8 hours
+    // Homepage: 24 hours (ISR: 86400s)
     if (pathname === '/') {
-      sMaxAge = 28800;
-    }
-    // Merchant pages: 8 hours
-    else if (pathname.startsWith('/shop/')) {
-      sMaxAge = 28800; // 8 hours
-    }
-    // Blog pages: 24 hours
-    else if (pathname.startsWith('/blog/')) {
       sMaxAge = 86400; // 24 hours
     }
-    // Category pages: 24 hours
-    else if (pathname.startsWith('/category/')) {
-      sMaxAge = 86400;
+    // Merchant pages: 12 hours (ISR: 43200s)
+    else if (pathname.startsWith('/shop/')) {
+      sMaxAge = 43200; // 12 hours
     }
-    // Other content pages: 8 hours
+    // Blog pages: 30 days (ISR: 2592000s)
+    else if (pathname.startsWith('/blog/')) {
+      sMaxAge = 2592000; // 30 days
+    }
+    // Category pages: 48 hours (ISR: 172800s)
+    else if (pathname.startsWith('/category/')) {
+      sMaxAge = 172800; // 48 hours
+    }
+    // Other content pages (legal): 30 days (ISR: 2592000s)
     else if (!pathname.startsWith('/search') && !pathname.startsWith('/api/')) {
-      sMaxAge = 28800;
+      sMaxAge = 2592000; // 30 days
     }
     // Search pages: no cache (SSR)
     else {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { strapiFetch, qs, getStartsAtFilterParams } from "@/lib/strapi.server";
 
 export const runtime = 'nodejs';
-export const revalidate = 300;
+export const revalidate = 86400; // Cache for 24 hours - coupons don't change frequently
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     };
 
     const couponData = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
-      revalidate: 300,
+      revalidate: 86400, // Cache for 24 hours - coupons don't change frequently
       tag: `merchant-coupon:${merchantSlug}`,
     });
     

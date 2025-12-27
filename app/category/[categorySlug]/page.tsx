@@ -6,7 +6,7 @@ import CategoryView from './category-view';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 
-export const revalidate = 3600; // ISR - revalidate every 60 minutes for stronger edge hit ratio
+export const revalidate = 172800; // ISR - revalidate every 48 hours - category content is relatively static
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
 
 export async function generateMetadata({ 
@@ -34,7 +34,7 @@ export async function generateMetadata({
         "fields[2]": "hreflang_alternate_url",
         "populate[market][fields][0]": "key",
       })}`,
-      { revalidate: 3600, tag: `category:${categorySlug}` }
+      { revalidate: 172800, tag: `category:${categorySlug}` } // Cache for 48 hours
     );
     
     const category = categoryRes?.data?.[0];
@@ -97,7 +97,7 @@ export default async function CategoryPage({
       "populate[merchants][populate][logo][fields][0]": "url",
       "populate[merchants][populate][market][fields][0]": "key",
     })}`, { 
-      revalidate: 3600, 
+          revalidate: 172800, // Cache for 48 hours
       tag: `category:${categorySlug}` 
     });
     
@@ -177,7 +177,7 @@ export default async function CategoryPage({
             "fields[6]": "priority",
             "fields[7]": "description",
           })}`, { 
-            revalidate: 300, 
+            revalidate: 86400, // Cache for 24 hours - coupons don't change frequently
             tag: `merchant:${merchant.page_slug}` 
           });
           

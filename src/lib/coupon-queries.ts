@@ -51,7 +51,7 @@ export async function getCouponsForMerchant(merchantId: string, marketKey: strin
     };
 
     const response = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
-      revalidate: 300,
+      revalidate: 86400, // Cache for 24 hours - coupons don't change frequently
       tag: `merchant-coupons:${merchantId}`,
     });
     const coupons = response.data || [];
@@ -113,7 +113,7 @@ export async function getTopCouponForMerchant(merchantId: string, marketKey: str
     };
 
     const response = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
-      revalidate: 300,
+      revalidate: 86400, // Cache for 24 hours - coupons don't change frequently
       tag: `merchant-priority1-coupon:${merchantId}:${marketKey}`,
     });
     
@@ -178,7 +178,7 @@ export async function getAllActiveCoupons(marketKey: string = "tw"): Promise<Cou
     };
 
     const response = await strapiFetch<{ data: any[] }>(`/api/coupons?${qs(params)}`, {
-      revalidate: 300,
+      revalidate: 86400, // Cache for 24 hours - coupons don't change frequently
       tag: `active-coupons:${marketKey}`,
     });
     const coupons = response.data || [];

@@ -7,7 +7,7 @@ import { webPageJsonLd, popularMerchantsItemListJsonLd, getDailyUpdatedTime } fr
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from "@/lib/domain-config";
 
 // Enable ISR for this page
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 86400; // Revalidate every 24 hours - homepage content is relatively static
 // IMPORTANT: Force static ISR so the homepage is cacheable at Cloudflare/Vercel.
 // If this page becomes dynamic (e.g. due to cookies()/headers() or no-store fetch),
 // Vercel will emit `Cache-Control: private, no-store...` which makes Cloudflare BYPASS.

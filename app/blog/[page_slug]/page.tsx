@@ -25,7 +25,7 @@ import BlogView from './blog-view';
  */
 
 // Revalidate once per day
-export const revalidate = 86400;
+export const revalidate = 2592000; // Revalidate every 30 days (1 month) - blog posts are very static
 // Content page: use ISR via `export const revalidate` (do not force SSR)
 
 // Generate metadata for SEO
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ page_slug
       'fields[0]': 'blog_title',
       'fields[1]': 'page_slug',
     })}`, {
-      revalidate: 86400,
+      revalidate: 2592000, // Cache for 30 days
       tag: `blog:${page_slug}`
     });
     
@@ -129,7 +129,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[categories][fields][2]": "page_slug",
       // Step 2: blog_table will be fetched separately (causes 404 even when alone in main query)
     })}`, { 
-      revalidate: 86400,
+      revalidate: 2592000, // Cache for 30 days
       tag: `blog:${page_slug}` 
     });
 
@@ -159,7 +159,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
         
         const tableRes = await strapiFetch<{ data: any[] }>(fetchUrl, { 
-          revalidate: 86400,
+          revalidate: 2592000, // Cache for 30 days
           tag: `blog-table:${page_slug}` 
         });
         
@@ -188,7 +188,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         console.log('[BLOG_IMAGES_FETCH] Fetch URL:', fetchUrl);
 
         const imageRes = await strapiFetch<{ data: any[] }>(fetchUrl, {
-          revalidate: 86400,
+          revalidate: 2592000, // Cache for 30 days
           tag: `blog-images:${page_slug}`,
         });
 
@@ -233,7 +233,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         console.log('[BLOG_COUPON_FETCH] Fetch URL:', fetchUrl);
 
         const couponRes = await strapiFetch<{ data: any[] }>(fetchUrl, {
-          revalidate: 86400,
+          revalidate: 2592000, // Cache for 30 days
           tag: `blog-coupon:${page_slug}`,
         });
 
@@ -424,7 +424,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           "pagination[pageSize]": Math.min(relatedBlogIds.length, 50),
         });
         const relRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${query}`, {
-          revalidate: 86400,
+          revalidate: 2592000, // Cache for 30 days
           tag: `blog-related-h2:${page_slug}`,
         });
 

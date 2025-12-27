@@ -3,9 +3,9 @@ import { strapiFetch, qs } from '@/lib/strapi.server'
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
 
 // Long cache: sitemaps are heavily crawled; keep edge-cached to reduce Strapi API calls.
-export const revalidate = 604800 // 7 days
+export const revalidate = 259200 // 72 hours (3 days)
 
-const SITEMAP_CACHE_CONTROL = 'public, s-maxage=604800, stale-while-revalidate=86400'
+const SITEMAP_CACHE_CONTROL = 'public, s-maxage=259200, stale-while-revalidate=86400' // 72 hours
 
 export async function GET() {
   const domainConfig = getDomainConfigServer()
@@ -30,7 +30,7 @@ export async function GET() {
 
     const merchantsData = await strapiFetch<{ data: any[] }>(
       `/api/merchants?${qs(merchantParams)}`,
-      { revalidate: 604800, tag: 'sitemap:merchants' }
+      { revalidate: 259200, tag: 'sitemap:merchants' } // 72 hours
     )
 
     merchantPages = (merchantsData?.data || [])
