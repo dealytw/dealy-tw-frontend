@@ -24,7 +24,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
     { href: "/", label: "主頁" },
     { href: "/special-offers", label: "最新快閃優惠" },
     { href: "/submit-coupons", label: "提交優惠券" },
-    { href: "/faq", label: "常見問題" },
+    { href: "/faqs", label: "常見問題" },
     { href: "/submit-coupons", label: "聯絡我們" },
     { href: "/about", label: "關於我們" },
   ];
