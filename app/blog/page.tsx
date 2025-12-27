@@ -3,7 +3,7 @@ import { strapiFetch, qs, absolutizeMedia, rewriteImageUrl } from '@/lib/strapi.
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 import BlogHomeView from './blog-home-view';
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 86400; // Revalidate every 24 hours - same as homepage since this is the blog homepage
 
 export async function generateMetadata() {
   return pageMeta({
@@ -45,7 +45,7 @@ export default async function BlogHomePage() {
       "populate[categories][fields][1]": "name",
       "populate[categories][fields][2]": "page_slug",
     })}`, {
-      revalidate: 3600,
+      revalidate: 86400, // Cache for 24 hours - same as homepage
       tag: 'blog:list'
     });
 
@@ -77,7 +77,7 @@ export default async function BlogHomePage() {
       "fields[2]": "page_slug",
       "sort[0]": "name:asc",
     })}`, {
-      revalidate: 3600,
+      revalidate: 86400, // Cache for 24 hours - same as homepage
       tag: 'blog:categories'
     });
 
