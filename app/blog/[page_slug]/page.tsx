@@ -114,6 +114,11 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[blog_sections][fields][7]": "header_color",
       "populate[blog_sections][fields][8]": "hover_color",
       "populate[blog_sections][fields][9]": "border_color",
+      // Populate images in rich text blocks (blog_texts and blog_texts_second)
+      "populate[blog_sections][populate][blog_texts][populate][image][fields][0]": "url",
+      "populate[blog_sections][populate][blog_texts][populate][image][fields][1]": "alternativeText",
+      "populate[blog_sections][populate][blog_texts_second][populate][image][fields][0]": "url",
+      "populate[blog_sections][populate][blog_texts_second][populate][image][fields][1]": "alternativeText",
       // Relations (basic fields only)
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
@@ -539,13 +544,44 @@ export default async function BlogPage({ params }: BlogPageProps) {
           if (url) bannerImageUrl = absolutizeMedia(url);
         }
         
+        // Process rich text blocks to rewrite image URLs (server-side only)
+        const processRichTextImages = (blocks: any): any => {
+          if (!blocks || !Array.isArray(blocks)) return blocks;
+          
+          return blocks.map((block: any) => {
+            if (block.type === 'image' && block.image) {
+              const imageData = block.image?.data || block.image;
+              const imageUrl = imageData?.attributes?.url || imageData?.url || '';
+              
+              if (imageUrl) {
+                // Rewrite image URL using server-side functions
+                const absoluteUrl = absolutizeMedia(imageUrl);
+                const rewrittenUrl = rewriteImageUrl(absoluteUrl, siteUrl);
+                
+                // Return block with rewritten URL
+                return {
+                  ...block,
+                  image: {
+                    ...block.image,
+                    data: {
+                      ...(imageData?.attributes || imageData),
+                      url: rewrittenUrl,
+                    },
+                  },
+                };
+              }
+            }
+            return block;
+          });
+        };
+        
         return {
           id: sectionData.id || section.id || 0,
           h2_title: sectionData.h2_blog_section_title || '',
           table_h3: sectionData.table_h3 || '', // Table title above the table
           banner_image: bannerImageUrl, // Section banner image (first blog_images url)
-          blog_texts: sectionData.blog_texts || [], // Rich text JSON
-          blog_texts_second: sectionData.blog_texts_second || [], // Rich text JSON (below table/coupon)
+          blog_texts: processRichTextImages(sectionData.blog_texts || []), // Rich text JSON with processed image URLs
+          blog_texts_second: processRichTextImages(sectionData.blog_texts_second || []), // Rich text JSON with processed image URLs
           section_button_text: sectionData.section_button_text || '',
           section_button_link: sectionData.section_button_link || '',
           // New table fields
