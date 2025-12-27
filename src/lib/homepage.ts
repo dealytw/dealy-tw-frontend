@@ -79,47 +79,35 @@ export interface HomePageResponse {
 }
 
 // Get homepage by market key - Using original working populate structure with Foundation Spec
+// Note: Using filters[market][key][$eq] like merchant page and other pages do
 export async function getHomePageByMarket(market = 'tw', revalidate = HOME_REVALIDATE): Promise<HomePageResponse> {
-  // First, get market documentId from market key
-  const marketDocumentId = await getMarketDocumentId(market);
-  
-  if (!marketDocumentId) {
-    console.error(`[getHomePageByMarket] Could not find market documentId for "${market}", returning empty response`);
-    return { data: [], meta: { pagination: { page: 1, pageSize: 1, pageCount: 0, total: 0 } } };
-  }
-
-  const params: Record<string, string> = {
-    'filters[market][documentId][$eq]': marketDocumentId, // Use documentId for filtering
+  const params = {
+    'filters[market][key][$eq]': market, // Use key filter like merchant page
     'fields[0]': 'id',
     'fields[1]': 'title',
     'fields[2]': 'seo_title',
     'fields[3]': 'seo_description',
     'populate[hero][populate][background][fields][0]': 'url',
-    // Filter merchants by market in populated relations (using documentId)
-    'populate[category][populate][merchants][filters][market][documentId][$eq]': marketDocumentId,
+    // Filter merchants by market in populated relations (using key like merchant page)
+    'populate[category][populate][merchants][filters][market][key][$eq]': market,
     'populate[category][populate][merchants][populate][logo][fields][0]': 'url',
-    'populate[category][populate][merchants][populate][market][fields][0]': 'documentId',
-    'populate[category][populate][merchants][populate][market][fields][1]': 'key',
-    // Filter coupon merchants by market (using documentId)
-    'populate[coupon][populate][merchants][filters][market][documentId][$eq]': marketDocumentId,
+    'populate[category][populate][merchants][populate][market][fields][0]': 'key',
+    // Filter coupon merchants by market (using key)
+    'populate[coupon][populate][merchants][filters][market][key][$eq]': market,
     'populate[coupon][populate][merchants][fields][0]': 'id',
     'populate[coupon][populate][merchants][fields][1]': 'merchant_name',
     'populate[coupon][populate][merchants][fields][2]': 'page_slug',
     'populate[coupon][populate][merchants][populate][logo][fields][0]': 'url',
-    'populate[coupon][populate][merchants][populate][market][fields][0]': 'documentId',
-    'populate[coupon][populate][merchants][populate][market][fields][1]': 'key',
-    // Filter categories by market (using documentId)
-    'populate[category][populate][categories][filters][market][documentId][$eq]': marketDocumentId,
-    'populate[category][populate][categories][populate][market][fields][0]': 'documentId',
-    'populate[category][populate][categories][populate][market][fields][1]': 'key',
-    // Filter special offers by market (using documentId)
-    'populate[topicpage][populate][special_offers][filters][market][documentId][$eq]': marketDocumentId,
+    'populate[coupon][populate][merchants][populate][market][fields][0]': 'key',
+    // Filter categories by market (using key)
+    'populate[category][populate][categories][filters][market][key][$eq]': market,
+    'populate[category][populate][categories][populate][market][fields][0]': 'key',
+    // Filter special offers by market (using key)
+    'populate[topicpage][populate][special_offers][filters][market][key][$eq]': market,
     'populate[topicpage][populate][special_offers][populate][logo][fields][0]': 'url',
-    'populate[topicpage][populate][special_offers][populate][market][fields][0]': 'documentId',
-    'populate[topicpage][populate][special_offers][populate][market][fields][1]': 'key',
-    // Populate market relation for homepage itself
-    'populate[market][fields][0]': 'documentId',
-    'populate[market][fields][1]': 'key',
+    'populate[topicpage][populate][special_offers][populate][market][fields][0]': 'key',
+    // Populate market relation for homepage itself (like merchant page does)
+    'populate[market][fields][0]': 'key',
     'pagination[pageSize]': '1',
   };
 
