@@ -300,9 +300,7 @@ export default async function CategoryPage({
     });
 
     // Transform blogs for display (limit to 10 for sidebar)
-    const domainConfig = getDomainConfigServer();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
-    
+    // siteUrl is already defined above, reuse it
     const categoryBlogs = blogsFromCMS.slice(0, 10).map((blog: any) => {
       const thumbnailUrl = blog.thumbnail?.url 
         ? rewriteImageUrl(absolutizeMedia(blog.thumbnail.url), siteUrl)
