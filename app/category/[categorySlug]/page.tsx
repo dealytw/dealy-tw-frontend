@@ -261,17 +261,19 @@ export default async function CategoryPage({
     const alternateUrl = categoryData.attributes?.hreflang_alternate_url || categoryData.hreflang_alternate_url || null;
 
     // Fetch blogs for this category
-    // Blogs are linked directly to Category (not blog-category), so use the category ID we already have
+    // Blogs are linked directly to Category (same as merchants), so use the category page_slug or ID
     let categoryBlogs: any[] = [];
     try {
       const categoryId = categoryData.id || categoryData.attributes?.id;
+      const categoryDocumentId = categoryData.documentId || categoryData.attributes?.documentId;
       
-      if (categoryId) {
-        // Fetch blogs with this category using category ID directly
+      if (categoryId || categoryDocumentId) {
+        // Try filtering by category page_slug first (more reliable for manyToMany relations)
+        // If that doesn't work, fall back to ID
         const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
           "filters[publishedAt][$notNull]": "true",
           "filters[market][key][$eq]": marketKey,
-          "filters[categories][id][$eq]": categoryId.toString(), // Filter by category ID
+          "filters[categories][page_slug][$eq]": categorySlug, // Filter by category page_slug (same as category slug)
           "fields[0]": "id",
           "fields[1]": "blog_title",
           "fields[2]": "page_slug",
@@ -285,9 +287,13 @@ export default async function CategoryPage({
           tag: `category-blogs:${categorySlug}`
         });
 
-        console.log(`[CategoryPage] Fetched blogs for category ${categorySlug} (ID: ${categoryId}):`, {
+        console.log(`[CategoryPage] Fetched blogs for category ${categorySlug} (page_slug filter):`, {
           blogCount: blogRes?.data?.length || 0,
-          blogs: blogRes?.data?.map((b: any) => ({ id: b.id, title: b.blog_title || b.attributes?.blog_title }))
+          blogs: blogRes?.data?.map((b: any) => ({ 
+            id: b.id, 
+            title: b.blog_title || b.attributes?.blog_title,
+            categories: b.categories 
+          }))
         });
 
         const domainConfig = getDomainConfigServer();
