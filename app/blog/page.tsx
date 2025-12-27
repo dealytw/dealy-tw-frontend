@@ -91,13 +91,17 @@ export default async function BlogHomePage() {
     // Continue with empty arrays - component will handle gracefully
   }
 
-  // Add "最新優惠" as first category placeholder
-  const categoriesWithPlaceholder = [
+  // Fixed category list as requested
+  const categoriesList = [
     { id: 'latest-offers', name: '最新優惠', slug: 'latest-offers' },
-    ...categories
+    { id: 'beauty', name: '美妝', slug: 'beauty' },
+    { id: 'travel', name: '旅遊', slug: 'travel' },
+    { id: 'sports', name: '運動', slug: 'sports' },
+    { id: 'health', name: '健康', slug: 'health' },
+    { id: 'home-appliances', name: '家電', slug: 'home-appliances' },
   ];
 
-  return <BlogHomeView blogPosts={blogPosts} categories={categoriesWithPlaceholder} />;
+  return <BlogHomeView blogPosts={blogPosts} categories={categoriesList} />;
 }
 
 
