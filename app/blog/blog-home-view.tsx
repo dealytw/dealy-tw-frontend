@@ -54,18 +54,39 @@ export default function BlogHomeView({ blogPosts = [], categories = [] }: BlogHo
     return blogPosts.slice(0, 3);
   }, [blogPosts]);
 
-  // Get remaining posts (newest first, already sorted from API)
-  const remainingPosts = useMemo(() => {
-    return blogPosts.slice(3);
+  // Get posts for main content area (original layout structure)
+  // Latest post (large), then 3 smaller posts, then another large + 3 small
+  const latestPost = useMemo(() => {
+    return blogPosts[3] || blogPosts[0] || null; // 4th post or fallback to 1st
   }, [blogPosts]);
 
-  // Get hottest posts (top 3 by some metric - using first 3 for now)
+  const firstThreePosts = useMemo(() => {
+    return blogPosts.slice(4, 7).length > 0 ? blogPosts.slice(4, 7) : blogPosts.slice(0, 3);
+  }, [blogPosts]);
+
+  const secondLargePost = useMemo(() => {
+    return blogPosts[7] || blogPosts[1] || blogPosts[0] || null;
+  }, [blogPosts]);
+
+  const secondThreePosts = useMemo(() => {
+    return blogPosts.slice(8, 11).length > 0 ? blogPosts.slice(8, 11) : blogPosts.slice(1, 4).length > 0 ? blogPosts.slice(1, 4) : blogPosts.slice(0, 3);
+  }, [blogPosts]);
+
+  // Get hottest posts - use same posts as main content since we only have 2 blogs
   const hottestPosts = useMemo(() => {
-    return blogPosts.slice(0, 3).map((post, index) => ({
+    // Use all available posts, prioritizing those shown in main content
+    const postsToShow = [
+      latestPost,
+      ...firstThreePosts,
+      secondLargePost,
+      ...secondThreePosts
+    ].filter(Boolean).slice(0, 3);
+    
+    return postsToShow.map((post, index) => ({
       ...post,
       rank: index + 1,
     }));
-  }, [blogPosts]);
+  }, [latestPost, firstThreePosts, secondLargePost, secondThreePosts]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % sliderPosts.length);
@@ -170,81 +191,131 @@ export default function BlogHomeView({ blogPosts = [], categories = [] }: BlogHo
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Left Column - Main Articles */}
           <div className="lg:col-span-3 space-y-8">
-            {/* Display all remaining posts (newest first, top to down) */}
-            {remainingPosts.length > 0 ? (
+            {/* Latest Article - Large */}
+            {latestPost ? (
+              <Link href={`/blog/${latestPost.slug}`} className="block group">
+                <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative h-64 lg:h-80">
+                    <Image
+                      src={latestPost.image}
+                      alt={latestPost.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <div className="text-sm text-gray-500 mb-2">{latestPost.category || '最新優惠'}</div>
+                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
+                      {latestPost.title}
+                    </h2>
+                    <p className="text-gray-600 mb-4 line-clamp-2">{latestPost.subtitle}</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatDate(latestPost.publishedAt || latestPost.createdAt || latestPost.date)}</span>
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ) : null}
+
+            {/* 3 Smaller Articles */}
+            {firstThreePosts.length > 0 && (
+              <div className="grid md:grid-cols-3 gap-6">
+                {firstThreePosts.map((post) => (
+                  <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
+                    <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
+                      <div className="relative h-48">
+                        <Image
+                          src={post.image}
+                          alt={post.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <div className="text-xs text-gray-500 mb-2 line-clamp-1">{post.category || '最新優惠'}</div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                          {post.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.subtitle}</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatDate(post.publishedAt || post.createdAt || post.date)}</span>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Another Large Article + 3 Small (1 Set) */}
+            {(secondLargePost || secondThreePosts.length > 0) && (
               <div className="space-y-6">
-                {remainingPosts.map((post, index) => {
-                  // First post: large layout
-                  if (index === 0) {
-                    return (
+                {/* Large Article */}
+                {secondLargePost && (
+                  <Link href={`/blog/${secondLargePost.slug}`} className="block group">
+                    <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                      <div className="md:flex">
+                        <div className="relative w-full md:w-1/2 h-64 md:h-auto">
+                          <Image
+                            src={secondLargePost.image}
+                            alt={secondLargePost.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="p-6 md:w-1/2 flex flex-col justify-center">
+                          <div className="text-sm text-gray-500 mb-2">{secondLargePost.category || '最新優惠'}</div>
+                          <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
+                            {secondLargePost.title}
+                          </h2>
+                          <p className="text-gray-600 mb-4 line-clamp-3">{secondLargePost.subtitle}</p>
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <Clock className="w-4 h-4" />
+                            <span>{formatDate(secondLargePost.publishedAt || secondLargePost.createdAt || secondLargePost.date)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                )}
+
+                {/* 3 Small Articles */}
+                {secondThreePosts.length > 0 && (
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {secondThreePosts.map((post) => (
                       <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
-                        <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                          <div className="md:flex">
-                            <div className="relative w-full md:w-1/2 h-64 md:h-auto">
-                              <Image
-                                src={post.image}
-                                alt={post.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            </div>
-                            <div className="p-6 md:w-1/2 flex flex-col justify-center">
-                              <div className="text-sm text-gray-500 mb-2">{post.category || '最新優惠'}</div>
-                              <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
-                                {post.title}
-                              </h2>
-                              <p className="text-gray-600 mb-4 line-clamp-3">{post.subtitle}</p>
-                              <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Clock className="w-4 h-4" />
-                                <span>{formatDate(post.publishedAt || post.createdAt || post.date)}</span>
-                              </div>
+                        <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
+                          <div className="relative h-48">
+                            <Image
+                              src={post.image}
+                              alt={post.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="p-4">
+                            <div className="text-xs text-gray-500 mb-2 line-clamp-1">{post.category || '最新優惠'}</div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                              {post.title}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.subtitle}</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Clock className="w-3 h-3" />
+                              <span>{formatDate(post.publishedAt || post.createdAt || post.date)}</span>
                             </div>
                           </div>
                         </article>
                       </Link>
-                    );
-                  }
-                  // After first post, show in groups of 3
-                  const groupIndex = Math.floor((index - 1) / 3);
-                  const positionInGroup = (index - 1) % 3;
-                  
-                  // Only render the first item of each group (which will render all 3)
-                  if (positionInGroup === 0) {
-                    const gridPosts = remainingPosts.slice(index, index + 3);
-                    return (
-                      <div key={`grid-${index}`} className="grid md:grid-cols-3 gap-6">
-                        {gridPosts.map((gridPost) => (
-                          <Link key={gridPost.id} href={`/blog/${gridPost.slug}`} className="block group">
-                            <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
-                              <div className="relative h-48">
-                                <Image
-                                  src={gridPost.image}
-                                  alt={gridPost.title}
-                                  fill
-                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                              </div>
-                              <div className="p-4">
-                                <div className="text-xs text-gray-500 mb-2 line-clamp-1">{gridPost.category || '最新優惠'}</div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
-                                  {gridPost.title}
-                                </h3>
-                                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{gridPost.subtitle}</p>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                  <Clock className="w-3 h-3" />
-                                  <span>{formatDate(gridPost.publishedAt || gridPost.createdAt || gridPost.date)}</span>
-                                </div>
-                              </div>
-                            </article>
-                          </Link>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return null; // Skip posts that are already rendered in grid
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
+            )}
+
+            {/* Show message if no posts at all */}
+            {blogPosts.length === 0 && (
               <div className="text-center py-12 text-gray-500">
                 <p>目前沒有文章</p>
               </div>
