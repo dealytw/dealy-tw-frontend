@@ -15,7 +15,7 @@ export const dynamic = 'force-static';
 
 // Generate metadata for SEO
 export async function generateMetadata() {
-  const MARKET = process.env.NEXT_PUBLIC_MARKET_KEY || "tw";
+  const MARKET = "tw"; // Hardcoded for TW frontend
   const domainConfig = getDomainConfigServer();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
   const ogImageUrl = `${siteUrl}/dealytwlogo.svg`;
@@ -46,7 +46,7 @@ export async function generateMetadata() {
 }
 
 export default async function HomePage() {
-  const MARKET = process.env.NEXT_PUBLIC_MARKET_KEY || "tw";
+  const MARKET = "tw"; // Hardcoded for TW frontend
   
   try {
     // Fetch homepage data on the server

@@ -87,13 +87,24 @@ export async function getHomePageByMarket(market = 'tw', revalidate = HOME_REVAL
     'fields[2]': 'seo_title',
     'fields[3]': 'seo_description',
     'populate[hero][populate][background][fields][0]': 'url',
+    // Filter merchants by market in populated relations
+    'populate[category][populate][merchants][filters][market][key][$eq]': market,
     'populate[category][populate][merchants][populate][logo][fields][0]': 'url',
+    'populate[category][populate][merchants][populate][market][fields][0]': 'key',
+    // Filter coupon merchants by market
+    'populate[coupon][populate][merchants][filters][market][key][$eq]': market,
     'populate[coupon][populate][merchants][fields][0]': 'id',
     'populate[coupon][populate][merchants][fields][1]': 'merchant_name',
     'populate[coupon][populate][merchants][fields][2]': 'page_slug',
     'populate[coupon][populate][merchants][populate][logo][fields][0]': 'url',
-    'populate[category][populate][categories]': 'true',
-    'populate[topicpage][populate][special_offers][populate][logo][fields][0]': 'url', // Populate logo for special offers
+    'populate[coupon][populate][merchants][populate][market][fields][0]': 'key',
+    // Filter categories by market
+    'populate[category][populate][categories][filters][market][key][$eq]': market,
+    'populate[category][populate][categories][populate][market][fields][0]': 'key',
+    // Filter special offers by market
+    'populate[topicpage][populate][special_offers][filters][market][key][$eq]': market,
+    'populate[topicpage][populate][special_offers][populate][logo][fields][0]': 'url',
+    'populate[topicpage][populate][special_offers][populate][market][fields][0]': 'key',
     'populate[market]': 'true',
     'pagination[pageSize]': '1',
   };
