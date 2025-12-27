@@ -27,6 +27,20 @@ interface Blog {
     blog_texts_second?: any; // Rich text blocks JSON (below table/coupon)
     section_button_text?: string;
     section_button_link?: string;
+    // New table fields
+    blog_header_row?: string; // Comma-separated header row
+    header_color?: string;
+    hover_color?: string;
+    border_color?: string;
+    blog_content_table?: Array<{  // New content table
+      id: number;
+      column_1: string;
+      column_2: string;
+      column_3: string;
+      column_4: string;
+      column_5: string;
+    }>;
+    // Backward compatibility
     blog_table?: Array<{  // Each section has its own blog_table
       id: number;
       table_h3: string;
@@ -808,31 +822,32 @@ export default function BlogView({ blog }: BlogViewProps) {
                         )}
 
                         {/* Comparison Table - Render after this section's blog_texts */}
-                        {section.blog_table && section.blog_table.length > 0 && (
+                        {((section.blog_content_table && section.blog_content_table.length > 0) || (section.blog_table && section.blog_table.length > 0)) && (
                         <div className="my-8">
                           {(() => {
-                            const firstThemeRow =
-                              section.blog_table.find((r) => (r.header_color || r.hover_color || r.border_color)) ||
-                              section.blog_table[0];
-                            const headerColor = (firstThemeRow?.header_color || '').toString().trim();
-                            const hoverColor = (firstThemeRow?.hover_color || '').toString().trim();
-                            const borderColor = (firstThemeRow?.border_color || '').toString().trim();
+                            // Use new blog_content_table if available, otherwise fallback to blog_table
+                            const useNewTable = section.blog_content_table && section.blog_content_table.length > 0;
+                            const tableData = useNewTable ? section.blog_content_table : section.blog_table || [];
+                            
+                            // Parse header row: use blog_header_row if provided, otherwise use default
+                            const headerRowText = (section.blog_header_row || '').toString().trim();
+                            const defaultHeaders = ['優惠標題', '優惠門檻及內容', '優惠期限', '專屬頁面或優惠碼'];
+                            const headerColumns = headerRowText 
+                              ? headerRowText.split(',').map(h => h.trim()).filter(h => h.length > 0)
+                              : defaultHeaders;
+                            
+                            // Get colors from section level (new) or from first row (backward compatibility)
+                            const headerColor = (section.header_color || '').toString().trim() || 
+                              (useNewTable ? '' : (tableData[0] as any)?.header_color || '').toString().trim();
+                            const hoverColor = (section.hover_color || '').toString().trim() || 
+                              (useNewTable ? '' : (tableData[0] as any)?.hover_color || '').toString().trim();
+                            const borderColor = (section.border_color || '').toString().trim() || 
+                              (useNewTable ? '' : (tableData[0] as any)?.border_color || '').toString().trim();
                             const hasCustomTheme = Boolean(headerColor || hoverColor || borderColor);
-
-                            const showTitleCol = section.blog_table.some((r) => (r.table_title || '').toString().trim() !== '');
-                            const showDescCol = section.blog_table.some((r) => (r.table_description || '').toString().trim() !== '');
-                            const showDateCol = section.blog_table.some((r) => (r.table_date || '').toString().trim() !== '');
-                            // Only show the action column if there is at least one real landing page link.
-                            // (If the table has no links, showing a whole column of '-' is noisy.)
-                            const showActionCol = section.blog_table.some((r) =>
-                              ((r.landingpage || '').toString().trim() !== '')
-                            );
-
-                            // If a column has no data at all, hide it.
-                            // (Title/Description are usually present, but keep the logic consistent.)
-                            const cols = { showTitleCol, showDescCol, showDateCol, showActionCol };
-                            const visibleCount = Object.values(cols).filter(Boolean).length;
-                            const minWidth = visibleCount <= 2 ? 'min-w-[420px]' : visibleCount === 3 ? 'min-w-[520px]' : 'min-w-[600px]';
+                            
+                            // Determine number of columns based on header count
+                            const columnCount = headerColumns.length;
+                            const minWidth = columnCount <= 2 ? 'min-w-[420px]' : columnCount === 3 ? 'min-w-[520px]' : 'min-w-[600px]';
 
                             return (
                               <>
@@ -869,33 +884,46 @@ export default function BlogView({ blog }: BlogViewProps) {
                               <table className={`w-full border-collapse ${minWidth} md:min-w-0 m-0`}>
                                 <thead>
                                   <tr className={hasCustomTheme ? "bg-[var(--bt-header)]" : "bg-yellow-100"}>
-                                    {showTitleCol && (
-                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
-                                        優惠標題
+                                    {headerColumns.map((header, colIndex) => (
+                                      <th 
+                                        key={colIndex}
+                                        className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}
+                                      >
+                                        {header}
                                       </th>
-                                    )}
-                                    {showDescCol && (
-                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
-                                        優惠門檻及內容
-                                      </th>
-                                    )}
-                                    {showDateCol && (
-                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
-                                        優惠期限
-                                      </th>
-                                    )}
-                                    {showActionCol && (
-                                      <th className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}>
-                                        專屬頁面或優惠碼
-                                      </th>
-                                    )}
+                                    ))}
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {section.blog_table.map((tableRow, rowIndex) => {
+                                  {tableData.map((tableRow: any, rowIndex: number) => {
                                     const buttonId = `promo-${sectionIndex}-${rowIndex}`;
-                                    const isRevealed = revealedPromoCodes[buttonId];
-                                    const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
+                                    
+                                    // For new table: use column_1, column_2, etc.
+                                    // For old table: use table_title, table_description, etc.
+                                    const getCellValue = (colIndex: number): string => {
+                                      if (useNewTable) {
+                                        const columnKey = `column_${colIndex + 1}` as keyof typeof tableRow;
+                                        return (tableRow[columnKey] || '').toString().trim();
+                                      } else {
+                                        // Backward compatibility: map to old structure
+                                        if (colIndex === 0) return tableRow.table_title || '-';
+                                        if (colIndex === 1) return tableRow.table_description || '-';
+                                        if (colIndex === 2) return tableRow.table_date || '-';
+                                        if (colIndex === 3) {
+                                          // Action column: show button or promo code
+                                          const isRevealed = revealedPromoCodes[buttonId];
+                                          const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
+                                          if (tableRow.landingpage && !(isRevealed && hasPromoCode)) {
+                                            return 'BUTTON_PLACEHOLDER'; // Special marker for button
+                                          }
+                                          if (isRevealed && hasPromoCode) {
+                                            return `CODE:${tableRow.table_promo_code}`; // Special marker for code
+                                          }
+                                          return '-';
+                                        }
+                                        return '-';
+                                      }
+                                    };
                                     
                                     return (
                                       <tr
@@ -905,48 +933,49 @@ export default function BlogView({ blog }: BlogViewProps) {
                                           hasCustomTheme ? "hover:bg-[var(--bt-hover)]" : "hover:bg-yellow-50",
                                         ].join(" ")}
                                       >
-                                        {showTitleCol && (
-                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground font-medium break-words leading-snug first:pl-6"}>
-                                            {tableRow.table_title || '-'}
-                                          </td>
-                                        )}
-                                        {showDescCol && (
-                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}>
-                                            {tableRow.table_description || '-'}
-                                          </td>
-                                        )}
-                                        {showDateCol && (
-                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}>
-                                            {tableRow.table_date || '-'}
-                                          </td>
-                                        )}
-                                        {showActionCol && (
-                                          <td className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 first:pl-6" : "border border-yellow-200 px-4 py-3 first:pl-6"}>
-                                            <div 
-                                              id={buttonId}
-                                              ref={(el) => { buttonRefs.current[buttonId] = el; }}
-                                              className="flex items-center gap-2 flex-wrap"
+                                        {headerColumns.map((_, colIndex) => {
+                                          const cellValue = getCellValue(colIndex);
+                                          const isButtonPlaceholder = cellValue === 'BUTTON_PLACEHOLDER';
+                                          const isCodePlaceholder = cellValue.startsWith('CODE:');
+                                          
+                                          return (
+                                            <td 
+                                              key={colIndex}
+                                              className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}
                                             >
-                                              {/* Show button only if not revealed (or if no promo code) */}
-                                              {tableRow.landingpage && !(isRevealed && hasPromoCode) && (
-                                                <Button 
-                                                  size="sm" 
-                                                  variant="outline"
-                                                  className="text-[11px] h-8 px-3"
-                                                  onClick={(e) => handleGetPromoClick(e, tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
+                                              {isButtonPlaceholder && !useNewTable ? (
+                                                <div 
+                                                  id={buttonId}
+                                                  ref={(el) => { buttonRefs.current[buttonId] = el; }}
+                                                  className="flex items-center gap-2 flex-wrap"
                                                 >
-                                                  獲取優惠
-                                                </Button>
+                                                  {tableRow.landingpage && (
+                                                    <Button 
+                                                      size="sm" 
+                                                      variant="outline"
+                                                      className="text-[11px] h-8 px-3"
+                                                      onClick={(e) => handleGetPromoClick(e, tableRow, sectionIndex, rowIndex, tableRow.landingpage)}
+                                                    >
+                                                      獲取優惠
+                                                    </Button>
+                                                  )}
+                                                </div>
+                                              ) : isCodePlaceholder && !useNewTable ? (
+                                                <div 
+                                                  id={buttonId}
+                                                  ref={(el) => { buttonRefs.current[buttonId] = el; }}
+                                                  className="flex items-center gap-2 flex-wrap"
+                                                >
+                                                  <Badge variant="secondary" className="font-mono text-[11px]">
+                                                    {cellValue.replace('CODE:', '')}
+                                                  </Badge>
+                                                </div>
+                                              ) : (
+                                                cellValue || '-'
                                               )}
-                                              {/* Show promo code when revealed */}
-                                              {isRevealed && hasPromoCode && (
-                                                <Badge variant="secondary" className="font-mono text-[11px]">
-                                                  {tableRow.table_promo_code}
-                                                </Badge>
-                                              )}
-                                            </div>
-                                          </td>
-                                        )}
+                                            </td>
+                                          );
+                                        })}
                                       </tr>
                                     );
                                   })}

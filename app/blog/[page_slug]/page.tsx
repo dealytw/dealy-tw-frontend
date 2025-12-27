@@ -110,6 +110,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[blog_sections][fields][3]": "blog_texts_second",
       "populate[blog_sections][fields][4]": "section_button_text",
       "populate[blog_sections][fields][5]": "section_button_link",
+      "populate[blog_sections][fields][6]": "blog_header_row",
+      "populate[blog_sections][fields][7]": "header_color",
+      "populate[blog_sections][fields][8]": "hover_color",
+      "populate[blog_sections][fields][9]": "border_color",
       // Relations (basic fields only)
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
@@ -149,11 +153,16 @@ export default async function BlogPage({ params }: BlogPageProps) {
     
     if (blogId) {
       try {
-        // blog_table is nested inside blog_sections, so we need nested populate
+        // blog_table and blog_content_table are nested inside blog_sections, so we need nested populate
         const queryString = qs({
           "filters[id][$eq]": blogId,
           "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
-          "populate[blog_sections][populate][blog_table]": "*",  // Nested populate: blog_sections -> blog_table
+          "populate[blog_sections][populate][blog_table]": "*",  // Nested populate: blog_sections -> blog_table (backward compatibility)
+          "populate[blog_sections][populate][blog_content_table][fields][0]": "content_table_column_1",
+          "populate[blog_sections][populate][blog_content_table][fields][1]": "content_table_column_2",
+          "populate[blog_sections][populate][blog_content_table][fields][2]": "content_table_column_3",
+          "populate[blog_sections][populate][blog_content_table][fields][3]": "content_table_column_4",
+          "populate[blog_sections][populate][blog_content_table][fields][4]": "content_table_column_5",
         });
         const fetchUrl = `/api/blogs?${queryString}`;
         console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
@@ -459,17 +468,45 @@ export default async function BlogPage({ params }: BlogPageProps) {
         // Handle both Strapi v5 attributes format and flat format
         const sectionData = section.attributes || section;
         
-        // Merge blog_table from separate fetch (sectionsWithTables) if available
+        // Extract new table fields from section level
+        const blogHeaderRow = sectionData.blog_header_row || '';
+        const sectionHeaderColor = sectionData.header_color || '';
+        const sectionHoverColor = sectionData.hover_color || '';
+        const sectionBorderColor = sectionData.border_color || '';
+        
+        // Merge blog_content_table from separate fetch (sectionsWithTables) if available
         // Match sections by index
-        let sectionTable: any[] = [];
+        let sectionContentTable: any[] = [];
         if (sectionsWithTables.length > index) {
+          const sectionWithTable = sectionsWithTables[index];
+          const sectionWithTableData = sectionWithTable.attributes || sectionWithTable;
+          const sectionContentTableData = sectionWithTableData.blog_content_table || [];
+          sectionContentTable = Array.isArray(sectionContentTableData) ? sectionContentTableData : (sectionContentTableData?.data || []);
+        }
+        
+        // Extract and transform blog_content_table
+        const blogContentTable = sectionContentTable.map((table: any) => {
+          const tableItem = table.attributes || table;
+          return {
+            id: tableItem.id || table.id || 0,
+            column_1: tableItem.content_table_column_1 || '',
+            column_2: tableItem.content_table_column_2 || '',
+            column_3: tableItem.content_table_column_3 || '',
+            column_4: tableItem.content_table_column_4 || '',
+            column_5: tableItem.content_table_column_5 || '',
+          };
+        });
+        
+        // Backward compatibility: Merge blog_table from separate fetch if blog_content_table is empty
+        let sectionTable: any[] = [];
+        if (blogContentTable.length === 0 && sectionsWithTables.length > index) {
           const sectionWithTable = sectionsWithTables[index];
           const sectionWithTableData = sectionWithTable.attributes || sectionWithTable;
           const sectionTableData = sectionWithTableData.blog_table || [];
           sectionTable = Array.isArray(sectionTableData) ? sectionTableData : (sectionTableData?.data || []);
         }
         
-        // Extract and transform blog_table
+        // Extract and transform blog_table (backward compatibility)
         const blogTable = sectionTable.map((table: any) => {
           const tableItem = table.attributes || table;
           return {
@@ -515,7 +552,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
           blog_texts_second: sectionData.blog_texts_second || [], // Rich text JSON (below table/coupon)
           section_button_text: sectionData.section_button_text || '',
           section_button_link: sectionData.section_button_link || '',
-          blog_table: blogTable, // Each section has its own blog_table array
+          // New table fields
+          blog_header_row: blogHeaderRow, // Comma-separated header row
+          header_color: sectionHeaderColor,
+          hover_color: sectionHoverColor,
+          border_color: sectionBorderColor,
+          blog_content_table: blogContentTable, // New content table (array of rows)
+          blog_table: blogTable, // Array of table rows (backward compatibility)
           blog_coupon_blocks: sectionCouponBlocks, // Each section can have coupon blocks
         };
       }),
