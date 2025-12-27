@@ -158,11 +158,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           "filters[id][$eq]": blogId,
           "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
           "populate[blog_sections][populate][blog_table]": "*",  // Nested populate: blog_sections -> blog_table (backward compatibility)
-          "populate[blog_sections][populate][blog_content_table][fields][0]": "content_table_column_1",
-          "populate[blog_sections][populate][blog_content_table][fields][1]": "content_table_column_2",
-          "populate[blog_sections][populate][blog_content_table][fields][2]": "content_table_column_3",
-          "populate[blog_sections][populate][blog_content_table][fields][3]": "content_table_column_4",
-          "populate[blog_sections][populate][blog_content_table][fields][4]": "content_table_column_5",
+          "populate[blog_sections][populate][blog_content_table]": "*",  // Nested populate: blog_sections -> blog_content_table (repeatable component)
         });
         const fetchUrl = `/api/blogs?${queryString}`;
         console.log('[BLOG_TABLE_FETCH] Fetch URL:', fetchUrl);
