@@ -962,7 +962,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         {headerColumns.map((_, colIndex) => {
                                           const cellValue = getCellValue(colIndex);
                                           const isButtonPlaceholder = cellValue === 'BUTTON_PLACEHOLDER';
-                                          const isCodePlaceholder = cellValue.startsWith('CODE:');
+                                          const isCodePlaceholder = cellValue && typeof cellValue === 'string' && cellValue.startsWith('CODE:');
                                           
                                           return (
                                             <td 
