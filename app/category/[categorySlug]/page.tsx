@@ -261,62 +261,52 @@ export default async function CategoryPage({
     const alternateUrl = categoryData.attributes?.hreflang_alternate_url || categoryData.hreflang_alternate_url || null;
 
     // Fetch blogs for this category
-    // Map category slug to blog category - try to find blog category with matching page_slug
+    // Blogs are linked directly to Category (not blog-category), so use the category ID we already have
     let categoryBlogs: any[] = [];
     try {
-      // First, try to find blog category that matches the category slug
-      const blogCategoryRes = await strapiFetch<{ data: any[] }>(`/api/blog-categories?${qs({
-        "filters[page_slug][$eq]": categorySlug,
-        "filters[market][key][$eq]": marketKey,
-        "fields[0]": "id",
-        "fields[1]": "page_slug",
-      })}`, {
-        revalidate: 172800, // Cache for 48 hours
-        tag: `blog-category:${categorySlug}`
-      });
-
-      const blogCategory = blogCategoryRes?.data?.[0];
+      const categoryId = categoryData.id || categoryData.attributes?.id;
       
-      if (blogCategory) {
-        const blogCategoryId = blogCategory.id || blogCategory.attributes?.id;
-        
-        if (blogCategoryId) {
-          // Fetch blogs with this category using category ID
-          const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
-            "filters[publishedAt][$notNull]": "true",
-            "filters[market][key][$eq]": marketKey,
-            "filters[categories][id][$eq]": blogCategoryId.toString(), // Filter by blog category ID
-            "fields[0]": "id",
-            "fields[1]": "blog_title",
-            "fields[2]": "page_slug",
-            "fields[3]": "intro_text",
-            "fields[4]": "publishedAt",
-            "sort[0]": "publishedAt:desc",
-            "pagination[pageSize]": "10", // Limit to 10 for sidebar
-            "populate[thumbnail][fields][0]": "url",
-          })}`, {
-            revalidate: 172800, // Cache for 48 hours
-            tag: `category-blogs:${categorySlug}`
-          });
+      if (categoryId) {
+        // Fetch blogs with this category using category ID directly
+        const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
+          "filters[publishedAt][$notNull]": "true",
+          "filters[market][key][$eq]": marketKey,
+          "filters[categories][id][$eq]": categoryId.toString(), // Filter by category ID
+          "fields[0]": "id",
+          "fields[1]": "blog_title",
+          "fields[2]": "page_slug",
+          "fields[3]": "intro_text",
+          "fields[4]": "publishedAt",
+          "sort[0]": "publishedAt:desc",
+          "pagination[pageSize]": "10", // Limit to 10 for sidebar
+          "populate[thumbnail][fields][0]": "url",
+        })}`, {
+          revalidate: 172800, // Cache for 48 hours
+          tag: `category-blogs:${categorySlug}`
+        });
 
-          const domainConfig = getDomainConfigServer();
-          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+        console.log(`[CategoryPage] Fetched blogs for category ${categorySlug} (ID: ${categoryId}):`, {
+          blogCount: blogRes?.data?.length || 0,
+          blogs: blogRes?.data?.map((b: any) => ({ id: b.id, title: b.blog_title || b.attributes?.blog_title }))
+        });
 
-          categoryBlogs = (blogRes?.data || []).map((post: any) => {
-            const thumbnailUrl = post.thumbnail?.url 
-              ? rewriteImageUrl(absolutizeMedia(post.thumbnail.url), siteUrl)
-              : '/placeholder.svg';
-            
-            return {
-              id: post.id,
-              title: post.blog_title || post.attributes?.blog_title || '',
-              subtitle: post.intro_text || post.attributes?.intro_text || '',
-              image: thumbnailUrl,
-              slug: post.page_slug || post.attributes?.page_slug || '',
-              publishedAt: post.publishedAt || post.createdAt,
-            };
-          });
-        }
+        const domainConfig = getDomainConfigServer();
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+
+        categoryBlogs = (blogRes?.data || []).map((post: any) => {
+          const thumbnailUrl = post.thumbnail?.url 
+            ? rewriteImageUrl(absolutizeMedia(post.thumbnail.url), siteUrl)
+            : '/placeholder.svg';
+          
+          return {
+            id: post.id,
+            title: post.blog_title || post.attributes?.blog_title || '',
+            subtitle: post.intro_text || post.attributes?.intro_text || '',
+            image: thumbnailUrl,
+            slug: post.page_slug || post.attributes?.page_slug || '',
+            publishedAt: post.publishedAt || post.createdAt,
+          };
+        });
       }
     } catch (error) {
       console.error('[CategoryPage] Error fetching category blogs:', error);
