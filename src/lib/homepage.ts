@@ -3,33 +3,6 @@
 import { strapiFetch, qs } from './strapi.server';
 import { HOME_REVALIDATE, HOME_TAG } from './constants';
 
-// Helper function to get market documentId from market key
-async function getMarketDocumentId(marketKey: string): Promise<string | null> {
-  try {
-    const sitesResponse = await strapiFetch<{ data: any[] }>(`/api/sites?${qs({
-      'pagination[pageSize]': '100',
-      'fields[0]': 'documentId',
-      'fields[1]': 'key',
-    })}`, {
-      revalidate: 86400, // Cache for 24 hours - market data doesn't change often
-      tag: 'sites:all'
-    });
-    
-    const sites = sitesResponse?.data || [];
-    const foundMarket = sites.find((site: any) => site.key?.toLowerCase() === marketKey.toLowerCase());
-    
-    if (foundMarket?.documentId) {
-      return foundMarket.documentId;
-    }
-    
-    console.warn(`[getHomePageByMarket] Market with key "${marketKey}" not found`);
-    return null;
-  } catch (error) {
-    console.error('[getHomePageByMarket] Error fetching sites for market documentId:', error);
-    return null;
-  }
-}
-
 // TypeScript interfaces for homepage data
 export interface HomePage {
   id: number;
@@ -158,16 +131,8 @@ export async function getHomePageByMarket(market = 'tw', revalidate = HOME_REVAL
 
 // Get homepage with minimal data (for performance)
 export async function getHomePageMinimal(market = 'tw', revalidate = HOME_REVALIDATE): Promise<HomePageResponse> {
-  // First, get market documentId from market key
-  const marketDocumentId = await getMarketDocumentId(market);
-  
-  if (!marketDocumentId) {
-    console.error(`[getHomePageMinimal] Could not find market documentId for "${market}", returning empty response`);
-    return { data: [], meta: { pagination: { page: 1, pageSize: 1, pageCount: 0, total: 0 } } };
-  }
-
-  const params: Record<string, string> = {
-    'filters[market][documentId][$eq]': marketDocumentId, // Use documentId for filtering
+  const params = {
+    'filters[market][key][$eq]': market, // Use key filter like merchant page
     'fields[0]': 'id',
     'fields[1]': 'title',
     'fields[2]': 'seo_title',
@@ -177,8 +142,7 @@ export async function getHomePageMinimal(market = 'tw', revalidate = HOME_REVALI
     'populate[hero][fields][2]': 'description',
     'populate[hero][fields][3]': 'search_placeholder',
     'populate[hero][populate][background][fields][0]': 'url',
-    'populate[market][fields][0]': 'documentId',
-    'populate[market][fields][1]': 'key',
+    'populate[market][fields][0]': 'key', // Populate market key like merchant page
     'pagination[pageSize]': '1',
   };
 
