@@ -550,7 +550,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
           
           return blocks.map((block: any) => {
             if (block.type === 'image' && block.image) {
-              const imageData = block.image?.data || block.image;
+              // Handle different Strapi data structures
+              let imageData = block.image;
+              if (imageData?.data) {
+                imageData = imageData.data;
+              }
+              
+              // Extract URL from various possible structures
               const imageUrl = imageData?.attributes?.url || imageData?.url || '';
               
               if (imageUrl) {
@@ -558,17 +564,37 @@ export default async function BlogPage({ params }: BlogPageProps) {
                 const absoluteUrl = absolutizeMedia(imageUrl);
                 const rewrittenUrl = rewriteImageUrl(absoluteUrl, siteUrl);
                 
-                // Return block with rewritten URL
-                return {
-                  ...block,
-                  image: {
-                    ...block.image,
-                    data: {
-                      ...(imageData?.attributes || imageData),
+                // Return block with rewritten URL, preserving structure
+                if (block.image?.data) {
+                  // Structure: { image: { data: { attributes: {...}, url: ... } } }
+                  return {
+                    ...block,
+                    image: {
+                      ...block.image,
+                      data: {
+                        ...imageData,
+                        attributes: {
+                          ...(imageData?.attributes || {}),
+                          url: rewrittenUrl,
+                        },
+                        url: rewrittenUrl,
+                      },
+                    },
+                  };
+                } else {
+                  // Structure: { image: { url: ... } }
+                  return {
+                    ...block,
+                    image: {
+                      ...block.image,
+                      attributes: {
+                        ...(block.image?.attributes || {}),
+                        url: rewrittenUrl,
+                      },
                       url: rewrittenUrl,
                     },
-                  },
-                };
+                  };
+                }
               }
             }
             return block;
