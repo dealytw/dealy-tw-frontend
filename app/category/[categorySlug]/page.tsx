@@ -96,6 +96,13 @@ export default async function CategoryPage({
       "populate[merchants][fields][3]": "summary",
       "populate[merchants][populate][logo][fields][0]": "url",
       "populate[merchants][populate][market][fields][0]": "key",
+      "populate[blogs][fields][0]": "id",
+      "populate[blogs][fields][1]": "blog_title",
+      "populate[blogs][fields][2]": "page_slug",
+      "populate[blogs][fields][3]": "intro_text",
+      "populate[blogs][fields][4]": "publishedAt",
+      "populate[blogs][populate][thumbnail][fields][0]": "url",
+      "populate[blogs][populate][market][fields][0]": "key",
     })}`, { 
           revalidate: 172800, // Cache for 48 hours
       tag: `category:${categorySlug}` 
@@ -260,64 +267,61 @@ export default async function CategoryPage({
     // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
     const alternateUrl = categoryData.attributes?.hreflang_alternate_url || categoryData.hreflang_alternate_url || null;
 
-    // Fetch blogs for this category
-    // Blogs are linked directly to Category (same as merchants), so use the category page_slug or ID
-    let categoryBlogs: any[] = [];
-    try {
-      const categoryId = categoryData.id || categoryData.attributes?.id;
-      const categoryDocumentId = categoryData.documentId || categoryData.attributes?.documentId;
-      
-      if (categoryId || categoryDocumentId) {
-        // Try filtering by category page_slug first (more reliable for manyToMany relations)
-        // If that doesn't work, fall back to ID
-        const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
-          "filters[publishedAt][$notNull]": "true",
-          "filters[market][key][$eq]": marketKey,
-          "filters[categories][page_slug][$eq]": categorySlug, // Filter by category page_slug (same as category slug)
-          "fields[0]": "id",
-          "fields[1]": "blog_title",
-          "fields[2]": "page_slug",
-          "fields[3]": "intro_text",
-          "fields[4]": "publishedAt",
-          "sort[0]": "publishedAt:desc",
-          "pagination[pageSize]": "10", // Limit to 10 for sidebar
-          "populate[thumbnail][fields][0]": "url",
-        })}`, {
-          revalidate: 172800, // Cache for 48 hours
-          tag: `category-blogs:${categorySlug}`
-        });
-
-        console.log(`[CategoryPage] Fetched blogs for category ${categorySlug} (page_slug filter):`, {
-          blogCount: blogRes?.data?.length || 0,
-          blogs: blogRes?.data?.map((b: any) => ({ 
-            id: b.id, 
-            title: b.blog_title || b.attributes?.blog_title,
-            categories: b.categories 
-          }))
-        });
-
-        const domainConfig = getDomainConfigServer();
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
-
-        categoryBlogs = (blogRes?.data || []).map((post: any) => {
-          const thumbnailUrl = post.thumbnail?.url 
-            ? rewriteImageUrl(absolutizeMedia(post.thumbnail.url), siteUrl)
-            : '/placeholder.svg';
-          
-          return {
-            id: post.id,
-            title: post.blog_title || post.attributes?.blog_title || '',
-            subtitle: post.intro_text || post.attributes?.intro_text || '',
-            image: thumbnailUrl,
-            slug: post.page_slug || post.attributes?.page_slug || '',
-            publishedAt: post.publishedAt || post.createdAt,
-          };
-        });
+    // Extract blogs from category relation (same pattern as merchants)
+    // Handle all possible formats for manyToMany relation:
+    // 1. Direct array: [{ id, ... }]
+    // 2. With data wrapper: { data: [{ id, ... }] }
+    // 3. Nested: [{ data: { id, ... } }]
+    let blogsFromCMS: any[] = [];
+    if (Array.isArray(categoryData?.blogs)) {
+      // Check if it's nested format
+      if (categoryData.blogs[0]?.data) {
+        blogsFromCMS = categoryData.blogs.map((item: any) => item.data || item);
+      } else {
+        blogsFromCMS = categoryData.blogs;
       }
-    } catch (error) {
-      console.error('[CategoryPage] Error fetching category blogs:', error);
-      // Continue without blogs - sidebar won't show
+    } else if (categoryData?.blogs?.data) {
+      blogsFromCMS = categoryData.blogs.data;
     }
+    
+    // Filter blogs by market and published status (only show published blogs for current market)
+    blogsFromCMS = blogsFromCMS.filter((blog: any) => {
+      if (!blog) return false;
+      const blogMarket = blog.market?.key || blog.market;
+      const isPublished = blog.publishedAt || blog.attributes?.publishedAt;
+      return blogMarket?.toLowerCase() === marketKey && isPublished;
+    });
+
+    // Sort blogs by publishedAt (newest first)
+    blogsFromCMS.sort((a: any, b: any) => {
+      const dateA = new Date(a.publishedAt || a.attributes?.publishedAt || a.createdAt || 0).getTime();
+      const dateB = new Date(b.publishedAt || b.attributes?.publishedAt || b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+
+    // Transform blogs for display (limit to 10 for sidebar)
+    const domainConfig = getDomainConfigServer();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
+    
+    const categoryBlogs = blogsFromCMS.slice(0, 10).map((blog: any) => {
+      const thumbnailUrl = blog.thumbnail?.url 
+        ? rewriteImageUrl(absolutizeMedia(blog.thumbnail.url), siteUrl)
+        : '/placeholder.svg';
+      
+      return {
+        id: blog.id,
+        title: blog.blog_title || blog.attributes?.blog_title || '',
+        subtitle: blog.intro_text || blog.attributes?.intro_text || '',
+        image: thumbnailUrl,
+        slug: blog.page_slug || blog.attributes?.page_slug || '',
+        publishedAt: blog.publishedAt || blog.attributes?.publishedAt || blog.createdAt,
+      };
+    });
+
+    console.log(`[CategoryPage] Extracted blogs for category ${categorySlug}:`, {
+      blogCount: categoryBlogs.length,
+      blogs: categoryBlogs.map((b: any) => ({ id: b.id, title: b.title }))
+    });
 
     return (
       <>
