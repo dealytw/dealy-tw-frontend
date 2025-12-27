@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
+import { strapiFetch, absolutizeMedia, rewriteImageUrl, qs } from '@/lib/strapi.server';
 import { pageMeta } from '@/seo/meta';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
