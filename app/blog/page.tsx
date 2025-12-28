@@ -22,7 +22,6 @@ export default async function BlogHomePage() {
 
   // Fetch blog posts with thumbnails, sorted by newest first
   let blogPosts: any[] = [];
-  let categories: any[] = [];
 
   try {
     // Fetch blog posts
@@ -68,24 +67,6 @@ export default async function BlogHomePage() {
         publishedAt: post.publishedAt,
       };
     });
-
-    // Fetch categories
-    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/blog-categories?${qs({
-      "filters[market][key][$eq]": marketKey,
-      "fields[0]": "id",
-      "fields[1]": "name",
-      "fields[2]": "page_slug",
-      "sort[0]": "name:asc",
-    })}`, {
-      revalidate: 86400, // Cache for 24 hours - same as homepage
-      tag: 'blog:categories'
-    });
-
-    categories = (categoryRes?.data || []).map((cat: any) => ({
-      id: cat.id,
-      name: cat.name || cat.attributes?.name || '',
-      slug: cat.page_slug || cat.attributes?.page_slug || '',
-    }));
   } catch (error) {
     console.error('Error fetching blog data:', error);
     // Continue with empty arrays - component will handle gracefully
