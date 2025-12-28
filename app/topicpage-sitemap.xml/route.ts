@@ -34,24 +34,28 @@ export async function GET() {
       { revalidate: 259200, tag: 'sitemap:topics' } // 72 hours
     )
 
-    topicPages = (topicsData?.data || [])
-      .filter((topic: any) => topic.publishedAt) // Double-check published status
-      .map((topic: any) => ({
-        url: `${baseUrl}/special-offers/${topic.page_slug || topic.slug}`,
-        lastmod: topic.updatedAt 
-          ? new Date(topic.updatedAt).toISOString() 
-          : (topic.publishedAt ? new Date(topic.publishedAt).toISOString() : currentDate.toISOString()),
-      }))
+    if (topicsData?.data && Array.isArray(topicsData.data)) {
+      topicPages = topicsData.data
+        .filter((topic: any) => topic.publishedAt && topic.page_slug) // Double-check published status and slug exists
+        .map((topic: any) => ({
+          url: `${baseUrl}/special-offers/${topic.page_slug}`,
+          lastmod: topic.updatedAt 
+            ? new Date(topic.updatedAt).toISOString() 
+            : (topic.publishedAt ? new Date(topic.publishedAt).toISOString() : currentDate.toISOString()),
+        }))
+    }
   } catch (error) {
     console.error('Error fetching special offers for sitemap:', error)
+    // Continue with empty array - return valid empty sitemap
   }
 
+  // Always return valid XML, even if empty
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${topicPages.map(page => `  <url>
+${topicPages.length > 0 ? topicPages.map(page => `  <url>
     <loc>${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
-  </url>`).join('\n')}
+  </url>`).join('\n') : ''}
 </urlset>`
 
   return new NextResponse(xml, {
