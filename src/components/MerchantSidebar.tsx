@@ -186,13 +186,6 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
             )}
           </div>
         </div>
-
-        {/* Store Description - Display below useful links */}
-        {merchant.store_description && (
-          <div className="border-t pt-4 mt-4">
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}></div>
-          </div>
-        )}
       </Card>
 
       {/* Description Card */}
