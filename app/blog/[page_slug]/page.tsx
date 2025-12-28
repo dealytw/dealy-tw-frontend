@@ -114,11 +114,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
       "populate[blog_sections][fields][7]": "header_color",
       "populate[blog_sections][fields][8]": "hover_color",
       "populate[blog_sections][fields][9]": "border_color",
-      // Populate images in rich text blocks (blog_texts and blog_texts_second)
-      "populate[blog_sections][populate][blog_texts][populate][image][fields][0]": "url",
-      "populate[blog_sections][populate][blog_texts][populate][image][fields][1]": "alternativeText",
-      "populate[blog_sections][populate][blog_texts_second][populate][image][fields][0]": "url",
-      "populate[blog_sections][populate][blog_texts_second][populate][image][fields][1]": "alternativeText",
+      // Note: Images in rich text blocks (blog_texts and blog_texts_second) are handled separately
+      // to avoid deep nested populate causing route 404 issues
       // Relations (basic fields only)
       "populate[related_merchants][fields][0]": "id",
       "populate[related_merchants][fields][1]": "merchant_name",
