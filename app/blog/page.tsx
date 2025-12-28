@@ -22,6 +22,7 @@ export default async function BlogHomePage() {
 
   // Fetch blog posts with thumbnails, sorted by newest first
   let blogPosts: any[] = [];
+  let categories: any[] = [];
 
   try {
     // Fetch blog posts
@@ -67,22 +68,38 @@ export default async function BlogHomePage() {
         publishedAt: post.publishedAt,
       };
     });
+
+    // Fetch categories from shared categories API (same as merchants)
+    const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs({
+      "filters[market][key][$eq]": marketKey,
+      "fields[0]": "id",
+      "fields[1]": "name",
+      "fields[2]": "page_slug",
+      "sort[0]": "name:asc",
+      "pagination[pageSize]": "100",
+    })}`, {
+      revalidate: 86400, // Cache for 24 hours - same as homepage
+      tag: `categories:${marketKey}`
+    });
+
+    categories = (categoryRes?.data || []).map((cat: any) => ({
+      id: cat.id || cat.documentId,
+      name: cat.name || cat.attributes?.name || '',
+      slug: cat.page_slug || cat.attributes?.page_slug || '',
+    }));
   } catch (error) {
     console.error('Error fetching blog data:', error);
     // Continue with empty arrays - component will handle gracefully
   }
 
-  // Fixed category list as requested
-  const categoriesList = [
-    { id: 'latest-offers', name: '最新優惠', slug: 'latest-offers' },
-    { id: 'beauty', name: '美妝', slug: 'beauty' },
-    { id: 'travel', name: '旅遊', slug: 'travel' },
-    { id: 'sports', name: '運動', slug: 'sports' },
-    { id: 'health', name: '健康', slug: 'health' },
-    { id: 'home-appliances', name: '家電', slug: 'home-appliances' },
-  ];
+  // Fallback to default category if no categories fetched
+  if (categories.length === 0) {
+    categories = [
+      { id: 'latest-offers', name: '最新優惠', slug: 'latest-offers' },
+    ];
+  }
 
-  return <BlogHomeView blogPosts={blogPosts} categories={categoriesList} />;
+  return <BlogHomeView blogPosts={blogPosts} categories={categories} />;
 }
 
 
