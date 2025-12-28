@@ -87,7 +87,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       "populate[merchants][fields][2]": "page_slug",
       "populate[merchants][populate][logo][fields][0]": "url",
     })}`, { 
-      revalidate: 60, // 1 minute (will be changed to 6 months in next request) 
+      revalidate: 15552000, // 6 months (180 days) - hotstore data rarely changes 
       tag: `hotstore:${marketKey}` 
     });
 
