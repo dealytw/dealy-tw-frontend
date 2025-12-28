@@ -3,7 +3,7 @@ import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.server';
 import MerchantIndex from './merchant-index';
 
-export const revalidate = 3600; // ISR - revalidate every hour (merchants don't change often)
+export const revalidate = 86400; // ISR - revalidate every 24 hours (merchants don't change often)
 
 /**
  * Extract the first English letter from a merchant name.

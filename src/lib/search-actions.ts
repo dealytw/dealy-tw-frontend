@@ -34,7 +34,7 @@ export async function getAllMerchantsForSearch(market: string = 'tw'): Promise<M
     };
 
     const merchantsData = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs(merchantParams)}`, {
-      revalidate: 3600, // Cache for 1 hour
+      revalidate: 86400, // Cache for 24 hours
       tag: `search:all-merchants:${market}`
     });
     

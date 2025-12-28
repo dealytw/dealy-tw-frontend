@@ -25,7 +25,7 @@ export async function getMerchantSEO(slug: string, revalidate = 21600) {
 
 // Get coupons for merchant (for SEO generation)
 // Fetches ACTIVE coupons sorted by priority for SEO title/description generation
-export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw', revalidate = 21600) {
+export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw', revalidate = 43200) { // 12 hours
   const params = {
     'filters[merchant][documentId][$eq]': merchantId,
     'filters[market][key][$eq]': market,
@@ -62,7 +62,7 @@ export async function getMerchantCouponsForSEO(merchantId: string, market = 'tw'
 }
 
 // TOPIC SEO (if you have topics)
-export async function getTopicSEO(slug: string, revalidate = 300) {
+export async function getTopicSEO(slug: string, revalidate = 43200) { // 12 hours
   const params = {
     'filters[page_slug][$eq]': slug,
     'fields[0]': 'id',
@@ -334,7 +334,7 @@ export async function findAlternateMerchantBySlug(
   pageSlug: string,
   currentMarket: string,
   alternateMarket: string,
-  revalidate = 300
+  revalidate = 43200 // 12 hours
 ): Promise<string | null> {
   if (!pageSlug || currentMarket === alternateMarket) {
     return null;
@@ -431,7 +431,7 @@ export async function findAlternateMerchant(
   merchantName: string,
   currentMarket: string,
   alternateMarket: string,
-  revalidate = 300
+  revalidate = 43200 // 12 hours
 ): Promise<string | null> {
   // For now, delegate to slug-based matching if we have a way to get slug from name
   // This is a fallback - prefer using findAlternateMerchantBySlug with page_slug directly

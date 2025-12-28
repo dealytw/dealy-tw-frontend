@@ -3,7 +3,7 @@ import { strapiFetch, qs, absolutizeMedia, rewriteImageUrl } from '@/lib/strapi.
 
 // Mark as dynamic since we use request.url
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600;
+export const revalidate = 60; // 1 minute (will be changed to 6 months in next request)
 
 export async function GET(request: Request) {
   try {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       "populate[merchants][fields][2]": "page_slug",
       "populate[merchants][populate][logo][fields][0]": "url",
     })}`, { 
-      revalidate: 3600, 
+      revalidate: 60, // 1 minute (will be changed to 6 months in next request) 
       tag: `hotstore:${marketKey}` 
     });
 
