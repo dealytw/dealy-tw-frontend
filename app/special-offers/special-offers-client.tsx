@@ -239,8 +239,8 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals, alte
 
         {/* Featured Merchants Section */}
         {featuredMerchants.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
+          <section className="mb-12" aria-labelledby="featured-merchants-heading">
+            <h2 id="featured-merchants-heading" className="text-2xl font-bold text-foreground mb-6 text-center">
               優惠主題熱門商店
             </h2>
             
@@ -264,13 +264,13 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals, alte
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* Flash Deals Section */}
-        <div>
+        <section aria-labelledby="flash-deals-heading">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 id="flash-deals-heading" className="text-2xl font-bold text-foreground">
               快閃優惠
             </h2>
             
@@ -318,7 +318,7 @@ const SpecialOffersClient = ({ specialOffer, featuredMerchants, flashDeals, alte
               );
             })}
           </div>
-        </div>
+        </section>
       </main>
 
       {/* Coupon Modal */}

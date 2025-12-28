@@ -98,9 +98,9 @@ export default function MerchantIndex({
             .filter(letter => /^[A-Z]$/.test(letter)) // Only show English letters
             .sort()
             .map((letter) => (
-            <div key={letter}>
+            <section key={letter} aria-labelledby={`letter-${letter}-heading`}>
               {/* Letter Header */}
-              <h2 className="text-xl font-bold text-gray-800 mb-6">{letter}</h2>
+              <h2 id={`letter-${letter}-heading`} className="text-xl font-bold text-gray-800 mb-6">{letter}</h2>
               
               {/* Merchants Grid for this letter */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
@@ -129,7 +129,7 @@ export default function MerchantIndex({
                   </Link>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
 
