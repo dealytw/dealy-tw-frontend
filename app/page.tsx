@@ -1,4 +1,5 @@
 // app/page.tsx - Server Component with ISR
+// Redeployment trigger
 import { getHomePageData } from "@/lib/homepage-loader";
 import { HOME_REVALIDATE, HOME_TAG } from "@/lib/constants";
 import { pageMeta } from "@/seo/meta";
