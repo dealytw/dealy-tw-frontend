@@ -373,7 +373,7 @@ const DealyCouponCard = ({
             e.stopPropagation();
             setShowDetails(!showDetails);
           }} className="text-xs text-blue-600 p-0 h-auto hover:underline">
-            {showDetails ? '隐藏優惠詳情' : '顯示優惠詳情'}
+            {showDetails ? '隱藏優惠詳情' : '顯示優惠詳情'}
             {showDetails ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
           </Button>
 

@@ -16,6 +16,7 @@ export async function GET() {
 
   // Clean robots.txt content (NO Content-signal directive)
   // Domain-specific: Only include sitemap for current domain
+  // Explicitly allow favicon for Google crawlers (WordPress-style optimization)
   const robotsTxt = `# Block admin and API routes from crawling
 User-agent: *
 Disallow: /api/admin/
@@ -24,6 +25,11 @@ Disallow: /api/env-test/
 Disallow: /api/hero-test/
 Disallow: /api/mapper-test/
 Disallow: /api/media-test/
+
+# Explicitly allow favicon for Google crawlers (WordPress-style optimization)
+Allow: /favicon.ico
+Allow: /apple-touch-icon.png
+Allow: /site.webmanifest
 
 # Allow everything else
 Allow: /

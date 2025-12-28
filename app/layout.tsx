@@ -203,18 +203,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
         <link rel="dns-prefetch" href="//cms.dealy.tw" />
         
-        {/* Preload primary favicon for faster loading (critical for first paint) */}
-        <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
-        
-        {/* Favicon links - Optimized for Google Search Results */}
+        {/* Favicon links - WordPress-style optimization for Google Search Results */}
         {/* PRIMARY: ICO with explicit type - Google's preferred format (MUST be first) */}
+        {/* WordPress uses this exact format, which Google crawls faster */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         {/* Alternative format for maximum browser compatibility */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        {/* Legacy shortcut icon */}
+        {/* Legacy shortcut icon - WordPress includes this for compatibility */}
         <link rel="shortcut icon" href="/favicon.ico" />
         {/* Apple touch icon for iOS devices only */}
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        {/* Preload favicon AFTER link tags (WordPress-style: helps Google discover faster) */}
+        <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
         {/* 
           REMOVED: SVG and redundant PNG fallbacks
           - SVG creates noise and Google prefers ICO
