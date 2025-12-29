@@ -12,11 +12,16 @@ export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (genera
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id: slug } = await params;
   
+  // Hardcode to TW market - this is the TW frontend
+  const marketKey = 'tw';
+  
   try {
     // Fetch special offer data for SEO - use explicit fields like merchant page
+    // Filter by market to ensure we only get TW entries (not HK entries)
     const specialOfferRes = await strapiFetch<{ data: any[] }>(
       `/api/special-offers?${qs({
         "filters[page_slug][$eq]": slug,
+        "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
         "fields[0]": "title",
         "fields[1]": "seo_title",
         "fields[2]": "seo_description",
@@ -60,11 +65,16 @@ export default async function SpecialOfferPage({
   params: Promise<{ id: string }> 
 }) {
   const { id: slug } = await params;
+  
+  // Hardcode to TW market - this is the TW frontend
+  const marketKey = 'tw';
 
   try {
     // Use explicit populate structure like merchant page - don't use "populate=deep"
+    // Filter by market to ensure we only get TW entries (not HK entries)
     const specialOfferRes = await strapiFetch<{ data: any[] }>(`/api/special-offers?${qs({
       "filters[page_slug][$eq]": slug,
+      "filters[market][key][$eq]": marketKey, // Filter by market (TW only)
       "fields[0]": "id",
       "fields[1]": "title",
       "fields[2]": "page_slug",
