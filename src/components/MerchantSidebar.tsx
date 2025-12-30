@@ -127,12 +127,12 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
           <h3 className="text-xl font-bold text-blue-600 mb-4">{merchant.name}</h3>
           
           <a
-            href={merchant.affiliateLink || merchant.website || '#'}
+            href={merchant.site_url || merchant.affiliateLink || merchant.website || '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 text-center rounded-md transition-colors"
           >
-            前往查看 {merchant.website || merchant.affiliateLink}
+            前往查看
           </a>
         </div>
 
