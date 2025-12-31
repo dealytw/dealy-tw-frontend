@@ -4,7 +4,7 @@ import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import SpecialOffersIndexClient from './special-offers-index-client';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 3600; // ISR - revalidate every 1 hour
+export const revalidate = 86400; // ISR - revalidate every 24 hours (same as homepage)
 
 export async function generateMetadata() {
   return pageMeta({
