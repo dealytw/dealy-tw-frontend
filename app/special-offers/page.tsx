@@ -32,7 +32,7 @@ export default async function SpecialOffersIndex() {
 
     const specialOffersRes = await strapiFetch<{ data: any[]; meta: any }>(
       `/api/special-offers?${qs(specialOffersParams)}`,
-      { revalidate: 3600, tag: 'special-offers:index' }
+      { revalidate: 86400, tag: 'special-offers:index' }
     );
     
     const specialOffers = specialOffersRes.data || [];
