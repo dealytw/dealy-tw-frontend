@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
 
-export const revalidate = 172800; // ISR - revalidate every 48 hours
+export const revalidate = 3600; // ISR - revalidate every 1 hour (reduced from 48h for faster updates when relations change)
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
