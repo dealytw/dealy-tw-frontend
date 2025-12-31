@@ -66,7 +66,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
           <SheetTitle className="text-2xl font-bold">
             <Link href="/" onClick={() => onOpenChange(false)} className="flex items-center">
               <img 
-                src="/dealytwlogo.svg"
+                src="/newdealylogo.png"
                 alt="dealy logo"
                 width={120}
                 height={32}

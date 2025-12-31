@@ -19,7 +19,7 @@ const Header = () => {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <img 
-                src="/dealytwlogo.svg"
+                src="/newdealylogo.png"
                 alt="dealy logo"
                 width={120}
                 height={32}
@@ -70,7 +70,7 @@ const Header = () => {
           <div className="flex items-center justify-start">
             <Link href="/" className="flex items-center">
               <img 
-                src="/dealytwlogo.svg"
+                src="/newdealylogo.png"
                 alt="dealy logo"
                 width={100}
                 height={32}
