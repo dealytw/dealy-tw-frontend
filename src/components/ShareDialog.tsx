@@ -57,6 +57,9 @@ export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps
       case 'email':
         window.open(`mailto:?subject=${encodedTitle}&body=${encodedUrl}`, '_blank');
         break;
+      case 'threads':
+        window.open(`https://threads.net/intent/post?text=${encodedTitle}%20${encodedUrl}`, '_blank');
+        break;
     }
   };
 
@@ -68,16 +71,16 @@ export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps
         </DialogHeader>
         <div className="space-y-4">
           {/* Share Options */}
-          <div className="flex items-center gap-4 justify-center">
+          <div className="flex items-center gap-3 justify-center flex-wrap">
             <Button
               variant="outline"
-              size="lg"
-              className="flex flex-col items-center gap-2 h-auto py-4 px-6 rounded-full"
+              size="sm"
+              className="flex flex-col items-center gap-1.5 h-auto py-2.5 px-3 rounded-full shadow-lg hover:shadow-xl transition-shadow"
               onClick={() => handleShare('whatsapp')}
             >
-              <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shadow-md">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-5 h-5 text-white"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -90,38 +93,57 @@ export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps
 
             <Button
               variant="outline"
-              size="lg"
-              className="flex flex-col items-center gap-2 h-auto py-4 px-6 rounded-full"
+              size="sm"
+              className="flex flex-col items-center gap-1.5 h-auto py-2.5 px-3 rounded-full shadow-lg hover:shadow-xl transition-shadow"
               onClick={() => handleShare('facebook')}
             >
-              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
-                <Facebook className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-md">
+                <Facebook className="w-5 h-5 text-white" />
               </div>
               <span className="text-xs">Facebook</span>
             </Button>
 
             <Button
               variant="outline"
-              size="lg"
-              className="flex flex-col items-center gap-2 h-auto py-4 px-6 rounded-full"
+              size="sm"
+              className="flex flex-col items-center gap-1.5 h-auto py-2.5 px-3 rounded-full shadow-lg hover:shadow-xl transition-shadow"
               onClick={() => handleShare('x')}
             >
-              <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
-                <X className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center shadow-md">
+                <X className="w-5 h-5 text-white" />
               </div>
               <span className="text-xs">X</span>
             </Button>
 
             <Button
               variant="outline"
-              size="lg"
-              className="flex flex-col items-center gap-2 h-auto py-4 px-6 rounded-full"
+              size="sm"
+              className="flex flex-col items-center gap-1.5 h-auto py-2.5 px-3 rounded-full shadow-lg hover:shadow-xl transition-shadow"
               onClick={() => handleShare('email')}
             >
-              <div className="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center">
-                <Mail className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center shadow-md">
+                <Mail className="w-5 h-5 text-white" />
               </div>
               <span className="text-xs">電子郵件</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex flex-col items-center gap-1.5 h-auto py-2.5 px-3 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+              onClick={() => handleShare('threads')}
+            >
+              <div className="w-10 h-10 rounded-full bg-[#101010] flex items-center justify-center shadow-md">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M16.3 11.3c-.1 0-.2-.1-.2-.1-.1-2.6-1.5-4-3.9-4-1.4 0-2.6.6-3.3 1.7l1.3.9c.5-.8 1.4-1 2-1 .8 0 1.4.2 1.7.7.3.3.5.8.5 1.3-.7-.1-1.4-.2-2.2-.1-2.2.1-3.7 1.4-3.6 3.2 0 .9.5 1.7 1.3 2.2.7.4 1.5.6 2.4.6 1.2-.1 2.1-.5 2.7-1.3.5-.6.8-1.4.9-2.4.6.3 1 .8 1.2 1.3.4.9.4 2.4-.8 3.6-1.1 1.1-2.3 1.5-4.3 1.5-2.1 0-3.8-.7-4.8-2S5.7 14.3 5.7 12c0-2.3.5-4.1 1.5-5.4 1.1-1.3 2.7-2 4.8-2 2.2 0 3.8.7 4.9 2 .5.7.9 1.5 1.2 2.5l1.5-.4c-.3-1.2-.8-2.2-1.5-3.1-1.3-1.7-3.3-2.6-6-2.6-2.6 0-4.7.9-6 2.6C4.9 7.2 4.3 9.3 4.3 12s.6 4.8 1.9 6.4c1.4 1.7 3.4 2.6 6 2.6 2.3 0 4-.6 5.3-2 1.8-1.8 1.7-4 1.1-5.4-.4-.9-1.2-1.7-2.3-2.3zm-4 3.8c-1 .1-2-.4-2-1.3 0-.7.5-1.5 2.1-1.6h.5c.6 0 1.1.1 1.6.2-.2 2.3-1.3 2.7-2.2 2.7z"/>
+                </svg>
+              </div>
+              <span className="text-xs">Threads</span>
             </Button>
           </div>
 

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -32,6 +32,20 @@ interface BlogHomeViewProps {
 
 export default function BlogHomeView({ blogPosts = [], categories = [] }: BlogHomeViewProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isCategoriesExpanded, setIsCategoriesExpanded] = useState(false);
+
+  // Define the categories to show by default (excluding "最新文章")
+  const defaultCategoryNames = ['旅遊', '服飾', '護膚', '美妝', '網購平台', '家電'];
+  
+  // Filter categories to show only the specified ones
+  const visibleCategories = useMemo(() => {
+    return categories.filter(cat => defaultCategoryNames.includes(cat.name));
+  }, [categories]);
+
+  // Get all other categories (not in the default list)
+  const hiddenCategories = useMemo(() => {
+    return categories.filter(cat => !defaultCategoryNames.includes(cat.name));
+  }, [categories]);
 
   // Format date helper
   const formatDate = (dateString?: string) => {
@@ -105,8 +119,42 @@ export default function BlogHomeView({ blogPosts = [], categories = [] }: BlogHo
         {/* Blog Menu / Categories */}
         <div className="mb-8 border-b border-gray-200 pb-4">
           <div className="flex flex-wrap gap-3 items-center">
+            {/* Latest Articles - always shown */}
             <span className="text-sm font-semibold text-gray-900 mr-1">最新文章</span>
-            {categories.map((cat) => (
+            
+            {/* Default visible categories (6 categories) */}
+            {visibleCategories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/blog?category=${cat.slug}`}
+                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-all"
+              >
+                {cat.name}
+              </Link>
+            ))}
+            
+            {/* Expand/Collapse button if there are hidden categories */}
+            {hiddenCategories.length > 0 && (
+              <button
+                onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-all flex items-center gap-1"
+              >
+                {isCategoriesExpanded ? (
+                  <>
+                    <span>收起</span>
+                    <ChevronUp className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    <span>更多</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            )}
+            
+            {/* Hidden categories - shown when expanded */}
+            {isCategoriesExpanded && hiddenCategories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/blog?category=${cat.slug}`}
