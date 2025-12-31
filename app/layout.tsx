@@ -35,13 +35,13 @@ export const metadata: Metadata = {
     title: "Dealy TW 台灣最新優惠平台",
     description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
     type: "website",
-    images: ["/dealytwlogo.svg"], // Use logo, not favicon for OpenGraph
+    images: ["/og-image.png"], // Use PNG for better social media compatibility
   },
   twitter: {
     card: "summary_large_image",
     title: "Dealy TW 台灣最新優惠平台",
     description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
-    images: ["/dealytwlogo.svg"], // Use logo, not favicon for OpenGraph
+    images: ["/og-image.png"], // Use PNG for better social media compatibility
   },
 };
 

@@ -10,7 +10,7 @@ export async function generateMetadata() {
     title: '部落格 | Dealy.TW',
     description: '台灣最新優惠資訊、購物指南與生活分享',
     path: '/blog',
-    ogImageUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw'}/dealytwlogo.svg`,
+    ogImageUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw'}/og-image.png`,
     ogImageAlt: 'Dealy TW 部落格',
   });
 }

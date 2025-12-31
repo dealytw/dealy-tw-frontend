@@ -19,7 +19,7 @@ export async function generateMetadata({
   const marketKey = market.toLowerCase();
   const domainConfig = getDomainConfigServer();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
-  const ogImageUrl = `${siteUrl}/dealytwlogo.svg`;
+  const ogImageUrl = `${siteUrl}/og-image.png`;
   const ogImageAlt = 'Dealy TW 台灣最新優惠平台';
   
   try {

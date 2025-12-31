@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
   const domainConfig = getDomainConfigServer();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
-  const ogImageUrl = `${siteUrl}/dealytwlogo.svg`;
+  const ogImageUrl = `${siteUrl}/og-image.png`;
   const ogImageAlt = 'Dealy TW 台灣最新優惠平台';
   
   // Check if slug is reserved
