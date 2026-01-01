@@ -83,15 +83,16 @@ export async function POST(req: NextRequest) {
   }
 
   // Revalidate paths SECOND (this invalidates the rendered page)
-  // For dynamic routes like /blog/[slug], we need to specify 'page' type
+  // For dynamic routes, we need to revalidate both 'page' and 'layout'
+  // This matches the pattern used in coupon-revalidate endpoint for merchant pages
   for (const path of paths) {
     if (typeof path === 'string' && path.startsWith('/')) {
       // Check if it's a dynamic route (blog, shop, etc.)
       if (path.startsWith('/blog/') || path.startsWith('/shop/')) {
-        // For dynamic routes, explicitly revalidate as 'page'
-        console.log(`[REVALIDATE] Revalidating dynamic route: ${path} (type: page)`);
+        // For dynamic routes, revalidate both page and layout
+        // This ensures the page cache is properly invalidated
+        console.log(`[REVALIDATE] Revalidating dynamic route: ${path} (type: page + layout)`);
         revalidatePath(path, 'page');
-        // Also revalidate the layout to ensure navigation updates
         revalidatePath(path, 'layout');
       } else {
         // For static routes, use default revalidation
@@ -106,13 +107,15 @@ export async function POST(req: NextRequest) {
   let purged = false;
   const uniqueWarmPaths = Array.from(new Set(paths.filter((p: unknown) => typeof p === 'string' && (p as string).startsWith('/')))) as string[];
   if (uniqueWarmPaths.length) {
+    console.log(`[REVALIDATE] Warming ${uniqueWarmPaths.length} paths to trigger ISR regeneration...`);
     const warm = await warmPaths(uniqueWarmPaths, {
       origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
       concurrency: 3,
-      timeoutMs: 4000,
+      timeoutMs: 10000, // Increased timeout for blog pages with long revalidate times
       retries: 2,
     });
     if (!warm.ok) {
+      console.error(`[REVALIDATE] Warming failed:`, warm);
       return NextResponse.json(
         { ok: false, warmed: warm },
         {
@@ -125,8 +128,11 @@ export async function POST(req: NextRequest) {
         }
       );
     }
-    // Wait 3 seconds for ISR rebuilds to complete before purging
-    await sleep(3000);
+    console.log(`[REVALIDATE] Warming successful, waiting for ISR rebuilds...`);
+    // Wait longer for ISR rebuilds to complete (especially for blog pages with 30-day revalidate)
+    // Blog pages may take longer to regenerate due to their long revalidate time
+    await sleep(5000); // Increased from 3s to 5s for blog pages
+    console.log(`[REVALIDATE] ISR rebuild wait complete`);
   }
 
   if (purgeEverything) {
