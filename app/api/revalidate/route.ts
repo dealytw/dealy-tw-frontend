@@ -73,17 +73,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'paths and tags must be arrays' }, { status: 400 });
   }
 
-  // Revalidate paths
-  for (const path of paths) {
-    if (typeof path === 'string' && path.startsWith('/')) {
-      revalidatePath(path);
+  // Revalidate tags FIRST (this invalidates cached data)
+  // Tags are used by fetch() calls with the `tag` option
+  for (const tag of tags) {
+    if (typeof tag === 'string') {
+      console.log(`[REVALIDATE] Revalidating tag: ${tag}`);
+      revalidateTag(tag);
     }
   }
 
-  // Revalidate tags
-  for (const tag of tags) {
-    if (typeof tag === 'string') {
-      revalidateTag(tag);
+  // Revalidate paths SECOND (this invalidates the rendered page)
+  // For dynamic routes like /blog/[slug], we need to specify 'page' type
+  for (const path of paths) {
+    if (typeof path === 'string' && path.startsWith('/')) {
+      // Check if it's a dynamic route (blog, shop, etc.)
+      if (path.startsWith('/blog/') || path.startsWith('/shop/')) {
+        // For dynamic routes, explicitly revalidate as 'page'
+        console.log(`[REVALIDATE] Revalidating dynamic route: ${path} (type: page)`);
+        revalidatePath(path, 'page');
+        // Also revalidate the layout to ensure navigation updates
+        revalidatePath(path, 'layout');
+      } else {
+        // For static routes, use default revalidation
+        console.log(`[REVALIDATE] Revalidating static route: ${path}`);
+        revalidatePath(path);
+      }
     }
   }
 
