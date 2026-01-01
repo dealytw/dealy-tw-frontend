@@ -83,22 +83,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Revalidate paths SECOND (this invalidates the rendered page)
-  // For dynamic routes, we need to revalidate both 'page' and 'layout'
-  // This matches the pattern used in coupon-revalidate endpoint for merchant pages
+  // Use simple revalidatePath() like category pages do - it works for all route types
   for (const path of paths) {
     if (typeof path === 'string' && path.startsWith('/')) {
-      // Check if it's a dynamic route (blog, shop, etc.)
-      if (path.startsWith('/blog/') || path.startsWith('/shop/')) {
-        // For dynamic routes, revalidate both page and layout
-        // This ensures the page cache is properly invalidated
-        console.log(`[REVALIDATE] Revalidating dynamic route: ${path} (type: page + layout)`);
-        revalidatePath(path, 'page');
-        revalidatePath(path, 'layout');
-      } else {
-        // For static routes, use default revalidation
-        console.log(`[REVALIDATE] Revalidating static route: ${path}`);
-        revalidatePath(path);
-      }
+      console.log(`[REVALIDATE] Revalidating path: ${path}`);
+      revalidatePath(path);
     }
   }
 
