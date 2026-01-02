@@ -436,7 +436,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                     router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
                   }
                 }}
-                className="m-2 px-8 py-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full"
+                className="m-2 px-8 py-2 bg-[#FF4790] hover:bg-[#E6397A] text-white rounded-full transition-colors"
               >
                 搜尋
               </Button>

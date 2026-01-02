@@ -208,6 +208,14 @@
   }
   
   .faq-answer-content a {
-    @apply text-pink-600 hover:text-pink-700 underline;
+    @apply text-link hover:text-link-hover underline;
+  }
+  
+  /* Global hyperlink styles for content areas */
+  .prose a,
+  [class*="content"] a:not([class*="text-"]):not([class*="bg-"]):not(.no-link-style),
+  p a:not([class*="text-"]):not([class*="bg-"]):not(.no-link-style),
+  article a:not([class*="text-"]):not([class*="bg-"]):not(.no-link-style) {
+    @apply text-link hover:text-link-hover underline transition-colors;
   }
 }
