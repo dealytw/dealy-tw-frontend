@@ -56,7 +56,13 @@ export default async function HomePage() {
     // Get domain config and locale for WebPage schema
     const domainConfig = getDomainConfigServer();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
-    const marketLocale = await getMarketLocale(MARKET);
+    let marketLocale: string;
+    try {
+      marketLocale = await getMarketLocale(MARKET);
+    } catch (error) {
+      console.error('[HomePage] Error fetching market locale, using fallback:', error);
+      marketLocale = 'zh-Hant-TW'; // Default fallback for TW
+    }
     
     // Get daily updated time for freshness signal (matches merchant pages)
     const dailyUpdatedTime = getDailyUpdatedTime();
