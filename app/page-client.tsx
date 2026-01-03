@@ -104,24 +104,38 @@ const MerchantSlider = ({ merchants }: MerchantSliderProps) => {
       clearInterval(scrollIntervalRef.current);
     }
 
+    // Cache maxScroll to avoid forced reflow (querying scrollWidth/clientWidth repeatedly)
+    let maxScroll = container.scrollWidth - container.clientWidth;
+    let lastRecalcTime = Date.now();
+    const RECALC_INTERVAL = 1000; // Recalculate maxScroll every 1 second instead of every frame
+
     // Function to perform the scroll
     const performScroll = () => {
       if (!container || isPausedRef.current) return;
       
       const scrollAmount = 1; // Pixels to scroll per step
       const currentScroll = container.scrollLeft;
-      const maxScroll = container.scrollWidth - container.clientWidth;
+      
+      // Only recalculate maxScroll periodically (not every frame) to reduce forced reflows
+      const now = Date.now();
+      if (now - lastRecalcTime > RECALC_INTERVAL) {
+        maxScroll = container.scrollWidth - container.clientWidth;
+        lastRecalcTime = now;
+      }
 
       // If we've reached the end, reset to start for seamless loop
       if (currentScroll >= maxScroll - 1) {
         container.scrollLeft = 0;
+        // Recalculate maxScroll after reset (container size might have changed)
+        maxScroll = container.scrollWidth - container.clientWidth;
+        lastRecalcTime = Date.now();
       } else {
         container.scrollLeft = currentScroll + scrollAmount;
       }
     };
 
-    // Start auto-scrolling immediately with setInterval
-    // Using 16ms ≈ 60fps for smooth animation
+    // Start auto-scrolling with setInterval (16ms ≈ 60fps)
+    // Using cached maxScroll reduces forced reflows from querying layout properties every frame
     scrollIntervalRef.current = setInterval(performScroll, 16);
 
     // Cleanup on unmount
