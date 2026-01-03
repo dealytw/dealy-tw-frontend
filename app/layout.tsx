@@ -51,7 +51,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const marketKey = domainConfig.market;
   
   // Fetch market locale from CMS (uses Market.defaultLocale)
-  const marketLocale = await getMarketLocale(marketKey);
+  // Wrap in try-catch to prevent 500 errors if CMS is unavailable
+  let marketLocale: string;
+  try {
+    marketLocale = await getMarketLocale(marketKey);
+  } catch (error) {
+    console.error('[Layout] Error fetching market locale, using fallback:', error);
+    // Fallback based on market key
+    marketLocale = marketKey.toLowerCase() === 'hk' ? 'zh-Hant-HK' : 'zh-Hant-TW';
+  }
   const htmlLang = localeToHtmlLang(marketLocale);
   const hreflangCode = localeToHreflang(marketLocale);
   
