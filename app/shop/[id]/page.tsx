@@ -525,9 +525,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
     const name = (merchant.attributes?.merchant_name || merchant.merchant_name || id).trim();
     
-    // Extract alternate URL from hreflang_alternate (rich text)
-    const hreflangAlternateField = merchant.attributes?.hreflang_alternate || merchant.hreflang_alternate;
-    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
+    // Use plain text hreflang_alternate_url (comma-separated URLs)
+    const alternateUrl = merchant.attributes?.hreflang_alternate_url || merchant.hreflang_alternate_url || null;
     
     if (alternateUrl) {
       console.log(`[generateMetadata] ✅ Found alternate URL for merchant "${id}": ${alternateUrl}`);
@@ -618,7 +617,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       ogImageUrl,
       ogImageAlt,
       ogType: 'article', // Change from 'website' to 'article' for merchant pages
-      alternateUrl, // Pass alternate URL from CMS hreflang_alternate field
+      alternateUrl, // Pass alternate URL(s) from CMS hreflang_alternate_url field
       ogUpdatedTime: (() => {
         // Use the same daily updated time function to ensure consistency
         const dailyTime = getDailyUpdatedTime();
@@ -671,7 +670,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[9]": "how_to",
         "fields[10]": "createdAt",
         "fields[11]": "updatedAt",
-        "fields[12]": "hreflang_alternate",
+        "fields[12]": "hreflang_alternate_url",
         "populate[logo][fields][0]": "url",
         "populate[how_to_image][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
@@ -897,9 +896,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
 
-    // Extract alternate URL from hreflang_alternate field (rich text)
-    const hreflangAlternateField = merchantData.attributes?.hreflang_alternate || merchantData.hreflang_alternate;
-    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
+    // Use plain text hreflang_alternate_url (comma-separated URLs)
+    const alternateUrl = merchantData.attributes?.hreflang_alternate_url || merchantData.hreflang_alternate_url || null;
 
     // Transform merchant data to match frontend structure
     const merchant = {
