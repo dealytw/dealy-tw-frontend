@@ -524,10 +524,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
     const name = (merchant.attributes?.merchant_name || merchant.merchant_name || id).trim();
     
-    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
-    // This field contains URL(s) like "https://dealy.hk/shop/trip-com" or "https://dealy.hk/shop/trip-com, https://dealy.sg/shop/trip-com"
-    const hreflangAlternateUrl = merchant.attributes?.hreflang_alternate_url || merchant.hreflang_alternate_url;
-    const alternateUrl = hreflangAlternateUrl || null; // Use directly (comma-separated URLs will be parsed in getHreflangLinks)
+    // Extract alternate URL from hreflang_alternate field (rich text JSON)
+    // This field contains a direct URL like "https://dealy.hk/shop/trip-com"
+    const hreflangAlternateField = merchant.attributes?.hreflang_alternate || merchant.hreflang_alternate;
+    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
     
     if (alternateUrl) {
       console.log(`[generateMetadata] ✅ Found alternate URL(s) for merchant "${id}": ${alternateUrl}`);
@@ -618,7 +618,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       ogImageUrl,
       ogImageAlt,
       ogType: 'article', // Change from 'website' to 'article' for merchant pages
-      alternateUrl, // Pass alternate URL(s) from CMS hreflang_alternate_url field (comma-separated)
+      alternateUrl, // Pass alternate URL from CMS hreflang_alternate field
       ogUpdatedTime: (() => {
         // Use the same daily updated time function to ensure consistency
         const dailyTime = getDailyUpdatedTime();
@@ -671,7 +671,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[9]": "how_to",
         "fields[10]": "createdAt",
         "fields[11]": "updatedAt",
-        "fields[12]": "hreflang_alternate_url",
+        "fields[12]": "hreflang_alternate",
         "populate[logo][fields][0]": "url",
         "populate[how_to_image][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
@@ -814,20 +814,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       notFound();
     }
 
-    const merchantDataRaw = merchantRes.data[0];
-    
-    // Normalize merchant data to handle Strapi v5.33 attributes wrapper (if present)
-    // When using fields[], Strapi v5 should return flat format, but normalize to be safe
-    // Match HK's approach: check attributes first, then fallback to direct access
-    const merchantData = merchantDataRaw?.attributes ? {
-      ...merchantDataRaw.attributes,
-      id: merchantDataRaw.id || merchantDataRaw.attributes.id,
-      documentId: merchantDataRaw.documentId || merchantDataRaw.attributes.documentId,
-      // Preserve any root-level fields that might not be in attributes
-      ...(merchantDataRaw.market ? { market: merchantDataRaw.market } : {}),
-      ...(merchantDataRaw.logo ? { logo: merchantDataRaw.logo } : {}),
-    } : merchantDataRaw;
-    
+    const merchantData = merchantRes.data[0];
     const allCouponsRaw = couponsRes.data || [];
     
     // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
@@ -863,15 +850,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const allCoupons = Array.from(uniqueCouponsMap.values());
     
     // Get market locale from merchant data or fetch separately
-    // Wrap in try-catch to prevent 500 errors if CMS is unavailable
-    let marketLocale: string;
-    try {
-      marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
-    } catch (error) {
-      console.error('[MerchantPage] Error fetching market locale, using fallback:', error);
-      // Fallback based on market key
-      marketLocale = marketKey.toLowerCase() === 'hk' ? 'zh-Hant-HK' : 'zh-Hant-TW';
-    }
+    const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
 
     // Get Taiwan time (UTC+8) for server-side date generation
     const getTaiwanDate = () => {
@@ -918,9 +897,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
 
-    // Extract alternate URL(s) from hreflang_alternate_url field (comma-separated text)
-    // Same as in generateMetadata - use directly, parsing happens in getHreflangLinks
-    const alternateUrl = merchantData.attributes?.hreflang_alternate_url || merchantData.hreflang_alternate_url || null;
+    // Extract alternate URL from hreflang_alternate field (same as in generateMetadata)
+    const hreflangAlternateField = merchantData.attributes?.hreflang_alternate || merchantData.hreflang_alternate;
+    const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
 
     // Transform merchant data to match frontend structure
     const merchant = {
