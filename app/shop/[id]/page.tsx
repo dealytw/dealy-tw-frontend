@@ -818,10 +818,14 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     
     // Normalize merchant data to handle Strapi v5.33 attributes wrapper (if present)
     // When using fields[], Strapi v5 should return flat format, but normalize to be safe
+    // Match HK's approach: check attributes first, then fallback to direct access
     const merchantData = merchantDataRaw?.attributes ? {
       ...merchantDataRaw.attributes,
-      id: merchantDataRaw.id,
-      documentId: merchantDataRaw.documentId,
+      id: merchantDataRaw.id || merchantDataRaw.attributes.id,
+      documentId: merchantDataRaw.documentId || merchantDataRaw.attributes.documentId,
+      // Preserve any root-level fields that might not be in attributes
+      ...(merchantDataRaw.market ? { market: merchantDataRaw.market } : {}),
+      ...(merchantDataRaw.logo ? { logo: merchantDataRaw.logo } : {}),
     } : merchantDataRaw;
     
     const allCouponsRaw = couponsRes.data || [];
