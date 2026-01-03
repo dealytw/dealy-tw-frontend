@@ -103,6 +103,7 @@ function mapPathToAlternateDomain(currentPath: string, targetDomain: string): st
   const mainPages: Record<string, string> = {
     "/": "/",
     "/shop": "/shop",
+    "/category": "/category",
     "/special-offers": "/special-offers",
     "/blog": "/blog",
   };

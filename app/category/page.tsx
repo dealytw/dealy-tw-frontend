@@ -8,10 +8,14 @@ import { strapiFetch, qs } from '@/lib/strapi.server';
 export const revalidate = 604800; // 1 week - categories are relatively static
 
 export async function generateMetadata() {
+  // Generate alternate URL for HK market
+  const alternateUrl = 'https://dealy.hk/category';
+  
   return pageMeta({
     title: '所有分類｜Dealy.TW',
     description: '瀏覽所有分類，快速找到你想要的商家與優惠。',
     path: '/category',
+    alternateUrl,
   });
 }
 
@@ -81,7 +85,7 @@ export default async function CategoryIndexPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer alternateUrl="https://dealy.hk/category" />
     </div>
   );
 }

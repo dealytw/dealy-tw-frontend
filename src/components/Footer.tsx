@@ -24,6 +24,7 @@ const Footer = ({ alternateUrl }: FooterProps = {}) => {
             <h4 className="text-sm font-semibold text-gray-900 mb-4">快速連結</h4>
             <ul className="space-y-2">
               <li><Link href="/shop" className="text-sm text-gray-600 hover:text-gray-900">所有商戶</Link></li>
+              <li><Link href="/category" className="text-sm text-gray-600 hover:text-gray-900">所有優惠分類</Link></li>
               <li><Link href="/category/travel" className="text-sm text-gray-600 hover:text-gray-900">旅遊優惠</Link></li>
               <li><Link href="/special-offers" className="text-sm text-gray-600 hover:text-gray-900">特別優惠</Link></li>
               <li><Link href="/blog" className="text-sm text-gray-600 hover:text-gray-900">Dealy.TW Blog</Link></li>
