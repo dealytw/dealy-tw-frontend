@@ -19,12 +19,13 @@ const Header = () => {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <img 
-                src="/newdealylogo.png"
+                src="/newdealylogo_150x79.png"
                 alt="dealy logo"
                 width={150}
                 height={40}
                 className="h-10 w-auto"
                 loading="eager"
+                fetchPriority="high"
               />
             </Link>
           </div>
@@ -70,12 +71,13 @@ const Header = () => {
           <div className="flex items-center justify-start">
             <Link href="/" className="flex items-center">
               <img 
-                src="/newdealylogo.png"
+                src="/newdealylogo_120x63.png"
                 alt="dealy logo"
                 width={120}
                 height={40}
                 className="h-10 w-auto"
                 loading="eager"
+                fetchPriority="high"
               />
             </Link>
           </div>

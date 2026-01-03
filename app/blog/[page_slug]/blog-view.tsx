@@ -762,7 +762,7 @@ export default function BlogView({ blog }: BlogViewProps) {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-12 h-12">
-                    <AvatarImage src="/dealytwlogo.svg" alt="Dealy Team" />
+                    <AvatarImage src="/newdealylogo_48x25.png" alt="Dealy Team" />
                     <AvatarFallback>DT</AvatarFallback>
                   </Avatar>
                   <div>
