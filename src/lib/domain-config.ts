@@ -57,9 +57,15 @@ export async function getMarketLocale(marketKey: string = 'tw') {
   try {
     const { strapiFetch, qs } = await import('@/lib/strapi.server');
     
+    // CMS stores Site.key as lowercase (e.g. "tw", "hk") but we accept any casing here.
+    // Use $in to match regardless of casing.
+    const keyVariants = Array.from(
+      new Set([marketKey, marketKey.toLowerCase(), marketKey.toUpperCase()].filter(Boolean))
+    );
+
     const marketRes = await strapiFetch<{ data: any[] }>(
       `/api/sites?${qs({
-        "filters[key][$eq]": marketKey.toUpperCase(),
+        "filters[key][$in]": keyVariants,
         "fields[0]": "defaultLocale",
         "fields[1]": "key",
       })}`,
