@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { pageMeta } from '@/seo/meta';
 import { strapiFetch, qs } from '@/lib/strapi.server';
 
-export const revalidate = 172800; // 48 hours - categories are relatively static
+export const revalidate = 604800; // 1 week - categories are relatively static
 
 export async function generateMetadata() {
   return pageMeta({
@@ -29,7 +29,7 @@ export default async function CategoryIndexPage() {
 
   const categoriesRes = await strapiFetch<{ data: any[] }>(
     `/api/categories?${qs(params)}`,
-    { revalidate: 172800, tag: `category:list:${marketKey}` }
+    { revalidate: 604800, tag: `category:list:${marketKey}` }
   );
 
   const categories = (categoriesRes?.data || [])
