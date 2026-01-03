@@ -646,7 +646,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
   const { id } = await params;
   const { market } = await searchParams;
   
-  const marketKey = (market as string) || process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const marketKey = (market as string) || 'tw'; // Hardcoded for TW frontend
 
   // Get siteUrl early for use in related merchants section
   const domainConfig = getDomainConfigServer();
