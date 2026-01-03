@@ -211,6 +211,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://cms.dealy.tw" crossOrigin="" />
         <link rel="dns-prefetch" href="//cms.dealy.tw" />
         
+        {/* Preconnect to Strapi CDN for faster image loading (critical for LCP) */}
+        <link rel="preconnect" href="https://ingenious-charity-13f9502d24.media.strapiapp.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//ingenious-charity-13f9502d24.media.strapiapp.com" />
+        
+        {/* Preload hero background image if available (critical for LCP) */}
+        {heroBgUrl && (
+          <link rel="preload" as="image" href={heroBgUrl} fetchPriority="high" />
+        )}
+        
         {/* Favicon links - WordPress-style optimization for Google Search Results */}
         {/* PRIMARY: ICO with explicit type - Google's preferred format (MUST be first) */}
         {/* WordPress uses this exact format, which Google crawls faster */}

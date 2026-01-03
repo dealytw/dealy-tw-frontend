@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
     // Temporarily ignore TypeScript errors during builds
     ignoreBuildErrors: true,
   },
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-avatar', '@radix-ui/react-dialog'],
+  },
+  // Compress output
+  compress: true,
+  // Optimize production builds
+  swcMinify: true,
   images: {
     remotePatterns: [
       // Strapi local dev

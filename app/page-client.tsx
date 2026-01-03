@@ -395,7 +395,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
       
       {/* CMS: hero.background - with fallback */}
       <section className="py-16 px-4 relative">
-        {/* Background Image - fixed resolution for performance */}
+        {/* Background Image - optimized for LCP performance */}
         {initialData.hero?.bgUrl && (
           <div className="absolute inset-0 z-0">
             <img
@@ -406,6 +406,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
               className="w-full h-full object-cover"
               loading="eager"
               fetchPriority="high"
+              decoding="async"
             />
           </div>
         )}
