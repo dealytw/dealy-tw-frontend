@@ -386,6 +386,30 @@ interface MerchantProps {
 }
 
 const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  
+  const handleShare = (platform: string) => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const title = merchant.h1Title || merchant.page_title_h1 || merchant.name;
+    const encodedUrl = encodeURIComponent(url);
+    const encodedTitle = encodeURIComponent(title);
+    
+    switch (platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`, '_blank');
+        break;
+      case 'share-dialog':
+        setIsShareDialogOpen(true);
+        break;
+      default:
+        navigator.clipboard.writeText(url);
+        break;
+    }
+  };
+
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("全部");
