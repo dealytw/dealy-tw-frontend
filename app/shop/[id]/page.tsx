@@ -814,7 +814,16 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       notFound();
     }
 
-    const merchantData = merchantRes.data[0];
+    const merchantDataRaw = merchantRes.data[0];
+    
+    // Normalize merchant data to handle Strapi v5.33 attributes wrapper (if present)
+    // When using fields[], Strapi v5 should return flat format, but normalize to be safe
+    const merchantData = merchantDataRaw?.attributes ? {
+      ...merchantDataRaw.attributes,
+      id: merchantDataRaw.id,
+      documentId: merchantDataRaw.documentId,
+    } : merchantDataRaw;
+    
     const allCouponsRaw = couponsRes.data || [];
     
     // Remove duplicate coupons by ID to prevent duplicate rendering in HTML
@@ -850,7 +859,15 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const allCoupons = Array.from(uniqueCouponsMap.values());
     
     // Get market locale from merchant data or fetch separately
-    const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
+    // Wrap in try-catch to prevent 500 errors if CMS is unavailable
+    let marketLocale: string;
+    try {
+      marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
+    } catch (error) {
+      console.error('[MerchantPage] Error fetching market locale, using fallback:', error);
+      // Fallback based on market key
+      marketLocale = marketKey.toLowerCase() === 'hk' ? 'zh-Hant-HK' : 'zh-Hant-TW';
+    }
 
     // Get Taiwan time (UTC+8) for server-side date generation
     const getTaiwanDate = () => {
