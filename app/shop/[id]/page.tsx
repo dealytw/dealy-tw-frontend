@@ -850,7 +850,18 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const allCoupons = Array.from(uniqueCouponsMap.values());
     
     // Get market locale from merchant data or fetch separately
-    const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
+    let marketLocale: string;
+    if (merchantData.market?.defaultLocale) {
+      marketLocale = merchantData.market.defaultLocale;
+    } else {
+      try {
+        marketLocale = await getMarketLocale(marketKey);
+      } catch (error) {
+        console.error('[MerchantPage] Error fetching market locale, using fallback:', error);
+        // Fallback based on market key
+        marketLocale = marketKey.toLowerCase() === 'hk' ? 'zh-Hant-HK' : 'zh-Hant-TW';
+      }
+    }
 
     // Get Taiwan time (UTC+8) for server-side date generation
     const getTaiwanDate = () => {
@@ -862,7 +873,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const taiwanDate = getTaiwanDate();
     const currentYear = taiwanDate.getFullYear();
     const currentMonth = taiwanDate.getMonth() + 1;
-    const generatedH1 = `${merchantData.merchant_name}折扣碼及優惠${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
+    const merchantName = merchantData.merchant_name || '商家';
+    const generatedH1 = `${merchantName}折扣碼及優惠${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
     const h1Title = merchantData.page_title_h1 || generatedH1;
     
     // Get daily updated time (consistent throughout the day)
