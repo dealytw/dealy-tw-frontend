@@ -600,7 +600,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     
     // Fallback to default OG image if no merchant image available
     if (!ogImageUrl) {
-      ogImageUrl = `${siteUrl}/dealytwlogo.svg`; // Use logo as fallback, not favicon
+      ogImageUrl = `${siteUrl}/og-image.png`; // Match HK fallback asset
       console.warn(`[generateMetadata] No OG image found for ${id}, using fallback`);
     } else {
       console.log(`[generateMetadata] OG image for ${id}:`, ogImageUrl);
@@ -850,17 +850,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const allCoupons = Array.from(uniqueCouponsMap.values());
     
     // Get market locale from merchant data or fetch separately
-    let marketLocale: string;
-    if (merchantData.market?.defaultLocale) {
-      marketLocale = merchantData.market.defaultLocale;
-    } else {
-      try {
-        marketLocale = await getMarketLocale(marketKey);
-      } catch (error) {
-        console.error('[MerchantPage] Error fetching market locale, using fallback:', error);
-        marketLocale = 'zh-Hant-TW';
-      }
-    }
+    const marketLocale = merchantData.market?.defaultLocale || await getMarketLocale(marketKey);
 
     // Get Taiwan time (UTC+8) for server-side date generation
     const getTaiwanDate = () => {
