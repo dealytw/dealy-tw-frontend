@@ -361,7 +361,8 @@ function parseHowToFromHTML(html: string): Array<{ step: string; descriptions: s
   
   // Match ordered list items (<ol><li>) or paragraphs with bold text
   // Pattern: <li> or <p> containing <strong> or <b> followed by <ul> or <p> with text
-  const liPattern = /<li[^>]*>(.*?)<\/li>/gis;
+  // NOTE: Avoid /s (dotAll) flag so we don't require ES2018 target
+  const liPattern = /<li[^>]*>([\s\S]*?)<\/li>/gi;
   const matches = Array.from(html.matchAll(liPattern));
   
   for (const match of matches) {
@@ -378,11 +379,11 @@ function parseHowToFromHTML(html: string): Array<{ step: string; descriptions: s
     
     // Look for nested <ul> or text after bold
     const afterBold = liContent.replace(/<(?:strong|b)[^>]*>.*?<\/(?:strong|b)>/i, '');
-    const ulMatch = afterBold.match(/<ul[^>]*>(.*?)<\/ul>/is);
+    const ulMatch = afterBold.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
     
     if (ulMatch) {
       // Extract list items from nested ul
-      const nestedLiPattern = /<li[^>]*>(.*?)<\/li>/gis;
+      const nestedLiPattern = /<li[^>]*>([\s\S]*?)<\/li>/gi;
       const nestedMatches = Array.from(ulMatch[1].matchAll(nestedLiPattern));
       nestedMatches.forEach(nestedMatch => {
         const text = stripHTMLTags(nestedMatch[1]).trim();
@@ -524,15 +525,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Extract merchant_name - handle both Strapi v5 attributes format and flat format (supports Chinese characters)
     const name = (merchant.attributes?.merchant_name || merchant.merchant_name || id).trim();
     
-    // Extract alternate URL from hreflang_alternate field (rich text JSON)
-    // This field contains a direct URL like "https://dealy.hk/shop/trip-com"
+    // Extract alternate URL from hreflang_alternate (rich text)
     const hreflangAlternateField = merchant.attributes?.hreflang_alternate || merchant.hreflang_alternate;
     const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
     
     if (alternateUrl) {
-      console.log(`[generateMetadata] ✅ Found alternate URL(s) for merchant "${id}": ${alternateUrl}`);
+      console.log(`[generateMetadata] ✅ Found alternate URL for merchant "${id}": ${alternateUrl}`);
     } else {
-      console.log(`[generateMetadata] No alternate URL found for merchant "${id}" (hreflang_alternate_url field is empty or null)`);
+      console.log(`[generateMetadata] No alternate URL found for merchant "${id}" (hreflang_alternate field is empty or null)`);
     }
     let title: string;
     let description: string;
@@ -600,7 +600,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     
     // Fallback to default OG image if no merchant image available
     if (!ogImageUrl) {
-      ogImageUrl = `${siteUrl}/og-image.png`; // Use PNG logo for better social media compatibility
+      ogImageUrl = `${siteUrl}/dealytwlogo.svg`; // Use logo as fallback, not favicon
       console.warn(`[generateMetadata] No OG image found for ${id}, using fallback`);
     } else {
       console.log(`[generateMetadata] OG image for ${id}:`, ogImageUrl);
@@ -858,8 +858,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         marketLocale = await getMarketLocale(marketKey);
       } catch (error) {
         console.error('[MerchantPage] Error fetching market locale, using fallback:', error);
-        // Fallback based on market key
-        marketLocale = marketKey.toLowerCase() === 'hk' ? 'zh-Hant-HK' : 'zh-Hant-TW';
+        marketLocale = 'zh-Hant-TW';
       }
     }
 
@@ -873,8 +872,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const taiwanDate = getTaiwanDate();
     const currentYear = taiwanDate.getFullYear();
     const currentMonth = taiwanDate.getMonth() + 1;
-    const merchantName = merchantData.merchant_name || '商家';
-    const generatedH1 = `${merchantName}折扣碼及優惠${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
+    const generatedH1 = `${merchantData.merchant_name}折扣碼及優惠${currentYear}｜${currentMonth}月最新折扣與信用卡優惠`;
     const h1Title = merchantData.page_title_h1 || generatedH1;
     
     // Get daily updated time (consistent throughout the day)
@@ -909,7 +907,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Parse FAQs from rich text (server-side)
     const parsedFAQs = parseFAQsFromRichText(merchantData.faqs);
 
-    // Extract alternate URL from hreflang_alternate field (same as in generateMetadata)
+    // Extract alternate URL from hreflang_alternate field (rich text)
     const hreflangAlternateField = merchantData.attributes?.hreflang_alternate || merchantData.hreflang_alternate;
     const alternateUrl = extractUrlFromRichText(hreflangAlternateField);
 
