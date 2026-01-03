@@ -1,5 +1,7 @@
 // app/category/page.tsx - Server Component with ISR
 import Link from 'next/link';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { pageMeta } from '@/seo/meta';
 import { strapiFetch, qs } from '@/lib/strapi.server';
 
@@ -41,31 +43,46 @@ export default async function CategoryIndexPage() {
     .filter((c: any) => c.name && c.slug);
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">所有分類</h1>
-        <p className="text-gray-700 mb-8">點擊分類以查看相關商家與優惠。</p>
+    <div className="min-h-screen bg-white">
+      <Header />
 
-        {categories.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-gray-700">
-            目前沒有可顯示的分類。
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/category/${cat.slug}`}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-              >
-                <div className="font-semibold text-gray-900">{cat.name}</div>
-                <div className="text-xs text-gray-500 mt-1">/category/{cat.slug}</div>
-              </Link>
-            ))}
-          </div>
-        )}
+      {/* Affiliate Disclaimer */}
+      <div className="bg-gray-50 border-b border-gray-200 py-1 px-2">
+        <div className="max-w-full mx-auto px-2">
+          <p className="text-[8px] text-gray-600 text-center leading-tight">
+            透過本站鏈接完成購物可享，我們可能會因此獲得佣金，而您無需額外付費。
+          </p>
+        </div>
       </div>
-    </main>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">所有分類</h1>
+          <p className="text-gray-700 mb-8">點擊分類以查看相關商家與優惠。</p>
+
+          {categories.length === 0 ? (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-gray-700">
+              目前沒有可顯示的分類。
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/category/${cat.slug}`}
+                  className="rounded-lg border border-gray-200 bg-white px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="font-semibold text-gray-900">{cat.name}</div>
+                  <div className="text-xs text-gray-500 mt-1">/category/{cat.slug}</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
