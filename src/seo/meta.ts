@@ -166,7 +166,8 @@ export function getHreflangLinks(
   }
   
   // For pages with alternate URLs from CMS (merchant, category, special offer, legal)
-  // Use CMS alternate URL(s) if provided, otherwise fall back to homepage
+  // Use CMS alternate URL(s) if provided, otherwise only show self (no homepage fallback)
+  // Following SEO best practice: hreflang should only link equivalent pages, not homepage
   if (alternateUrl) {
     // Use alternate URL(s) from CMS (supports comma-separated URLs for multiple markets)
     const alternateUrls = parseHreflangUrls(alternateUrl);
@@ -183,14 +184,11 @@ export function getHreflangLinks(
       }
     }
   } else {
-    // Fallback: If no alternate URL provided, link to homepage of alternate domain
-    // This applies to merchant, category, special offer, and legal pages
-    if (isMerchantPage || isCategoryPage || isSpecialOfferPage || isLegalPage) {
-      links.push({
-        hreflang: config.alternateHreflang,
-        href: `${alternateDomainUrl}/`
-      });
-      console.log(`[getHreflangLinks] No alternate URL provided, falling back to homepage: ${alternateDomainUrl}/`);
+    // No alternate URL: Only show self (already added above)
+    // Do NOT fallback to homepage for merchant/category/special-offer pages
+    // This follows SEO best practice: hreflang should only link equivalent pages
+    if (isMerchantPage || isCategoryPage || isSpecialOfferPage) {
+      console.log(`[getHreflangLinks] No alternate URL provided for ${currentPath}, only showing self (no homepage fallback)`);
     }
   }
   
