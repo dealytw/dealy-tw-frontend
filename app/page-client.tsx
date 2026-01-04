@@ -393,6 +393,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
     <div className="min-h-screen bg-white">
       <Header />
       
+      <main id="main-content">
       {/* CMS: hero.background - with fallback */}
       <section className="py-16 px-4 relative">
         {/* Background Image - optimized for LCP performance */}
@@ -575,6 +576,8 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
           </div>
         </section>
       )}
+
+      </main>
 
       {/* Coupon Modal */}
       <CouponModal 
