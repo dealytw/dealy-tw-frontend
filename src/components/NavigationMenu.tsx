@@ -56,7 +56,8 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                 alt="dealy logo"
                 width={150}
                 height={79}
-                className="h-auto w-auto max-h-10"
+                style={{ aspectRatio: '150/79', maxHeight: '40px', height: 'auto', width: 'auto' }}
+                className="h-auto"
                 loading="lazy"
               />
             </Link>

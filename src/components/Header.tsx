@@ -23,7 +23,8 @@ const Header = () => {
                 alt="dealy logo"
                 width={150}
                 height={79}
-                className="h-auto w-auto max-h-10"
+                style={{ aspectRatio: '150/79', maxHeight: '40px', height: 'auto', width: 'auto' }}
+                className="h-auto"
                 loading="eager"
                 fetchPriority="high"
               />
@@ -75,7 +76,8 @@ const Header = () => {
                 alt="dealy logo"
                 width={120}
                 height={63}
-                className="h-auto w-auto max-h-10"
+                style={{ aspectRatio: '120/63', maxHeight: '40px', height: 'auto', width: 'auto' }}
+                className="h-auto"
                 loading="eager"
                 fetchPriority="high"
               />
