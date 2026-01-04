@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 // Removed Next.js Image import - using regular img tags for fixed resolution
 import { X } from "lucide-react";
@@ -13,6 +14,7 @@ interface NavigationMenuProps {
 }
 
 export default function NavigationMenu({ open, onOpenChange }: NavigationMenuProps) {
+  const router = useRouter();
   const pathname = usePathname();
   // Get hotstore merchants from context (fetched server-side in layout.tsx)
   const { hotstoreMerchants } = useSearchMerchants();
@@ -25,8 +27,21 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
     { href: "/submit-coupons", label: "提交優惠券" },
     { href: "/faqs", label: "常見問題" },
     { href: "/submit-coupons", label: "聯絡我們" },
-    { href: "/about", label: "關於我們" },
+    { href: "/about-us", label: "關於我們" },
   ];
+
+  const handleLinkClick = (href: string) => {
+    if (href.startsWith("#")) {
+      // Handle anchor links
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      router.push(href);
+    }
+    onOpenChange(false);
+  };
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -52,12 +67,11 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
           <SheetTitle className="text-2xl font-bold">
             <Link href="/" onClick={() => onOpenChange(false)} className="flex items-center">
               <img 
-                src="/newdealylogo_150x79.png"
+                src="/newdealylogo.png"
                 alt="dealy logo"
                 width={150}
-                height={79}
-                style={{ aspectRatio: '150/79', maxHeight: '40px', height: 'auto', width: 'auto' }}
-                className="h-auto"
+                height={40}
+                className="h-10 w-auto"
                 loading="lazy"
               />
             </Link>
@@ -67,10 +81,9 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
         {/* Navigation Links */}
         <nav className="space-y-2 mb-8">
           {navigationLinks.map((link) => (
-            <Link
+            <button
               key={link.href}
-              href={link.href}
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleLinkClick(link.href)}
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                 isActive(link.href)
                   ? "bg-gray-800 md:bg-gray-200 text-red-400 md:text-red-600 font-semibold"
@@ -78,7 +91,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
               }`}
             >
               {link.label}
-            </Link>
+            </button>
           ))}
         </nav>
 
