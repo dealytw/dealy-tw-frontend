@@ -67,11 +67,12 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
           <SheetTitle className="text-2xl font-bold">
             <Link href="/" onClick={() => onOpenChange(false)} className="flex items-center">
               <img 
-                src="/newdealylogo.png"
+                src="/newdealylogo_150x79.png"
                 alt="dealy logo"
                 width={150}
-                height={40}
-                className="h-10 w-auto"
+                height={79}
+                style={{ aspectRatio: '150/79', maxHeight: '40px', height: 'auto', width: 'auto' }}
+                className="h-auto"
                 loading="lazy"
               />
             </Link>
