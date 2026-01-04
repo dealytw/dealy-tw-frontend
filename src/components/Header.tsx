@@ -22,8 +22,8 @@ const Header = () => {
                 src="/newdealylogo_150x79.png"
                 alt="dealy logo"
                 width={150}
-                height={40}
-                className="h-10 w-auto"
+                height={79}
+                className="h-auto w-auto max-h-10"
                 loading="eager"
                 fetchPriority="high"
               />
@@ -74,8 +74,8 @@ const Header = () => {
                 src="/newdealylogo_120x63.png"
                 alt="dealy logo"
                 width={120}
-                height={40}
-                className="h-10 w-auto"
+                height={63}
+                className="h-auto w-auto max-h-10"
                 loading="eager"
                 fetchPriority="high"
               />
