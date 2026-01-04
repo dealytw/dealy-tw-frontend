@@ -80,24 +80,26 @@ export function extractUrlFromRichText(richText: any): string | null {
 /**
  * Determine hreflang code from URL domain
  * Examples:
- * - https://dealy.hk/... -> zh-HK
- * - https://dealy.sg/... -> zh-SG
- * - https://dealy.tw/... -> zh-TW
+ * - https://dealy.hk/... -> zh-Hant-HK
+ * - https://dealy.sg/... -> zh-Hant-SG
+ * - https://dealy.tw/... -> zh-Hant-TW
+ * 
+ * Uses full format with script (zh-Hant-XX) for consistency and SEO best practice
  */
 function getHreflangFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
     
-    if (hostname.includes('dealy.hk')) return 'zh-HK';
-    if (hostname.includes('dealy.sg')) return 'zh-SG';
-    if (hostname.includes('dealy.tw')) return 'zh-TW';
+    if (hostname.includes('dealy.hk')) return 'zh-Hant-HK';
+    if (hostname.includes('dealy.sg')) return 'zh-Hant-SG';
+    if (hostname.includes('dealy.tw')) return 'zh-Hant-TW';
     
     // Default: try to extract from domain pattern
     const match = hostname.match(/dealy\.([a-z]{2})/);
     if (match) {
       const country = match[1].toUpperCase();
-      return `zh-${country}`;
+      return `zh-Hant-${country}`;
     }
     
     return null;
@@ -275,11 +277,12 @@ export function pageMeta({
   const config = getDomainConfig();
   const siteName = config.name || 'Dealy TW 台灣最新優惠平台';
   
-  // Convert locale for og:locale (e.g., "zh-Hant-TW" -> "zh_TW")
+  // Convert hreflang for og:locale (e.g., "zh-Hant-TW" -> "zh_TW")
+  // Note: Open Graph uses underscore format (zh_TW) and short format (no script)
   let ogLocale = 'zh_TW';
-  if (config.locale === 'zh-Hant-HK') {
+  if (config.hreflang === 'zh-Hant-HK' || config.locale === 'zh-HK') {
     ogLocale = 'zh_HK';
-  } else if (config.locale === 'zh-Hant-TW') {
+  } else if (config.hreflang === 'zh-Hant-TW' || config.locale === 'zh-TW') {
     ogLocale = 'zh_TW';
   }
 

@@ -5,41 +5,41 @@ export const DOMAIN_CONFIG = {
   'dealy.tw': {
     domain: 'dealy.tw',
     market: 'tw',
-    locale: 'zh-TW',
-    hreflang: 'zh-TW',
+    locale: 'zh-TW', // For i18n/Next.js (short format, commonly supported)
+    hreflang: 'zh-Hant-TW', // For SEO output (full format with script)
     alternateDomain: 'dealy.hk',
-    alternateLocale: 'zh-HK',
-    alternateHreflang: 'zh-HK',
+    alternateLocale: 'zh-HK', // For i18n/Next.js
+    alternateHreflang: 'zh-Hant-HK', // For SEO output
     name: 'Dealy TW',
   },
   'dealy.hk': {
     domain: 'dealy.hk',
     market: 'hk',
-    locale: 'zh-HK',
-    hreflang: 'zh-HK',
+    locale: 'zh-HK', // For i18n/Next.js (short format, commonly supported)
+    hreflang: 'zh-Hant-HK', // For SEO output (full format with script)
     alternateDomain: 'dealy.tw',
-    alternateLocale: 'zh-TW',
-    alternateHreflang: 'zh-TW',
+    alternateLocale: 'zh-TW', // For i18n/Next.js
+    alternateHreflang: 'zh-Hant-TW', // For SEO output
     name: 'Dealy HK',
   },
   'www.dealy.tw': {
     domain: 'dealy.tw',
     market: 'tw',
-    locale: 'zh-TW',
-    hreflang: 'zh-TW',
+    locale: 'zh-TW', // For i18n/Next.js
+    hreflang: 'zh-Hant-TW', // For SEO output
     alternateDomain: 'dealy.hk',
-    alternateLocale: 'zh-HK',
-    alternateHreflang: 'zh-HK',
+    alternateLocale: 'zh-HK', // For i18n/Next.js
+    alternateHreflang: 'zh-Hant-HK', // For SEO output
     name: 'Dealy TW',
   },
   'www.dealy.hk': {
     domain: 'dealy.hk',
     market: 'hk',
-    locale: 'zh-HK',
-    hreflang: 'zh-HK',
+    locale: 'zh-HK', // For i18n/Next.js
+    hreflang: 'zh-Hant-HK', // For SEO output
     alternateDomain: 'dealy.tw',
-    alternateLocale: 'zh-TW',
-    alternateHreflang: 'zh-TW',
+    alternateLocale: 'zh-TW', // For i18n/Next.js
+    alternateHreflang: 'zh-Hant-TW', // For SEO output
     name: 'Dealy HK',
   },
 } as const;
