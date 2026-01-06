@@ -1364,7 +1364,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
               </Card>
 
               {/* Small Blog Section */}
-              {smallBlogSection && (
+              {smallBlogSection && 
+               (typeof smallBlogSection === 'string' ? smallBlogSection.trim() !== '' : 
+                (Array.isArray(smallBlogSection) ? smallBlogSection.length > 0 : true)) && (
                 <Card className="shadow-md">
                   <CardHeader>
                     {smallBlogSectionTitle && (
