@@ -975,7 +975,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         }));
       })(),
       small_blog_section: merchantData.small_blog_section || null,
-      small_blog_section_title: extractFirstH2Title(merchantData.small_blog_section) || null,
+      small_blog_section_title: `精選${merchantData.merchant_name}優惠懶人包`, // Preset H2 title
     };
 
     // Process hotstore merchants for popular merchants section

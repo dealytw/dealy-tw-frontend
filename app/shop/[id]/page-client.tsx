@@ -74,6 +74,10 @@ function blocksToHTML(blocks: any): string {
     if (block.type === 'heading') {
       const level = block.level || 2;
       const content = processChildren(block.children || []);
+      // H3 should be styled as a small title within the section
+      if (level === 3) {
+        return `<h3 style="font-size: 1rem; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; color: #374151;">${content}</h3>`;
+      }
       return `<h${level}>${content}</h${level}>`;
     }
     
@@ -891,7 +895,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   </div>
                 </div>
                 
-                <div className="space-y-0">
+                <div className="space-y-5">
                   {uniqueCoupons
                     .filter((coupon) => {
                       // Apply filtering based on activeFilter
@@ -1022,7 +1026,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   >
                     {merchant.name}信用卡優惠一覽
                   </h2>
-                  <div className="space-y-0">
+                  <div className="space-y-5">
                     {uniqueCoupons
                       .filter((coupon) => isCreditCardCoupon(coupon.coupon_title || ""))
                       .map((coupon, index) => {
@@ -1032,17 +1036,14 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                           return null;
                         }
                         return (
-                          <div 
-                            key={coupon.id} 
+                          <DealyCouponCard 
+                            key={coupon.id}
                             id={`credit-card-coupon-${coupon.id}`}
-                          >
-                            <DealyCouponCard 
-                              coupon={transformedCoupon} 
-                              onClick={() => handleCouponClick(coupon)}
-                              isScrolledTo={scrolledToCouponId === coupon.id}
-                              merchantSlug={merchant.slug}
-                            />
-                          </div>
+                            coupon={transformedCoupon} 
+                            onClick={() => handleCouponClick(coupon)}
+                            isScrolledTo={scrolledToCouponId === coupon.id}
+                            merchantSlug={merchant.slug}
+                          />
                         );
                       }).filter(Boolean)}
                   </div>
@@ -1369,11 +1370,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                 (Array.isArray(smallBlogSection) ? smallBlogSection.length > 0 : true)) && (
                 <Card className="shadow-md">
                   <CardHeader>
-                    {smallBlogSectionTitle && (
-                      <CardTitle className="text-xl font-bold text-gray-800">
-                        {smallBlogSectionTitle}
-                      </CardTitle>
-                    )}
+                    <CardTitle className="text-xl font-bold text-gray-800">
+                      {smallBlogSectionTitle || `精選${merchant.name}優惠懶人包`}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div 
