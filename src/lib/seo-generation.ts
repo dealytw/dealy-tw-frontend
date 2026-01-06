@@ -241,26 +241,18 @@ export function getFirstValidCoupon(
 }
 
 /**
- * Generate meta title (WordPress format)
- * Format: {Merchant}折扣碼及優惠｜最省 4折 & 新客優惠 & 免運費 | 10月 2025
- * If highlights empty: {Merchant}折扣碼及優惠｜{Month}月 {Year}最新優惠
- * SEO Limit: 60 characters (for better Google display)
+ * Generate meta title
+ * Format: {Merchant}折扣碼及優惠{year}｜{month}月最新折扣與信用卡優惠 | Dealy
  */
 export function generateMerchantMetaTitle(
   merchantName: string,
-  highlights: string
+  highlights: string // Kept for backward compatibility, but not used
 ): string {
   const twDate = getTaiwanDate();
   const month = twDate.getMonth() + 1; // 1-12
   const year = twDate.getFullYear();
 
-  if (highlights) {
-    const title = `${merchantName}折扣碼及優惠｜${highlights} | ${month}月 ${year}`;
-    // Truncate to ~60 chars for SEO
-    return title.length > 60 ? title.substring(0, 57) + '...' : title;
-  } else {
-    return `${merchantName}折扣碼及優惠｜${month}月 ${year}最新優惠`;
-  }
+  return `${merchantName}折扣碼及優惠${year}｜${month}月最新折扣與信用卡優惠 | Dealy`;
 }
 
 /**

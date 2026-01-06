@@ -421,11 +421,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const merchant = res.data?.[0];
 
     if (!merchant) {
-      return pageMeta({
-        title: `${id} 優惠碼｜最新折扣與優惠券`,
-        description: `精選 ${id} 最新優惠碼與折扣，限時優惠一鍵領取。`,
-        path: `/shop/${id}`,
-      });
+      notFound();
     }
 
     // Fetch ogImage and logo separately (with populate) - keep this separate to avoid breaking title/description
@@ -628,11 +624,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     });
       } catch (error) {
     console.error('Error generating metadata:', error);
-    return pageMeta({
-      title: `${id} 優惠碼｜最新折扣與優惠券`,
-      description: `精選 ${id} 最新優惠碼與折扣，限時優惠一鍵領取。`,
-      path: `/shop/${id}`,
-    });
+    notFound();
   }
 }
 
