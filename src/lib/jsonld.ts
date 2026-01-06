@@ -428,8 +428,16 @@ export function storeJsonLd(opts: {
   image?: UrlString;
   ratingValue?: string;
   reviewCount?: string;
+  market?: string; // 'hk' or 'tw' - determines address location
+  id?: UrlString; // Optional @id to prevent duplicates
 }) {
-  const { name, url, image, ratingValue, reviewCount } = opts;
+  const { name, url, image, ratingValue, reviewCount, market, id } = opts;
+  
+  // Determine address based on market (default to TW for TW frontend)
+  const isHK = market && market.toLowerCase() === 'hk';
+  const addressLocality = isHK ? 'Hong Kong' : 'Taiwan';
+  const addressRegion = isHK ? 'Hong Kong SAR' : 'Taiwan';
+  const addressCountry = isHK ? 'HK' : 'TW';
   
   const store: any = {
     '@context': 'https://schema.org',
@@ -439,11 +447,16 @@ export function storeJsonLd(opts: {
     image,
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Taiwan',
-      addressRegion: 'Taiwan',
-      addressCountry: 'TW',
+      addressLocality,
+      addressRegion,
+      addressCountry,
     },
   };
+  
+  // Add @id to prevent duplicates (if provided)
+  if (id) {
+    store['@id'] = id;
+  }
   
   // Add aggregateRating only if rating data is provided
   if (ratingValue && reviewCount) {

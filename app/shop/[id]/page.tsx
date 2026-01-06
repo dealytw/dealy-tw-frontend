@@ -1121,12 +1121,17 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const ratingCount = generateRatingCount(merchant.name);
     
     // Store schema (separate script tag, not in @graph - matching HK format)
+    // Use @id to prevent duplicates
+    // Hardcode market to 'tw' for TW frontend
+    const storeId = `${merchantUrl}#store`;
     const store = storeJsonLd({
       name: merchant.name,
       url: merchantUrl,
       image: pageImage || undefined,
       ratingValue: "5",
       reviewCount: ratingCount.toString(),
+      market: 'tw', // Hardcoded for TW frontend
+      id: storeId, // Add @id to prevent duplicate detection
     });
     
     // Combine schemas into @graph array (matching HK format exactly)
