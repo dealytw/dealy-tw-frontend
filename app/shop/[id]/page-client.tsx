@@ -28,6 +28,89 @@ function getTaiwanDate() {
   return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
 }
 
+/**
+ * Convert Strapi blocks to HTML
+ */
+function blocksToHTML(blocks: any): string {
+  if (!blocks) return '';
+  if (!Array.isArray(blocks)) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text' || child.text !== undefined) {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  return blocks.map((block: any) => {
+    if (block.type === 'paragraph') {
+      const content = processChildren(block.children || []);
+      // If paragraph is empty or just whitespace, treat as line break
+      if (!content || content.trim() === '') {
+        return '<br>';
+      }
+      return `<p style="margin: 0; margin-bottom: 0.5em;">${content}</p>`;
+    }
+    
+    if (block.type === 'heading') {
+      const level = block.level || 2;
+      const content = processChildren(block.children || []);
+      return `<h${level}>${content}</h${level}>`;
+    }
+    
+    if (block.type === 'list') {
+      const isOrdered = block.format === 'ordered';
+      const items = (block.children || []).map((item: any) => {
+        const content = processChildren(item.children || []);
+        return `<li>${content}</li>`;
+      }).join('');
+      return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+    }
+    
+    // Handle image blocks
+    if (block.type === 'image' && block.image) {
+      let imageData = block.image;
+      if (imageData?.data) {
+        imageData = imageData.data;
+      }
+      
+      const imageUrl = imageData?.attributes?.url || imageData?.url || '';
+      const altText = imageData?.attributes?.alternativeText || imageData?.alternativeText || block.caption || '';
+      
+      if (imageUrl) {
+        const escapedAlt = altText.replace(/"/g, '&quot;');
+        
+        if (block.caption) {
+          const caption = processChildren(block.caption || []);
+          return `<figure style="margin: 1em 0;"><img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" /><figcaption style="margin-top: 0.5em; font-size: 0.875em; color: #666; text-align: center;">${caption}</figcaption></figure>`;
+        }
+        return `<img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1em 0;" />`;
+      }
+    }
+    
+    return '';
+  }).join('\n');
+}
+
 // Contact Form Component
 function ContactForm({ merchantName }: { merchantName: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -383,9 +466,11 @@ interface MerchantProps {
     slug: string;
   }>;
   alternateUrl?: string | null;
+  smallBlogSection?: any;
+  smallBlogSectionTitle?: string | null;
 }
 
-const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [] }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [], smallBlogSection, smallBlogSectionTitle }: MerchantProps) => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   
   const handleShare = (platform: string) => {
@@ -1277,6 +1362,29 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   )}
                 </CardContent>
               </Card>
+
+              {/* Small Blog Section */}
+              {smallBlogSection && (
+                <Card className="shadow-md">
+                  <CardHeader>
+                    {smallBlogSectionTitle && (
+                      <CardTitle className="text-xl font-bold text-gray-800">
+                        {smallBlogSectionTitle}
+                      </CardTitle>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div 
+                      className="prose prose-sm max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ 
+                        __html: typeof smallBlogSection === 'string' 
+                          ? smallBlogSection 
+                          : blocksToHTML(smallBlogSection) 
+                      }} 
+                    />
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Contact Form */}
               <Card className="shadow-md">

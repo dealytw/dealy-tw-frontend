@@ -98,6 +98,34 @@ function extractTextFromBlock(block: any): string {
 }
 
 /**
+ * Extract first H2 heading from rich text blocks
+ * Returns the text content of the first H2 heading found
+ */
+function extractFirstH2Title(richText: any): string | null {
+  if (!richText) return null;
+  
+  // If richText is Strapi blocks format (JSON array)
+  if (Array.isArray(richText)) {
+    for (const block of richText) {
+      if (block.type === 'heading' && block.level === 2) {
+        return extractTextFromBlock(block);
+      }
+    }
+  }
+  
+  // If richText is HTML string, parse it
+  if (typeof richText === 'string') {
+    const h2Match = richText.match(/<h2[^>]*>(.*?)<\/h2>/i);
+    if (h2Match) {
+      // Strip HTML tags from the match
+      return h2Match[1].replace(/<[^>]*>/g, '').trim();
+    }
+  }
+  
+  return null;
+}
+
+/**
  * Convert Strapi block to HTML, preserving list structure
  */
 function blockToHTML(block: any): string {
@@ -660,9 +688,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "fields[7]": "store_description",
         "fields[8]": "faqs",
         "fields[9]": "how_to",
-        "fields[10]": "createdAt",
-        "fields[11]": "updatedAt",
-        "fields[12]": "hreflang_alternate_url",
+        "fields[10]": "small_blog_section",
+        "fields[11]": "createdAt",
+        "fields[12]": "updatedAt",
+        "fields[13]": "hreflang_alternate_url",
         "populate[logo][fields][0]": "url",
         "populate[how_to_image][fields][0]": "url",
         "populate[useful_links][fields][0]": "link_title",
@@ -945,6 +974,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
           slug: so.page_slug,
         }));
       })(),
+      small_blog_section: merchantData.small_blog_section || null,
+      small_blog_section_title: extractFirstH2Title(merchantData.small_blog_section) || null,
     };
 
     // Process hotstore merchants for popular merchants section
@@ -1160,6 +1191,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         market={marketKey}
         specialOffers={merchant.special_offers || []}
         alternateUrl={alternateUrl || null}
+        smallBlogSection={merchant.small_blog_section || null}
+        smallBlogSectionTitle={merchant.small_blog_section_title || null}
       />
       {/* JSON-LD scripts - Matching HK site format exactly */}
       {/* eslint-disable @next/next/no-sync-scripts */}
