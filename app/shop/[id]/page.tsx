@@ -703,6 +703,9 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[special_offers][fields][0]": "id",
         "populate[special_offers][fields][1]": "title",
         "populate[special_offers][fields][2]": "page_slug",
+        "populate[related_blogs][fields][0]": "id",
+        "populate[related_blogs][fields][1]": "blog_title",
+        "populate[related_blogs][fields][2]": "page_slug",
         "populate[market][fields][0]": "key",
         "populate[market][fields][1]": "defaultLocale",
       })}`, { 
@@ -972,6 +975,29 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
           id: so.id,
           title: so.title,
           slug: so.page_slug,
+          type: 'special_offer', // Mark as special offer
+        }));
+      })(),
+      related_blogs: (() => {
+        // Handle different formats for manyToMany relation (same as related_merchants)
+        let relatedBlogsFromCMS = [];
+        if (Array.isArray(merchantData.related_blogs)) {
+          // Check if it's nested format
+          if (merchantData.related_blogs[0]?.data) {
+            relatedBlogsFromCMS = merchantData.related_blogs.map((item: any) => item.data || item);
+          } else {
+            relatedBlogsFromCMS = merchantData.related_blogs;
+          }
+        } else if (merchantData.related_blogs?.data) {
+          relatedBlogsFromCMS = merchantData.related_blogs.data;
+        }
+        
+        // Transform to the format needed by client component (same format as special_offers)
+        return relatedBlogsFromCMS.map((blog: any) => ({
+          id: blog.id,
+          title: blog.blog_title || blog.attributes?.blog_title || '',
+          slug: blog.page_slug || blog.attributes?.page_slug || '',
+          type: 'blog', // Mark as blog
         }));
       })(),
       small_blog_section: merchantData.small_blog_section || null,
@@ -1190,6 +1216,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         hotstoreMerchants={hotstoreMerchants}
         market={marketKey}
         specialOffers={merchant.special_offers || []}
+        relatedBlogs={merchant.related_blogs || []}
         alternateUrl={alternateUrl || null}
         smallBlogSection={merchant.small_blog_section || null}
         smallBlogSectionTitle={merchant.small_blog_section_title || null}

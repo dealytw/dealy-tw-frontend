@@ -468,13 +468,20 @@ interface MerchantProps {
     id: number;
     title: string;
     slug: string;
+    type?: string;
+  }>;
+  relatedBlogs?: Array<{
+    id: number;
+    title: string;
+    slug: string;
+    type?: string;
   }>;
   alternateUrl?: string | null;
   smallBlogSection?: any;
   smallBlogSectionTitle?: string | null;
 }
 
-const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [], smallBlogSection, smallBlogSectionTitle }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [], relatedBlogs = [], smallBlogSection, smallBlogSectionTitle }: MerchantProps) => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   
   const handleShare = (platform: string) => {
@@ -1263,24 +1270,36 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   <CardTitle className="text-xl font-bold text-gray-800">相關購物分類及攻略</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {specialOffers && specialOffers.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {specialOffers.map((specialOffer) => (
-                        <Link
-                          key={specialOffer.id}
-                          href={`/special-offers/${specialOffer.slug}`}
-                        >
-                          <Badge variant="outline" className="cursor-pointer px-3 py-1 text-sm border-gray-300 hover:bg-gray-50 transition-colors">
-                            {specialOffer.title}
-                          </Badge>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500 py-8">
-                      <p>暫無相關購物攻略</p>
-                    </div>
-                  )}
+                  {(() => {
+                    // Combine related_blogs (first) and special_offers (second)
+                    const allItems = [
+                      ...(relatedBlogs || []).map(blog => ({ ...blog, type: 'blog' })),
+                      ...(specialOffers || []).map(offer => ({ ...offer, type: 'special_offer' }))
+                    ];
+                    
+                    if (allItems.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {allItems.map((item) => (
+                            <Link
+                              key={`${item.type}-${item.id}`}
+                              href={item.type === 'blog' ? `/blog/${item.slug}` : `/special-offers/${item.slug}`}
+                            >
+                              <Badge variant="outline" className="cursor-pointer px-3 py-1 text-sm border-gray-300 hover:bg-gray-50 transition-colors">
+                                {item.title}
+                              </Badge>
+                            </Link>
+                          ))}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="text-center text-gray-500 py-8">
+                          <p>暫無相關購物攻略</p>
+                        </div>
+                      );
+                    }
+                  })()}
                 </CardContent>
               </Card>
 
