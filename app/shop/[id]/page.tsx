@@ -1006,6 +1006,13 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
 
     // Process hotstore merchants for popular merchants section
     let hotstoreMerchants: any[] = [];
+    console.log(`[MerchantPage] Fetching hotstore for market: ${marketKey} (hardcoded: tw)`);
+    console.log(`[MerchantPage] Hotstore response:`, {
+      hasData: !!hotstoreRes?.data,
+      dataLength: hotstoreRes?.data?.length || 0,
+      firstItem: hotstoreRes?.data?.[0] || null,
+    });
+    
     if (hotstoreRes.data && hotstoreRes.data.length > 0) {
       const hotstore = hotstoreRes.data[0]; // Get first hotstore entry for this market
       
@@ -1021,12 +1028,19 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         merchantsFromCMS = hotstore.merchants.data;
       }
 
+      console.log(`[MerchantPage] Extracted merchants from hotstore:`, {
+        merchantsCount: merchantsFromCMS.length,
+        merchants: merchantsFromCMS.map((m: any) => ({ id: m.id, name: m.merchant_name || m.name })),
+      });
+
       hotstoreMerchants = merchantsFromCMS.map((merchant: any) => ({
         id: merchant.id.toString(),
         name: merchant.merchant_name || merchant.name || '',
         slug: merchant.page_slug || '',
         logoUrl: merchant.logo?.url ? rewriteImageUrl(absolutizeMedia(merchant.logo.url), siteUrl) : null,
       }));
+    } else {
+      console.warn(`[MerchantPage] No hotstore data found for market: ${marketKey}. Check CMS for hotstore entry with market='tw'`);
     }
 
     // Transform coupons data
