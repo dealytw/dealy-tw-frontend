@@ -749,7 +749,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[merchants][fields][2]": "page_slug",
         "populate[merchants][populate][logo][fields][0]": "url",
       })}`, { 
-        revalidate: 15552000, // 6 months (180 days) - hotstore data rarely changes 
+        revalidate: 43200, // 12 hours - reduced from 6 months to allow cache refresh when hotstore data is updated
         tag: `hotstore:${marketKey}` 
       })
     ]);
@@ -1011,10 +1011,19 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       hasData: !!hotstoreRes?.data,
       dataLength: hotstoreRes?.data?.length || 0,
       firstItem: hotstoreRes?.data?.[0] || null,
+      rawResponse: JSON.stringify(hotstoreRes, null, 2).substring(0, 500), // Log first 500 chars for debugging
     });
     
-    if (hotstoreRes.data && hotstoreRes.data.length > 0) {
+    if (hotstoreRes?.data && hotstoreRes.data.length > 0) {
       const hotstore = hotstoreRes.data[0]; // Get first hotstore entry for this market
+      console.log(`[MerchantPage] Hotstore entry:`, {
+        id: hotstore.id,
+        documentId: hotstore.documentId,
+        hasMerchants: !!hotstore.merchants,
+        merchantsType: typeof hotstore.merchants,
+        merchantsIsArray: Array.isArray(hotstore.merchants),
+        merchantsKeys: hotstore.merchants ? Object.keys(hotstore.merchants) : null,
+      });
       
       // Extract merchants from hotstore.merchants
       let merchantsFromCMS = [];
@@ -1025,22 +1034,39 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
           merchantsFromCMS = hotstore.merchants;
         }
       } else if (hotstore?.merchants?.data) {
-        merchantsFromCMS = hotstore.merchants.data;
+        merchantsFromCMS = Array.isArray(hotstore.merchants.data) ? hotstore.merchants.data : [hotstore.merchants.data];
+      } else if (hotstore?.merchants) {
+        // Handle case where merchants is a single object
+        merchantsFromCMS = [hotstore.merchants];
       }
 
       console.log(`[MerchantPage] Extracted merchants from hotstore:`, {
         merchantsCount: merchantsFromCMS.length,
-        merchants: merchantsFromCMS.map((m: any) => ({ id: m.id, name: m.merchant_name || m.name })),
+        merchants: merchantsFromCMS.map((m: any) => ({ 
+          id: m.id, 
+          documentId: m.documentId,
+          name: m.merchant_name || m.name,
+          slug: m.page_slug,
+          hasLogo: !!m.logo,
+        })),
       });
 
-      hotstoreMerchants = merchantsFromCMS.map((merchant: any) => ({
-        id: merchant.id.toString(),
-        name: merchant.merchant_name || merchant.name || '',
-        slug: merchant.page_slug || '',
-        logoUrl: merchant.logo?.url ? rewriteImageUrl(absolutizeMedia(merchant.logo.url), siteUrl) : null,
-      }));
+      hotstoreMerchants = merchantsFromCMS
+        .filter((merchant: any) => merchant && (merchant.id || merchant.documentId)) // Filter out invalid merchants
+        .map((merchant: any) => ({
+          id: (merchant.id || merchant.documentId || '').toString(),
+          name: merchant.merchant_name || merchant.name || '',
+          slug: merchant.page_slug || '',
+          logoUrl: merchant.logo?.url ? rewriteImageUrl(absolutizeMedia(merchant.logo.url), siteUrl) : null,
+        }));
+      
+      console.log(`[MerchantPage] Final hotstoreMerchants:`, {
+        count: hotstoreMerchants.length,
+        merchants: hotstoreMerchants,
+      });
     } else {
       console.warn(`[MerchantPage] No hotstore data found for market: ${marketKey}. Check CMS for hotstore entry with market='tw'`);
+      console.warn(`[MerchantPage] Full hotstoreRes:`, JSON.stringify(hotstoreRes, null, 2).substring(0, 1000));
     }
 
     // Transform coupons data
