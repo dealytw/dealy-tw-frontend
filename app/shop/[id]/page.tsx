@@ -749,7 +749,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         "populate[merchants][fields][2]": "page_slug",
         "populate[merchants][populate][logo][fields][0]": "url",
       })}`, { 
-        revalidate: 300, // 5 minutes - temporarily reduced for debugging, will change back to 15552000 (6 months) after verification
+        revalidate: 15552000, // 6 months (180 days) - hotstore data rarely changes
         tag: `hotstore:${marketKey}` 
       })
     ]);
