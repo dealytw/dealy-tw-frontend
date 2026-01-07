@@ -19,13 +19,27 @@ export async function POST(
     }
 
     // Fetch current coupon to get existing user_count
-    const couponResponse = await strapiFetch<{ data: any }>(
-      `/api/coupons/${id}?fields[0]=user_count`,
-      { 
-        revalidate: 0, // Don't cache this request
-        tags: [`coupon:${id}`]
+    let couponResponse;
+    try {
+      couponResponse = await strapiFetch<{ data: any }>(
+        `/api/coupons/${id}?fields[0]=user_count`,
+        { 
+          revalidate: 0, // Don't cache this request
+          tags: [`coupon:${id}`]
+        }
+      );
+    } catch (fetchError: any) {
+      // Handle 404 (coupon not found) gracefully - return 404 instead of 500
+      if (fetchError?.status === 404 || (fetchError instanceof Error && fetchError.message.includes('404'))) {
+        console.warn(`[track-click] Coupon ${id} not found (404)`);
+        return NextResponse.json(
+          { error: 'Coupon not found' },
+          { status: 404 }
+        );
       }
-    );
+      // Re-throw other errors to be handled by outer catch
+      throw fetchError;
+    }
 
     const currentUserCount = couponResponse?.data?.user_count || 0;
     const newUserCount = currentUserCount + 1;
@@ -47,15 +61,33 @@ export async function POST(
     });
 
     if (!updateResponse.ok) {
-      throw new Error(`Failed to update coupon: ${updateResponse.statusText}`);
+      // Handle 404 on update (coupon deleted between fetch and update)
+      if (updateResponse.status === 404) {
+        console.warn(`[track-click] Coupon ${id} not found during update (404)`);
+        return NextResponse.json(
+          { error: 'Coupon not found' },
+          { status: 404 }
+        );
+      }
+      throw new Error(`Failed to update coupon: ${updateResponse.status} ${updateResponse.statusText}`);
     }
 
     return NextResponse.json({
       success: true,
       user_count: newUserCount,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error tracking coupon click:', error);
+    
+    // If it's a 404 error, return 404 instead of 500
+    if (error?.status === 404 || (error instanceof Error && error.message.includes('404'))) {
+      return NextResponse.json(
+        { error: 'Coupon not found' },
+        { status: 404 }
+      );
+    }
+    
+    // For other errors, return 500
     return NextResponse.json(
       { error: 'Failed to track click' },
       { status: 500 }

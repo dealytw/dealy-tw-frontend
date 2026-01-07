@@ -30,7 +30,9 @@ export async function strapiFetch<T>(path: string, init?: NextInit) {
   
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Strapi ${res.status}: ${url}\n${text.slice(0, 600)}`);
+    const error = new Error(`Strapi ${res.status}: ${url}\n${text.slice(0, 600)}`) as Error & { status: number };
+    error.status = res.status; // Attach status code to error for better error handling
+    throw error;
   }
   
   return (await res.json()) as T;
