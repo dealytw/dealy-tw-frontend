@@ -1245,6 +1245,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       {/* Script 2: Store - separate script tag (matching HK format) */}
       {store && (
         <script 
+          key="store-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(store, null, 0) }}
         />
