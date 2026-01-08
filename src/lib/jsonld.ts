@@ -426,8 +426,8 @@ export function storeJsonLd(opts: {
   name: string; 
   url: UrlString; 
   image?: UrlString;
-  ratingValue?: string;
-  reviewCount?: string;
+  ratingValue?: number; // Schema.org requires number, not string
+  reviewCount?: number; // Schema.org requires number, not string
   market?: string; // 'hk' or 'tw' - determines address location
   id?: UrlString; // Optional @id to prevent duplicates
 }) {
@@ -459,11 +459,12 @@ export function storeJsonLd(opts: {
   }
   
   // Add aggregateRating only if rating data is provided
-  if (ratingValue && reviewCount) {
+  // Schema.org requires ratingValue and reviewCount to be numbers
+  if (ratingValue !== undefined && reviewCount !== undefined) {
     store.aggregateRating = {
       '@type': 'AggregateRating',
-      ratingValue,
-      reviewCount,
+      ratingValue: Number(ratingValue), // Ensure it's a number
+      reviewCount: Number(reviewCount), // Ensure it's a number
     };
   }
   

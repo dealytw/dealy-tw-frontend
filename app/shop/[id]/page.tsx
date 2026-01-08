@@ -1217,8 +1217,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       name: merchant.name,
       url: merchantUrl,
       image: pageImage || undefined,
-      ratingValue: "5",
-      reviewCount: ratingCount.toString(),
+      ratingValue: 5, // Schema.org requires number, not string
+      reviewCount: ratingCount, // ratingCount is already a number from generateRatingCount
       market: 'tw', // Hardcoded for TW frontend
       id: storeId, // Add @id to prevent duplicate detection
     });
