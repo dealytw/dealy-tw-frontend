@@ -99,7 +99,7 @@ async function parseHKMerchantSitemap(): Promise<Set<string>> {
   try {
     const sitemapUrl = 'https://dealy.hk/shop-sitemap.xml';
     const response = await fetch(sitemapUrl, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: 86400 }, // Cache for 24 hours
     });
 
     if (!response.ok) {

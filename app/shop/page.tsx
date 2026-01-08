@@ -59,7 +59,7 @@ export default async function ShopIndex({
 
     const merchantsData = await strapiFetch<{ data: any[]; meta: any }>(
       `/api/merchants?${qs(merchantParams)}`,
-      { revalidate: 3600, tag: 'merchant:list' }
+      { revalidate: 86400, tag: 'merchant:list' }
     );
 
     // Transform merchants data

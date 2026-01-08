@@ -149,7 +149,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     
     const merchantsData = await strapiFetch<{ data: any[] }>(
       `/api/merchants?${qs(merchantParams)}`,
-      { revalidate: 3600, tag: `search:all-merchants:${marketKey}` }
+      { revalidate: 86400, tag: `search:all-merchants:${marketKey}` }
     );
 
     console.log(`[Layout] Received merchant data:`, {

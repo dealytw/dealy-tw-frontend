@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         "fields[2]": "seo_description",
         "fields[3]": "hreflang_alternate_url",
       })}`,
-      { revalidate: 3600, tag: `special-offer:${slug}` }
+      { revalidate: 86400, tag: `special-offer:${slug}` }
     );
     
     const specialOffer = specialOfferRes.data?.[0];
