@@ -1248,20 +1248,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Pass the data to the original client component
   return (
       <>
-      <Merchant 
-        merchant={merchant as any}
-        coupons={activeCoupons}
-        expiredCoupons={expiredCoupons}
-        relatedMerchants={relatedMerchants}
-        hotstoreMerchants={hotstoreMerchants}
-        market={marketKey}
-        specialOffers={merchant.special_offers || []}
-        relatedBlogs={merchant.related_blogs || []}
-        alternateUrl={alternateUrl || null}
-        smallBlogSection={merchant.small_blog_section || null}
-        smallBlogSectionTitle={merchant.small_blog_section_title || null}
-      />
-      {/* JSON-LD scripts - Matching HK site format exactly */}
+      {/* JSON-LD scripts - Early in <body> (before page content) - standard practice for schema markup */}
       {/* eslint-disable @next/next/no-sync-scripts */}
       {/* Script 1: BreadcrumbList - separate script tag (matching HK format) */}
       <script 
@@ -1288,6 +1275,19 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
           dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo, null, 0) }}
         />
       )}
+      <Merchant 
+        merchant={merchant as any}
+        coupons={activeCoupons}
+        expiredCoupons={expiredCoupons}
+        relatedMerchants={relatedMerchants}
+        hotstoreMerchants={hotstoreMerchants}
+        market={marketKey}
+        specialOffers={merchant.special_offers || []}
+        relatedBlogs={merchant.related_blogs || []}
+        alternateUrl={alternateUrl || null}
+        smallBlogSection={merchant.small_blog_section || null}
+        smallBlogSectionTitle={merchant.small_blog_section_title || null}
+      />
       </>
     );
   } catch (error) {
