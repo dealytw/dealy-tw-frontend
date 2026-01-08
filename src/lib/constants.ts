@@ -3,7 +3,6 @@
 export const HOME_REVALIDATE = 86400; // 24 hours
 export const HOME_TAG = 'home';
 
-export const MERCHANT_REVALIDATE = 300;
 export const MERCHANTS_LIST_TAG = 'merchants:list';
 
 export const COUPON_TAG_PREFIX = 'coupon';

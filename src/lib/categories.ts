@@ -1,7 +1,7 @@
 // src/lib/categories.ts - Typed category data helpers
 
 import { strapiFetch, qs } from './strapi.server';
-import { getCategoryTag, MERCHANT_REVALIDATE } from './constants';
+import { getCategoryTag } from './constants';
 
 // TypeScript interfaces for category data
 export interface Category {
@@ -38,7 +38,7 @@ export interface CategoryResponse {
 }
 
 // Get category by slug
-export async function getCategoryBySlug(slug: string, market = 'tw', revalidate = MERCHANT_REVALIDATE): Promise<CategoryResponse> {
+export async function getCategoryBySlug(slug: string, market = 'tw', revalidate = 300): Promise<CategoryResponse> {
   const params = {
     'filters[page_slug][$eq]': slug,
     'filters[market][key][$eq]': market,
@@ -61,7 +61,7 @@ export async function getCategoryBySlug(slug: string, market = 'tw', revalidate 
 }
 
 // Get categories list
-export async function getCategoriesList(market = 'tw', page = 1, pageSize = 20, revalidate = MERCHANT_REVALIDATE): Promise<CategoryResponse> {
+export async function getCategoriesList(market = 'tw', page = 1, pageSize = 20, revalidate = 300): Promise<CategoryResponse> {
   const params = {
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
@@ -82,7 +82,7 @@ export async function getCategoriesList(market = 'tw', page = 1, pageSize = 20, 
 }
 
 // Get featured categories
-export async function getFeaturedCategories(market = 'tw', limit = 10, revalidate = MERCHANT_REVALIDATE): Promise<CategoryResponse> {
+export async function getFeaturedCategories(market = 'tw', limit = 10, revalidate = 300): Promise<CategoryResponse> {
   const params = {
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',

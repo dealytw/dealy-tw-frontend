@@ -1,7 +1,7 @@
 // src/lib/merchants.ts - Typed merchant data helpers
 
 import { strapiFetch, qs } from './strapi.server';
-import { getMerchantTag, MERCHANT_REVALIDATE } from './constants';
+import { getMerchantTag } from './constants';
 
 // TypeScript interfaces for merchant data
 export interface Merchant {
@@ -46,7 +46,7 @@ export interface MerchantResponse {
 }
 
 // Get merchant by slug with minimal populate
-export async function getMerchantBySlug(slug: string, market = 'tw', revalidate = MERCHANT_REVALIDATE): Promise<MerchantResponse> {
+export async function getMerchantBySlug(slug: string, market = 'tw', revalidate = 300): Promise<MerchantResponse> {
   const params = {
     'filters[page_slug][$eq]': slug,
     'filters[market][key][$eq]': market,
@@ -79,7 +79,7 @@ export async function getMerchantBySlug(slug: string, market = 'tw', revalidate 
 }
 
 // Get merchants list with pagination
-export async function getMerchantsList(market = 'tw', page = 1, pageSize = 20, revalidate = MERCHANT_REVALIDATE): Promise<MerchantResponse> {
+export async function getMerchantsList(market = 'tw', page = 1, pageSize = 20, revalidate = 300): Promise<MerchantResponse> {
   const params = {
     'filters[market][key][$eq]': market,
     'fields[0]': 'id',
@@ -102,7 +102,7 @@ export async function getMerchantsList(market = 'tw', page = 1, pageSize = 20, r
 }
 
 // Get featured merchants
-export async function getFeaturedMerchants(market = 'tw', limit = 6, revalidate = MERCHANT_REVALIDATE): Promise<MerchantResponse> {
+export async function getFeaturedMerchants(market = 'tw', limit = 6, revalidate = 300): Promise<MerchantResponse> {
   const params = {
     'filters[market][key][$eq]': market,
     'filters[is_featured][$eq]': 'true',
@@ -124,7 +124,7 @@ export async function getFeaturedMerchants(market = 'tw', limit = 6, revalidate 
 }
 
 // Get related merchants (excluding current merchant)
-export async function getRelatedMerchants(currentSlug: string, market = 'tw', limit = 6, revalidate = MERCHANT_REVALIDATE): Promise<MerchantResponse> {
+export async function getRelatedMerchants(currentSlug: string, market = 'tw', limit = 6, revalidate = 300): Promise<MerchantResponse> {
   const params = {
     'filters[page_slug][$ne]': currentSlug, // Exclude current merchant
     'filters[market][key][$eq]': market,
