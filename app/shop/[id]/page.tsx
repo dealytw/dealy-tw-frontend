@@ -5,7 +5,6 @@ import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, generateRatingCount } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
-import Script from 'next/script';
 
 /**
  * Parse FAQs from rich text (HTML format)
@@ -1243,36 +1242,33 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       '@graph': graphItems,
     };
 
-    // Render JSON-LD in the page (server) using `next/script` with per-page unique IDs.
-    // This ensures Google can see it, and prevents duplication during hydration.
+    // Render JSON-LD inline in HTML (server) - most reliable for Google.
+    // Use stable, per-merchant IDs to reduce risk of duplication across client navigations.
     const jsonldPrefix = `jsonld-${merchantSlug}`;
     return (
       <>
-        <Script
+        {/* eslint-disable @next/next/no-sync-scripts */}
+        <script
           id={`${jsonldPrefix}-breadcrumb`}
           type="application/ld+json"
-          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb, null, 0) }}
         />
         {store && (
-          <Script
+          <script
             id={`${jsonldPrefix}-store`}
             type="application/ld+json"
-            strategy="beforeInteractive"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(store, null, 0) }}
           />
         )}
-        <Script
+        <script
           id={`${jsonldPrefix}-graph`}
           type="application/ld+json"
-          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph, null, 0) }}
         />
         {howTo && (
-          <Script
+          <script
             id={`${jsonldPrefix}-howto`}
             type="application/ld+json"
-            strategy="beforeInteractive"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo, null, 0) }}
           />
         )}
