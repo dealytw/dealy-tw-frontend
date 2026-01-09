@@ -550,6 +550,28 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
   // Deduplicate coupons and expired coupons
   const uniqueCoupons = deduplicateCoupons(coupons || []);
   const uniqueExpiredCoupons = deduplicateCoupons(expiredCoupons || []);
+
+  // Phase 2: "Top verified codes" table (max 5).
+  // Codes are rendered in the initial HTML (ISR) but kept out of SERP snippets via data-nosnippet.
+  const verifiedPromoCodes = uniqueCoupons
+    .filter((c: any) => c?.coupon_type === "promo_code" && typeof c?.code === "string" && c.code.trim() && c?.affiliate_link)
+    .slice(0, 5);
+
+  const formatExpiryDate = (expiresAt: any): string => {
+    if (!expiresAt) return "長期有效";
+    if (typeof expiresAt === "string") {
+      // Prefer YYYY-MM-DD if it's an ISO string
+      if (expiresAt.length >= 10) return expiresAt.slice(0, 10);
+      return expiresAt;
+    }
+    try {
+      const d = new Date(expiresAt);
+      if (Number.isNaN(d.getTime())) return "長期有效";
+      return d.toISOString().slice(0, 10);
+    } catch {
+      return "長期有效";
+    }
+  };
   
   // Determine which filters to show based on merchant settings
   // When location_filtering and creditcard_filtering are false (default), show simple filters
@@ -803,6 +825,91 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                 >
                   {merchant.name}優惠碼總整理 (每日更新) | Promo code/ Discount code
                 </h2>
+
+                {/* Latest verified codes (max 5 promo_code). Hide when none. */}
+                {verifiedPromoCodes.length > 0 && (
+                  <div className="mb-6 rounded-xl border border-yellow-200 bg-yellow-50/60 p-4">
+                    <div className="text-sm md:text-base font-semibold text-gray-900">
+                      最新已驗證{merchant.name}優惠碼
+                    </div>
+                    <div className="mt-3 overflow-x-auto">
+                      <table className="w-full text-xs md:text-sm border-separate border-spacing-0">
+                        <thead>
+                          <tr className="text-left text-gray-700">
+                            <th className="py-2 pr-3 font-medium">優惠</th>
+                            <th className="py-2 pr-3 font-medium whitespace-nowrap">優惠碼</th>
+                            <th className="py-2 font-medium whitespace-nowrap">到期日</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-gray-900">
+                          {verifiedPromoCodes.map((c: any) => {
+                            const href = c.affiliate_link || "#";
+                            return (
+                              <tr key={`verified-code-${c.id}`} className="border-t border-yellow-200/60">
+                                <td className="py-2 pr-3 align-top">
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer nofollow sponsored"
+                                    className="inline-flex items-start gap-2 hover:underline"
+                                  >
+                                    {/* Verified tick */}
+                                    <span className="mt-0.5 inline-flex items-center justify-center">
+                                      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                        <path
+                                          d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"
+                                          fill="#16A34A"
+                                          opacity="0.15"
+                                        />
+                                        <path
+                                          d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"
+                                          stroke="#16A34A"
+                                          strokeWidth="1.2"
+                                        />
+                                        <path
+                                          d="m6.2 10.2 2.3 2.3 5.3-5.3"
+                                          stroke="#16A34A"
+                                          strokeWidth="1.6"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                      </svg>
+                                    </span>
+                                    <span className="leading-snug">
+                                      <span className="mr-2 inline-block text-[11px] md:text-xs text-green-700 font-medium">
+                                        已驗證
+                                      </span>
+                                      <span>{c.coupon_title || "優惠碼"}</span>
+                                    </span>
+                                  </a>
+                                </td>
+                                <td className="py-2 pr-3 align-top whitespace-nowrap">
+                                  <details className="group inline-block">
+                                    <summary className="cursor-pointer select-none text-blue-700 hover:text-blue-800 underline">
+                                      顯示優惠碼
+                                    </summary>
+                                    <a
+                                      href={href}
+                                      target="_blank"
+                                      rel="noopener noreferrer nofollow sponsored"
+                                      className="mt-1 inline-flex items-center rounded-md border border-yellow-200 bg-white px-2 py-1 font-mono text-xs md:text-sm"
+                                      title="Open affiliate link in new tab"
+                                    >
+                                      <span data-nosnippet>{c.code}</span>
+                                    </a>
+                                  </details>
+                                </td>
+                                <td className="py-2 align-top whitespace-nowrap text-gray-700">
+                                  {formatExpiryDate(c.expires_at)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Filter Section */}
                 <div className="mb-6">
