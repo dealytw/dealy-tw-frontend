@@ -23,14 +23,17 @@ export { DOMAIN_CONFIG, type DomainConfig };
 
 /**
  * Convert Market.defaultLocale enum to HTML lang attribute
- * "zh-Hant-HK" -> "zh-HK"
- * "zh-Hant-TW" -> "zh-TW"
+ * We intentionally keep the full script+region (zh-Hant-XX) to match hreflang usage.
  */
 export function localeToHtmlLang(locale?: string): string {
-  if (!locale) return 'zh-TW'; // Default fallback
+  if (!locale) return 'zh-Hant-TW'; // Default fallback
   
-  if (locale === 'zh-Hant-HK') return 'zh-HK';
-  if (locale === 'zh-Hant-TW') return 'zh-TW';
+  // If already in full format, return as-is
+  if (locale === 'zh-Hant-HK' || locale === 'zh-Hant-TW') return locale;
+
+  // If in short format, convert to full format
+  if (locale === 'zh-HK') return 'zh-Hant-HK';
+  if (locale === 'zh-TW') return 'zh-Hant-TW';
   
   return locale; // Return as-is if not matched
 }
