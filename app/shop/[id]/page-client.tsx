@@ -555,6 +555,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
   // Codes are rendered in the initial HTML (ISR) but kept out of SERP snippets via data-nosnippet.
   const verifiedPromoCodes = uniqueCoupons
     .filter((c: any) => c?.coupon_type === "promo_code" && typeof c?.code === "string" && c.code.trim() && c?.affiliate_link)
+    .sort((a: any, b: any) => Number(b?.priority ?? 0) - Number(a?.priority ?? 0))
     .slice(0, 5);
 
   const formatExpiryDate = (expiresAt: any): string => {
