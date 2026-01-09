@@ -85,7 +85,8 @@ export async function getMarketLocale(marketKey: string = 'tw') {
     );
     
     const market = marketRes.data?.[0];
-    return market?.defaultLocale || 'zh-Hant-TW'; // Default fallback
+    // If CMS returns no record, fall back based on market key (don't default HK → TW).
+    return market?.defaultLocale || (marketKey.toLowerCase() === 'hk' ? 'zh-Hant-HK' : 'zh-Hant-TW');
   } catch (error) {
     console.error('[DomainConfig] Error fetching market locale:', error);
     // Fallback based on market key
