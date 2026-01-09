@@ -1172,7 +1172,8 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const faq = faqPageJsonLd(
       (merchant.faqs || []).map((f: any) => ({ 
         question: f?.q || f?.question || '', 
-        answer: f?.a || f?.answer || '' 
+        // Schema `acceptedAnswer.text` should be plain text (no HTML tags)
+        answer: stripHTMLTags(f?.a || f?.answer || '') 
       })).filter((x: any) => x.question && x.answer),
       `${merchantUrl}#faq` // Use #faq suffix to match HK format
     );
