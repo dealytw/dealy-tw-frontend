@@ -5,6 +5,7 @@ import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, generateRatingCount } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
+import Script from 'next/script';
 
 /**
  * Parse FAQs from rich text (HTML format)
@@ -1209,18 +1210,15 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     // Generate rating count (matches UI display)
     const ratingCount = generateRatingCount(merchant.name);
     
-    // Store schema (separate script tag, not in @graph - matching HK format)
-    // Use @id to prevent duplicates
-    // Hardcode market to 'tw' for TW frontend
+    // Store schema (separate script tag, not in @graph)
+    // IMPORTANT: Avoid AggregateRating (high-risk for GSC review snippet issues)
     const storeId = `${merchantUrl}#store`;
     const store = storeJsonLd({
       name: merchant.name,
       url: merchantUrl,
       image: pageImage || undefined,
-      ratingValue: 5, // Schema.org requires number, not string
-      reviewCount: ratingCount, // ratingCount is already a number from generateRatingCount
-      market: 'tw', // Hardcoded for TW frontend
-      id: storeId, // Add @id to prevent duplicate detection
+      market: 'tw',
+      id: storeId,
     });
     
     // Combine schemas into @graph array (matching HK format exactly)
@@ -1245,22 +1243,53 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       '@graph': graphItems,
     };
 
-    // Page JSON-LD is rendered in `app/shop/[id]/head.tsx` (server-only)
-    // to avoid client/hydration duplication in GSC rendered HTML.
+    // Render JSON-LD in the page (server) using `next/script` with per-page unique IDs.
+    // This ensures Google can see it, and prevents duplication during hydration.
+    const jsonldPrefix = `jsonld-${merchantSlug}`;
     return (
-      <Merchant
-        merchant={merchant as any}
-        coupons={activeCoupons}
-        expiredCoupons={expiredCoupons}
-        relatedMerchants={relatedMerchants}
-        hotstoreMerchants={hotstoreMerchants}
-        market={marketKey}
-        specialOffers={merchant.special_offers || []}
-        relatedBlogs={merchant.related_blogs || []}
-        alternateUrl={alternateUrl || null}
-        smallBlogSection={merchant.small_blog_section || null}
-        smallBlogSectionTitle={merchant.small_blog_section_title || null}
-      />
+      <>
+        <Script
+          id={`${jsonldPrefix}-breadcrumb`}
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb, null, 0) }}
+        />
+        {store && (
+          <Script
+            id={`${jsonldPrefix}-store`}
+            type="application/ld+json"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(store, null, 0) }}
+          />
+        )}
+        <Script
+          id={`${jsonldPrefix}-graph`}
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph, null, 0) }}
+        />
+        {howTo && (
+          <Script
+            id={`${jsonldPrefix}-howto`}
+            type="application/ld+json"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo, null, 0) }}
+          />
+        )}
+        <Merchant
+          merchant={merchant as any}
+          coupons={activeCoupons}
+          expiredCoupons={expiredCoupons}
+          relatedMerchants={relatedMerchants}
+          hotstoreMerchants={hotstoreMerchants}
+          market={marketKey}
+          specialOffers={merchant.special_offers || []}
+          relatedBlogs={merchant.related_blogs || []}
+          alternateUrl={alternateUrl || null}
+          smallBlogSection={merchant.small_blog_section || null}
+          smallBlogSectionTitle={merchant.small_blog_section_title || null}
+        />
+      </>
     );
   } catch (error) {
     console.error('Error fetching merchant data:', error);
