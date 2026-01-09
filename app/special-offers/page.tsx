@@ -15,11 +15,12 @@ export async function generateMetadata() {
 }
 
 export default async function SpecialOffersIndex() {
-  const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+  const market = 'tw'; // Hardcoded for TW frontend
   
   try {
-    // Fetch all special offers for the index page (without market filter for now)
+    // Fetch special offers for TW only
     const specialOffersParams = {
+      "filters[market][key][$eq]": market,
       "fields[0]": "id",
       "fields[1]": "title", 
       "fields[2]": "page_slug",
@@ -32,7 +33,7 @@ export default async function SpecialOffersIndex() {
 
     const specialOffersRes = await strapiFetch<{ data: any[]; meta: any }>(
       `/api/special-offers?${qs(specialOffersParams)}`,
-      { revalidate: 86400, tag: 'special-offers:index' }
+      { revalidate: 86400, tag: `special-offers:index:${market}` }
     );
     
     const specialOffers = specialOffersRes.data || [];
