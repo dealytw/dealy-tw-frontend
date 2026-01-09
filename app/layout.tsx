@@ -191,6 +191,59 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={htmlLang} suppressHydrationWarning>
       <head>
+        {/* JSON-LD should be emitted from server <head> (not inside client Providers)
+            to avoid duplication in Google-rendered HTML. */}
+        <script
+          id="jsonld-website"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              websiteJsonLd({
+                siteName: domainConfig.name,
+                siteUrl: siteUrl,
+                searchUrl: `${siteUrl}/search`,
+                locale: marketLocale,
+                image: `${siteUrl}/dealytwlogo.svg`,
+                description:
+                  "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。",
+              }),
+              null,
+              0
+            ),
+          }}
+        />
+        <script
+          id="jsonld-organization"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              organizationJsonLd({
+                name: domainConfig.name,
+                url: siteUrl,
+                logo: `${siteUrl}/dealytwlogo.svg`,
+                sameAs: sameAs,
+                id: `${siteUrl}#organization`,
+              }),
+              null,
+              0
+            ),
+          }}
+        />
+        <script
+          id="jsonld-sitenav"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              siteNavigationJsonLd([
+                { name: '首頁', url: `${siteUrl}/` },
+                { name: '商家', url: `${siteUrl}/shop` },
+                { name: '特別優惠', url: `${siteUrl}/special-offers` },
+              ]),
+              null,
+              0
+            ),
+          }}
+        />
         {/* Google Tag Manager - Lazy loaded for better performance */}
         <Script
           id="gtm-script"
@@ -262,49 +315,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         
         <Providers>
           <SearchProvider initialMerchants={searchMerchants} hotstoreMerchants={hotstoreMerchants}>
-            {/* Site-wide JSON-LD: WebSite + Organization */}
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(
-                  websiteJsonLd({ 
-                    siteName: domainConfig.name, 
-                    siteUrl: siteUrl, 
-                    searchUrl: `${siteUrl}/search`,
-                    locale: marketLocale,
-                    image: `${siteUrl}/dealytwlogo.svg`, // Use image instead of logo (WebSite doesn't support logo)
-                    description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。"
-                    // Note: publisher removed - WebSite doesn't support publisher property (use publisherId in webPageJsonLd instead)
-                  })
-                ),
-              }}
-            />
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(
-                  organizationJsonLd({ 
-                    name: domainConfig.name, 
-                    url: siteUrl, 
-                    logo: `${siteUrl}/dealytwlogo.svg`, // Use logo, not favicon for structured data
-                    sameAs: sameAs,
-                    id: `${siteUrl}#organization` // Use same @id as merchant page to avoid duplication
-                  })
-                ),
-              }}
-            />
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(
-                  siteNavigationJsonLd([
-                    { name: '首頁', url: `${siteUrl}/` },
-                    { name: '商家', url: `${siteUrl}/shop` },
-                    { name: '特別優惠', url: `${siteUrl}/special-offers` },
-                  ])
-                ),
-              }}
-            />
             {children}
             <FloatingActionContainer />
             <CWVTracker />

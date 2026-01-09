@@ -1245,37 +1245,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       '@graph': graphItems,
     };
 
-    // Pass the data to the original client component
-  return (
-      <>
-      {/* JSON-LD scripts - Early in <body> (before page content) - standard practice for schema markup */}
-      {/* eslint-disable @next/next/no-sync-scripts */}
-      {/* Script 1: BreadcrumbList - separate script tag (matching HK format) */}
-      <script 
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb, null, 0) }}
-      />
-      {/* Script 2: Store - separate script tag (matching HK format) */}
-      {store && (
-        <script 
-          key="store-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(store, null, 0) }}
-        />
-      )}
-      {/* Script 3: @graph structure - Organization, FAQPage, ItemList, WebSite, WebPage */}
-      <script 
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph, null, 0) }}
-      />
-      {/* Script 4: HowTo - separate script tag (matching reference format) */}
-      {howTo && (
-        <script 
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo, null, 0) }}
-        />
-      )}
-      <Merchant 
+    // Page JSON-LD is rendered in `app/shop/[id]/head.tsx` (server-only)
+    // to avoid client/hydration duplication in GSC rendered HTML.
+    return (
+      <Merchant
         merchant={merchant as any}
         coupons={activeCoupons}
         expiredCoupons={expiredCoupons}
@@ -1288,7 +1261,6 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         smallBlogSection={merchant.small_blog_section || null}
         smallBlogSectionTitle={merchant.small_blog_section_title || null}
       />
-      </>
     );
   } catch (error) {
     console.error('Error fetching merchant data:', error);
