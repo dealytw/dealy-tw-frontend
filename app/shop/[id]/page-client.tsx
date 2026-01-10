@@ -555,7 +555,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
   // Codes are rendered in the initial HTML (ISR) but kept out of SERP snippets via data-nosnippet.
   const verifiedPromoCodes = uniqueCoupons
     .filter((c: any) => c?.coupon_type === "promo_code" && typeof c?.code === "string" && c.code.trim() && c?.affiliate_link)
-    .sort((a: any, b: any) => Number(b?.priority ?? 0) - Number(a?.priority ?? 0))
+    // Lowest priority number first (1 -> N)
+    .sort((a: any, b: any) => Number(a?.priority ?? Infinity) - Number(b?.priority ?? Infinity))
     .slice(0, 5);
 
   const formatExpiryDate = (expiresAt: any): string => {
@@ -824,9 +825,11 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                       <tr className="text-left text-gray-700">
                         <th className="py-1 pr-3 font-medium">
                           <span className="inline-flex items-center gap-1">
-                            已驗證
-                            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                              <path d="m6.2 10.2 2.3 2.3 5.3-5.3" stroke="#16A34A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            已驗證優惠
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                              <circle cx="10" cy="10" r="8.5" fill="#16A34A" opacity="0.14" />
+                              <circle cx="10" cy="10" r="8.5" stroke="#16A34A" strokeWidth="1.2" />
+                              <path d="m6.2 10.3 2.2 2.2 5.5-5.5" stroke="#16A34A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </span>
                         </th>
