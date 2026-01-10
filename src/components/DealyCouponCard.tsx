@@ -180,6 +180,7 @@ const DealyCouponCard = ({
   // Determine coupon type - use coupon_type from CMS, fallback to code detection
   const couponType = coupon.coupon_type || (coupon.code ? "promo_code" : "coupon");
   const discountType = coupon.code ? "代碼" : "優惠";
+  const affiliateRelId = `coupon-affiliate-${coupon.id}`;
 
   const handleCopy = async (code: string) => {
     try {
@@ -328,6 +329,30 @@ const DealyCouponCard = ({
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
           </p>
+
+          {/* Expose promo code in initial HTML for crawling (visually hidden). */}
+          {couponType === "promo_code" && coupon.code ? (
+            <span className="sr-only" aria-hidden="true" data-nosnippet="">
+              {coupon.code}
+            </span>
+          ) : null}
+
+          {/* Expose affiliate outlink in HTML for crawling (visually hidden). */}
+          {coupon.affiliateLink ? (
+            <a
+              id={affiliateRelId}
+              href={coupon.affiliateLink}
+              target="_blank"
+              rel="noopener noreferrer nofollow sponsored"
+              className="sr-only"
+              aria-hidden="true"
+              tabIndex={-1}
+              data-coupon-id={coupon.id}
+              data-nosnippet=""
+            >
+              {coupon.title}
+            </a>
+          ) : null}
           
           <div className="flex items-center gap-4 mb-4">
             {couponType === "promo_code" && isScrolledTo ? (
@@ -361,7 +386,11 @@ const DealyCouponCard = ({
               </div>
             ) : (
               /* Regular Layout - Standard Button */
-              <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0" onClick={handleButtonClick}>
+              <Button
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0"
+                onClick={handleButtonClick}
+                aria-describedby={affiliateRelId}
+              >
                 {getButtonText(couponType)}
               </Button>
             )}
@@ -545,7 +574,11 @@ const DealyCouponCard = ({
                 </div>
               ) : (
                 /* Mobile Regular Layout - Standard Button */
-                <Button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-full border-0 text-xs" onClick={handleButtonClick}>
+                <Button
+                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-full border-0 text-xs"
+                  onClick={handleButtonClick}
+                  aria-describedby={affiliateRelId}
+                >
                   {getButtonText(couponType)}
                 </Button>
               )}

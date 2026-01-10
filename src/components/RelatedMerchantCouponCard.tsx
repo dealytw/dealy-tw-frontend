@@ -27,6 +27,8 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
   if (!coupon) {
     return null;
   }
+
+  const affiliateRelId = `coupon-affiliate-${coupon.id}`;
   
   // Extract discount value from coupon value string
   const extractDiscountValue = (value: string) => {
@@ -129,6 +131,30 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
           {couponTitle}
         </h3>
 
+        {/* Expose promo code in initial HTML for crawling (visually hidden). */}
+        {coupon.coupon_type === "promo_code" && coupon.code ? (
+          <span className="sr-only" aria-hidden="true" data-nosnippet="">
+            {coupon.code}
+          </span>
+        ) : null}
+
+        {/* Expose affiliate outlink in HTML for crawling (visually hidden). */}
+        {coupon.affiliate_link ? (
+          <a
+            id={affiliateRelId}
+            href={coupon.affiliate_link}
+            target="_blank"
+            rel="noopener noreferrer nofollow sponsored"
+            className="sr-only"
+            aria-hidden="true"
+            tabIndex={-1}
+            data-coupon-id={coupon.id}
+            data-nosnippet=""
+          >
+            {coupon.title}
+          </a>
+        ) : null}
+
         {/* View More Button - Below title, pale grey background, with shadow */}
         {relatedMerchant.slug && (
           <Link href={`/shop/${relatedMerchant.slug}`} className="mb-0 flex justify-center">
@@ -157,6 +183,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
           className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-3 py-1.5 text-sm"
           size="sm"
           onClick={handleButtonClick}
+          aria-describedby={affiliateRelId}
         >
           {getButtonText(coupon.coupon_type)}
         </Button>

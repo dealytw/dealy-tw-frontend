@@ -25,6 +25,7 @@ interface CouponCardProps {
 const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
   const [isCodeRevealed, setIsCodeRevealed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const affiliateRelId = `coupon-affiliate-${coupon.id}`;
 
   const calculateTimeLeft = (expiresAt?: string) => {
     if (!expiresAt) return null;
@@ -89,6 +90,30 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
           <h3 className="text-lg font-semibold text-gray-800 mb-3 leading-tight">
             {coupon.coupon_title}
           </h3>
+
+          {/* Expose promo code in initial HTML for crawling (visually hidden). */}
+          {coupon.coupon_type === "promo_code" && coupon.code ? (
+            <span className="sr-only" aria-hidden="true" data-nosnippet="">
+              {coupon.code}
+            </span>
+          ) : null}
+
+          {/* Expose affiliate outlink in HTML for crawling (visually hidden). */}
+          {coupon.affiliate_link ? (
+            <a
+              id={affiliateRelId}
+              href={coupon.affiliate_link}
+              target="_blank"
+              rel="noopener noreferrer nofollow sponsored"
+              className="sr-only"
+              aria-hidden="true"
+              tabIndex={-1}
+              data-coupon-id={coupon.id}
+              data-nosnippet=""
+            >
+              {coupon.coupon_title}
+            </a>
+          ) : null}
           
           {timeLeft && (
             <p className="text-sm text-orange-600 mb-3">
@@ -101,6 +126,7 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
               <Button 
                 onClick={handleGetCode}
                 className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg px-6 py-2"
+                aria-describedby={affiliateRelId}
               >
                 獲取優惠碼
               </Button>
@@ -108,6 +134,7 @@ const CouponCard = ({ coupon, onGetCode }: CouponCardProps) => {
               <Button 
                 onClick={handleGetCode}
                 className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg px-6 py-2"
+                aria-describedby={affiliateRelId}
               >
                 獲取優惠
               </Button>

@@ -18,6 +18,7 @@ interface CategoryCouponCardProps {
 }
 
 const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
+  const affiliateRelId = `coupon-affiliate-${coupon.id}`;
   // Extract discount value from coupon discount string
   const extractDiscountValue = (value: string) => {
     if (!value) return "優惠";
@@ -102,6 +103,30 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
         <h3 className="text-sm font-medium text-gray-900 mb-1.5 leading-tight pr-20">
           {formattedTitle}
         </h3>
+
+        {/* Expose promo code in initial HTML for crawling (visually hidden). */}
+        {coupon.coupon_type === "promo_code" && coupon.code ? (
+          <span className="sr-only" aria-hidden="true" data-nosnippet="">
+            {coupon.code}
+          </span>
+        ) : null}
+
+        {/* Expose affiliate outlink in HTML for crawling (visually hidden). */}
+        {coupon.affiliate_link ? (
+          <a
+            id={affiliateRelId}
+            href={coupon.affiliate_link}
+            target="_blank"
+            rel="noopener noreferrer nofollow sponsored"
+            className="sr-only"
+            aria-hidden="true"
+            tabIndex={-1}
+            data-coupon-id={coupon.id}
+            data-nosnippet=""
+          >
+            {coupon.title}
+          </a>
+        ) : null}
         
         {/* Thumbnail Image */}
         <div className="absolute top-3 right-3 w-16 h-16 rounded overflow-hidden bg-gray-100">
@@ -151,6 +176,7 @@ const CategoryCouponCard = ({ coupon }: CategoryCouponCardProps) => {
           className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-4 py-2 rounded border border-red-300"
           size="sm"
           onClick={handleButtonClick}
+          aria-describedby={affiliateRelId}
         >
           {getButtonText(coupon.coupon_type)}
         </Button>
