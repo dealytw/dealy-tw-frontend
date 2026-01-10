@@ -15,20 +15,33 @@ export async function generateMetadata() {
   });
 }
 
-export default async function BlogHomePage() {
-  const marketKey = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
+export default async function BlogHomePage({
+  searchParams,
+}: {
+  searchParams?: { page?: string; category?: string };
+}) {
+  const marketKey = 'tw'; // Hardcoded for TW frontend
   const domainConfig = getDomainConfigServer();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`;
 
   // Fetch blog posts with thumbnails, sorted by newest first
   let blogPosts: any[] = [];
   let categories: any[] = [];
+  let page = 1;
+  let pageCount = 1;
+  const pageSize = 24;
+  const selectedCategory = (searchParams?.category || '').trim() || null;
+  const parsedPage = Number(searchParams?.page || '1');
+  if (Number.isFinite(parsedPage) && parsedPage > 0) {
+    page = Math.floor(parsedPage);
+  }
 
   try {
     // Fetch blog posts
-    const blogRes = await strapiFetch<{ data: any[] }>(`/api/blogs?${qs({
+    const blogRes = await strapiFetch<{ data: any[]; meta?: any }>(`/api/blogs?${qs({
       "filters[publishedAt][$notNull]": "true", // Only published posts
       "filters[market][key][$eq]": marketKey,
+      ...(selectedCategory ? { "filters[categories][page_slug][$eq]": selectedCategory } : {}),
       "fields[0]": "id",
       "fields[1]": "blog_title",
       "fields[2]": "page_slug",
@@ -36,8 +49,9 @@ export default async function BlogHomePage() {
       "fields[4]": "createdAt",
       "fields[5]": "updatedAt",
       "fields[6]": "publishedAt",
-      "sort[0]": "publishedAt:desc", // Newest first
-      "pagination[pageSize]": "50", // Get enough posts for display
+      "sort[0]": "updatedAt:desc", // Latest update first
+      "pagination[page]": String(page),
+      "pagination[pageSize]": String(pageSize),
       // Thumbnail image
       "populate[thumbnail][fields][0]": "url",
       // Categories
@@ -46,7 +60,7 @@ export default async function BlogHomePage() {
       "populate[categories][fields][2]": "page_slug",
     })}`, {
       revalidate: 86400, // Cache for 24 hours - same as homepage
-      tag: 'blog:list'
+      tag: `blog:list:${marketKey}:${selectedCategory || 'all'}:${page}`
     });
 
     blogPosts = (blogRes?.data || []).map((post: any) => {
@@ -62,12 +76,14 @@ export default async function BlogHomePage() {
         subtitle: post.intro_text || post.attributes?.intro_text || '',
         image: thumbnailUrl,
         category: categoryNames || '最新優惠',
-        date: post.publishedAt || post.createdAt || post.updatedAt,
+        date: post.updatedAt || post.publishedAt || post.createdAt,
         slug: post.page_slug || post.attributes?.page_slug || '',
         createdAt: post.createdAt,
         publishedAt: post.publishedAt,
       };
     });
+
+    pageCount = blogRes?.meta?.pagination?.pageCount || 1;
 
     // Fetch categories from shared categories API (same as merchants)
     const categoryRes = await strapiFetch<{ data: any[] }>(`/api/categories?${qs({
@@ -99,7 +115,15 @@ export default async function BlogHomePage() {
     ];
   }
 
-  return <BlogHomeView blogPosts={blogPosts} categories={categories} />;
+  return (
+    <BlogHomeView
+      blogPosts={blogPosts}
+      categories={categories}
+      currentPage={page}
+      totalPages={pageCount}
+      selectedCategory={selectedCategory}
+    />
+  );
 }
 
 

@@ -1,9 +1,7 @@
-"use client";
-
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, ChevronDown, ChevronUp } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -15,8 +13,6 @@ interface BlogPost {
   category: string;
   date: string;
   slug: string;
-  createdAt?: string;
-  publishedAt?: string;
 }
 
 interface Category {
@@ -28,112 +24,98 @@ interface Category {
 interface BlogHomeViewProps {
   blogPosts: BlogPost[];
   categories: Category[];
+  currentPage: number;
+  totalPages: number;
+  selectedCategory: string | null;
 }
 
-export default function BlogHomeView({ blogPosts = [], categories = [] }: BlogHomeViewProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+export default function BlogHomeView({
+  blogPosts = [],
+  categories = [],
+  currentPage,
+  totalPages,
+  selectedCategory,
+}: BlogHomeViewProps) {
   const [isCategoriesExpanded, setIsCategoriesExpanded] = useState(false);
 
-  // Define the categories to show by default (excluding "最新文章")
-  const defaultCategoryNames = ['旅遊', '服飾', '護膚', '美妝', '網購平台', '家電'];
-  
-  // Filter categories to show only the specified ones
+  const defaultCategoryNames = ["旅遊", "服飾", "護膚", "美妝", "網購平台", "家電"];
+
   const visibleCategories = useMemo(() => {
-    return categories.filter(cat => defaultCategoryNames.includes(cat.name));
+    return categories.filter((cat) => defaultCategoryNames.includes(cat.name));
   }, [categories]);
 
-  // Get all other categories (not in the default list)
   const hiddenCategories = useMemo(() => {
-    return categories.filter(cat => !defaultCategoryNames.includes(cat.name));
+    return categories.filter((cat) => !defaultCategoryNames.includes(cat.name));
   }, [categories]);
 
-  // Format date helper
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffHours < 1) return '剛剛';
+
+    if (diffHours < 1) return "剛剛";
     if (diffHours < 24) return `${diffHours} 小時前`;
     if (diffDays < 7) return `${diffDays} 天前`;
-    
-    return date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+
+    return date.toLocaleDateString("zh-TW", { month: "short", day: "numeric" });
   };
 
-  // Get slider posts (first 3 newest posts)
-  const sliderPosts = useMemo(() => {
-    return blogPosts.slice(0, 3);
-  }, [blogPosts]);
-
-  // Get posts for main content area (original layout structure)
-  // Latest post (large), then 3 smaller posts, then another large + 3 small
-  const latestPost = useMemo(() => {
-    return blogPosts[3] || blogPosts[0] || null; // 4th post or fallback to 1st
-  }, [blogPosts]);
-
-  const firstThreePosts = useMemo(() => {
-    return blogPosts.slice(4, 7).length > 0 ? blogPosts.slice(4, 7) : blogPosts.slice(0, 3);
-  }, [blogPosts]);
-
-  const secondLargePost = useMemo(() => {
-    return blogPosts[7] || blogPosts[1] || blogPosts[0] || null;
-  }, [blogPosts]);
-
-  const secondThreePosts = useMemo(() => {
-    return blogPosts.slice(8, 11).length > 0 ? blogPosts.slice(8, 11) : blogPosts.slice(1, 4).length > 0 ? blogPosts.slice(1, 4) : blogPosts.slice(0, 3);
-  }, [blogPosts]);
-
-  // Get hottest posts - use same posts as main content since we only have 2 blogs
-  const hottestPosts = useMemo(() => {
-    // Use all available posts, prioritizing those shown in main content
-    const postsToShow = [
-      latestPost,
-      ...firstThreePosts,
-      secondLargePost,
-      ...secondThreePosts
-    ].filter(Boolean).slice(0, 3);
-    
-    return postsToShow.map((post, index) => ({
-      ...post,
-      rank: index + 1,
-    }));
-  }, [latestPost, firstThreePosts, secondLargePost, secondThreePosts]);
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % sliderPosts.length);
+  const buildBlogHref = (opts: { page?: number; category?: string | null }) => {
+    const params = new URLSearchParams();
+    if (opts.category) params.set("category", opts.category);
+    if (opts.page && opts.page > 1) params.set("page", String(opts.page));
+    const qs = params.toString();
+    return qs ? `/blog?${qs}` : "/blog";
   };
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + sliderPosts.length) % sliderPosts.length);
-  };
+  const pageNumbers = useMemo(() => {
+    if (!totalPages || totalPages <= 1) return [];
+    const maxAll = 15;
+    if (totalPages <= maxAll) return Array.from({ length: totalPages }, (_, i) => i + 1);
+
+    const windowSize = 2;
+    const start = Math.max(2, currentPage - windowSize);
+    const end = Math.min(totalPages - 1, currentPage + windowSize);
+    const nums = [1];
+    for (let i = start; i <= end; i++) nums.push(i);
+    nums.push(totalPages);
+    return Array.from(new Set(nums));
+  }, [currentPage, totalPages]);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      {/* Container with same width as blog posts (max-w-5xl) */}
+
       <div className="container mx-auto px-4 py-8 max-w-full lg:max-w-5xl">
         {/* Blog Menu / Categories */}
         <div className="mb-8 border-b border-gray-200 pb-4">
           <div className="flex flex-wrap gap-3 items-center">
-            {/* Latest Articles - always shown */}
-            <span className="text-sm font-semibold text-gray-900 mr-1">最新文章</span>
-            
-            {/* Default visible categories (6 categories) */}
+            <Link
+              href="/blog"
+              className={`text-sm font-semibold mr-1 ${
+                !selectedCategory ? "text-pink-600" : "text-gray-900 hover:text-pink-600"
+              }`}
+            >
+              最新文章
+            </Link>
+
             {visibleCategories.map((cat) => (
               <Link
                 key={cat.id}
-                href={`/blog?category=${cat.slug}`}
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-all"
+                href={buildBlogHref({ category: cat.slug || null, page: 1 })}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  selectedCategory === cat.slug
+                    ? "text-pink-700 bg-pink-50"
+                    : "text-gray-700 hover:text-pink-600 hover:bg-pink-50"
+                }`}
               >
                 {cat.name}
               </Link>
             ))}
-            
-            {/* Expand/Collapse button if there are hidden categories */}
+
             {hiddenCategories.length > 0 && (
               <button
                 onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
@@ -152,270 +134,104 @@ export default function BlogHomeView({ blogPosts = [], categories = [] }: BlogHo
                 )}
               </button>
             )}
-            
-            {/* Hidden categories - shown when expanded */}
-            {isCategoriesExpanded && hiddenCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/blog?category=${cat.slug}`}
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-all"
-              >
-                {cat.name}
-              </Link>
-            ))}
+
+            {isCategoriesExpanded &&
+              hiddenCategories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={buildBlogHref({ category: cat.slug || null, page: 1 })}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    selectedCategory === cat.slug
+                      ? "text-pink-700 bg-pink-50"
+                      : "text-gray-700 hover:text-pink-600 hover:bg-pink-50"
+                  }`}
+                >
+                  {cat.name}
+                </Link>
+              ))}
           </div>
         </div>
 
-        {/* Image Slider with Title */}
-        {sliderPosts.length > 0 && (
-          <div className="relative mb-8 h-[400px] lg:h-[500px] rounded-lg overflow-hidden group">
-            {sliderPosts.map((post, index) => (
-              <Link
-                key={post.id}
-                href={`/blog/${post.slug}`}
-                className={`absolute inset-0 transition-opacity duration-500 ${
-                  index === currentSlide ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <div className="relative w-full h-full">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    priority={index === 0}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                    <div className="text-white">
-                      <div className="text-sm mb-2 opacity-90">{post.category || '最新優惠'}</div>
-                      <h2 className="text-2xl lg:text-3xl font-bold mb-2 line-clamp-2">
-                        {post.title}
-                      </h2>
-                      <p className="text-sm lg:text-base opacity-90 line-clamp-2">{post.subtitle}</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-            
-            {/* Slider Controls */}
-            {sliderPosts.length > 1 && (
-              <>
-                <button
-                  onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-colors"
-                  aria-label="Previous slide"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-colors"
-                  aria-label="Next slide"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-                
-                {/* Pagination Dots */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {sliderPosts.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentSlide(index)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentSlide ? "bg-white w-6" : "bg-white/50"
-                      }`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Left Column - Main Articles */}
-          <div className="lg:col-span-3 space-y-8">
-            {/* Latest Article - Large */}
-            {latestPost ? (
-              <Link href={`/blog/${latestPost.slug}`} className="block group">
-                <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  <div className="relative h-64 lg:h-80">
+        {/* Blog listings */}
+        <div className="grid gap-5 md:grid-cols-2">
+          {blogPosts.length === 0 ? (
+            <div className="text-gray-500 text-center py-8 md:col-span-2">目前沒有文章</div>
+          ) : (
+            blogPosts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
+                <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="relative h-44 md:h-48">
                     <Image
-                      src={latestPost.image}
-                      alt={latestPost.title}
+                      src={post.image}
+                      alt={post.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <div className="p-6">
-                    <div className="text-sm text-gray-500 mb-2">{latestPost.category || '最新優惠'}</div>
-                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
-                      {latestPost.title}
+                  <div className="p-4">
+                    <div className="text-xs text-gray-500 mb-2">{post.category || "最新優惠"}</div>
+                    <h2 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                      {post.title}
                     </h2>
-                    <p className="text-gray-600 mb-4 line-clamp-2">{latestPost.subtitle}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Clock className="w-4 h-4" />
-                      <span>{formatDate(latestPost.publishedAt || latestPost.createdAt || latestPost.date)}</span>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.subtitle}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{formatDate(post.date)}</span>
                     </div>
                   </div>
                 </article>
               </Link>
-            ) : null}
-
-            {/* 3 Smaller Articles */}
-            {firstThreePosts.length > 0 && (
-              <div className="grid md:grid-cols-3 gap-6">
-                {firstThreePosts.map((post) => (
-                  <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
-                    <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
-                      <div className="relative h-48">
-                        <Image
-                          src={post.image}
-                          alt={post.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <div className="text-xs text-gray-500 mb-2 line-clamp-1">{post.category || '最新優惠'}</div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
-                          {post.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.subtitle}</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatDate(post.publishedAt || post.createdAt || post.date)}</span>
-                        </div>
-                      </div>
-                    </article>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* Another Large Article + 3 Small (1 Set) */}
-            {(secondLargePost || secondThreePosts.length > 0) && (
-              <div className="space-y-6">
-                {/* Large Article */}
-                {secondLargePost && (
-                  <Link href={`/blog/${secondLargePost.slug}`} className="block group">
-                    <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                      <div className="md:flex">
-                        <div className="relative w-full md:w-1/2 h-64 md:h-auto">
-                          <Image
-                            src={secondLargePost.image}
-                            alt={secondLargePost.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="p-6 md:w-1/2 flex flex-col justify-center">
-                          <div className="text-sm text-gray-500 mb-2">{secondLargePost.category || '最新優惠'}</div>
-                          <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
-                            {secondLargePost.title}
-                          </h2>
-                          <p className="text-gray-600 mb-4 line-clamp-3">{secondLargePost.subtitle}</p>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Clock className="w-4 h-4" />
-                            <span>{formatDate(secondLargePost.publishedAt || secondLargePost.createdAt || secondLargePost.date)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  </Link>
-                )}
-
-                {/* 3 Small Articles */}
-                {secondThreePosts.length > 0 && (
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {secondThreePosts.map((post) => (
-                      <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
-                        <article className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
-                          <div className="relative h-48">
-                            <Image
-                              src={post.image}
-                              alt={post.title}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          <div className="p-4">
-                            <div className="text-xs text-gray-500 mb-2 line-clamp-1">{post.category || '最新優惠'}</div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
-                              {post.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.subtitle}</p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Clock className="w-3 h-3" />
-                              <span>{formatDate(post.publishedAt || post.createdAt || post.date)}</span>
-                            </div>
-                          </div>
-                        </article>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Show message if no posts at all */}
-            {blogPosts.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                <p>目前沒有文章</p>
-              </div>
-            )}
-          </div>
-
-          {/* Right Sidebar - Hottest Articles */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Hottest Articles
-                <span className="block text-sm font-normal text-gray-500 mt-1">最熱文章</span>
-              </h2>
-              <div className="space-y-6">
-                {hottestPosts.length > 0 ? (
-                  hottestPosts.map((post) => (
-                    <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
-                      <article className="space-y-3">
-                        <div className="relative h-40 rounded-lg overflow-hidden">
-                          <Image
-                            src={post.image}
-                            alt={post.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <div className="absolute top-2 left-2 bg-pink-600 text-white text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                            {post.rank}
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-pink-600 transition-colors">
-                            {post.title}
-                          </h3>
-                          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{post.subtitle}</p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <span>{formatDate(post.publishedAt || post.createdAt || post.date)}</span>
-                          </div>
-                        </div>
-                      </article>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    <p>目前沒有熱門文章</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </aside>
+            ))
+          )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Blog pagination">
+            <Link
+              href={buildBlogHref({ category: selectedCategory, page: Math.max(1, currentPage - 1) })}
+              className={`px-3 py-2 text-sm rounded-md border ${
+                currentPage <= 1 ? "pointer-events-none opacity-40" : "hover:bg-gray-50"
+              }`}
+              aria-disabled={currentPage <= 1}
+            >
+              上一頁
+            </Link>
+
+            <div className="flex items-center gap-1">
+              {pageNumbers.map((p, idx) => {
+                const prev = pageNumbers[idx - 1];
+                const showEllipsis = prev && p - prev > 1;
+                return (
+                  <span key={`page-${p}`} className="flex items-center gap-1">
+                    {showEllipsis && <span className="px-1 text-gray-400">…</span>}
+                    <Link
+                      href={buildBlogHref({ category: selectedCategory, page: p })}
+                      className={`px-3 py-2 text-sm rounded-md border ${
+                        p === currentPage ? "bg-pink-50 text-pink-700 border-pink-200" : "hover:bg-gray-50"
+                      }`}
+                      aria-current={p === currentPage ? "page" : undefined}
+                    >
+                      {p}
+                    </Link>
+                  </span>
+                );
+              })}
+            </div>
+
+            <Link
+              href={buildBlogHref({ category: selectedCategory, page: Math.min(totalPages, currentPage + 1) })}
+              className={`px-3 py-2 text-sm rounded-md border ${
+                currentPage >= totalPages ? "pointer-events-none opacity-40" : "hover:bg-gray-50"
+              }`}
+              aria-disabled={currentPage >= totalPages}
+            >
+              下一頁
+            </Link>
+          </nav>
+        )}
       </div>
-      
+
       <Footer />
     </div>
   );
