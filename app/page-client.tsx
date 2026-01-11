@@ -422,7 +422,7 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
           </div>
           <div className="space-y-2 text-gray-700 mb-8">
             <div className="text-lg whitespace-pre-line">
-              {initialData.hero?.description || "🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）\n🔎 立即搜尋最划算好康"}
+              {"🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）"}
             </div>
           </div>
           
