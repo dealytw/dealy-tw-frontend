@@ -91,7 +91,7 @@ export async function getHomePageData(marketKey: string): Promise<HomePageData> 
     // Return fallback data if no homepage is found
     return {
       seo: { title: "Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠", description: "精選台灣最新網購優惠碼、折扣碼與網購折扣情報！Dealy TW 提供各大品牌獨家優惠券、信用卡優惠、會員禮遇及限時 Promo Code，助你精明省錢。" },
-      hero: { title: "Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠", subtitle: "NEVER Pay Full Price", description: "🛍 全台最新優惠情報｜每日更新！ ✨", bgUrl: "", searchPlaceholder: "搜尋最抵Deal" },
+      hero: { title: "Dealy TW 台灣最新優惠碼及折扣平台｜每日更新網購優惠", subtitle: "NEVER Pay Full Price", description: "🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）\n🔎 立即搜尋最划算好康", bgUrl: "", searchPlaceholder: "立即搜尋最划算好康" },
       popularMerchants: { heading: "台灣最新折扣優惠", items: [] },
       categoryBlock: { heading: "2025優惠主題一覽", categories: [], disclaimer: "通過本站連結完成購物訂單，我們可能會因此獲得佣金，而您無需額外付費。" },
       couponRail: { heading: "本日最新最受歡迎折扣碼/優惠券/Promo Code", items: [] }
