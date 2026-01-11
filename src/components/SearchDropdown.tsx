@@ -220,18 +220,23 @@ export default function SearchDropdown({
     setShowDropdown(true);
     setError(null);
 
-    // Create new AbortController for this request
+    // Only fetch the index once if cache is empty.
     abortControllerRef.current = new AbortController();
 
-    // Debounce API call only if cache is empty
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
-        
-        console.log('🔍 Cache miss - fetching from API:', query.trim());
-        
-        // Fallback to API route if cache is empty
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}&market=${market}`, {
+        // If cache is already filled (e.g. SearchProvider finished), stop here.
+        if (globalMerchantsCache.length > 0) {
+          const results = filterMerchantsFromCache(query);
+          startTransition(() => {
+            setSuggestions(results);
+            setIsLoading(false);
+          });
+          return;
+        }
+
+        console.log('🔍 Search cache empty - fetching 7d cached index');
+        const response = await fetch(`/api/search-index`, {
           signal: abortControllerRef.current?.signal,
         });
         
@@ -253,60 +258,13 @@ export default function SearchDropdown({
           return;
         }
 
-        // Handle error from API response
-        if (data.error) {
-          console.error('❌ Search error:', data.error);
-          throw new Error(data.error);
+        // Normalize merchant list
+        const merchants = Array.isArray(data?.merchants) ? data.merchants : [];
+        if (merchants.length > 0) {
+          globalMerchantsCache = merchants;
         }
 
-        // Ensure we have valid data structure
-        if (!data || (!data.merchants && !data.coupons)) {
-          console.warn('⚠️ Invalid API response:', data);
-          // Don't throw error, just show empty results
-          startTransition(() => {
-            setSuggestions([]);
-            setIsLoading(false);
-          });
-          return;
-        }
-
-        // Combine merchants and coupons, prioritize merchants and best matches
-        const merchants = (data.merchants || []).slice(0, 5);
-        const coupons = (data.coupons || []).slice(0, 5);
-        
-        // Score and sort merchants
-        const scoredMerchants = merchants.map((m: any) => ({
-          id: m.id,
-          name: m.name,
-          slug: m.slug,
-          logo: m.logo,
-          website: m.website || m.affiliateLink || '',
-          type: 'merchant' as const,
-          score: getMatchScore(m.name, m.website, query.trim())
-        }));
-
-        // Score and sort coupons
-        const scoredCoupons = coupons.map((c: any) => ({
-          id: c.id,
-          name: c.title,
-          slug: c.merchant?.slug,
-          logo: c.merchant?.logo,
-          website: c.merchant?.name || '',
-          type: 'coupon' as const,
-          score: getMatchScore(c.title, c.merchant?.name, query.trim())
-        }));
-
-        // Combine and sort by score, prioritize merchants
-        const allResults = [...scoredMerchants, ...scoredCoupons]
-          .sort((a, b) => {
-            // Merchants first if same score
-            if (a.score === b.score) {
-              return a.type === 'merchant' ? -1 : 1;
-            }
-            return b.score - a.score;
-          })
-          .slice(0, 5) // Top 5
-          .map(({ score, ...rest }) => rest); // Remove score before setting state
+        const allResults = filterMerchantsFromCache(query);
 
         // Use startTransition for non-urgent state updates
         startTransition(() => {
@@ -319,12 +277,12 @@ export default function SearchDropdown({
           return;
         }
         
-        console.error('Search error:', error);
+        console.error('Search index fetch error:', error);
         setError('搜尋時發生錯誤，請稍後再試');
         setSuggestions([]);
         setIsLoading(false);
       }
-    }, 300); // Only debounce if cache miss
+    }, 50); // Quick debounce to avoid double-fetch on fast typing
 
     return () => {
       if (debounceTimerRef.current) {
