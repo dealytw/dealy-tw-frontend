@@ -3,7 +3,8 @@ import { strapiFetch, qs, getStartsAtFilterParams } from "@/lib/strapi.server";
 
 export const runtime = 'nodejs';
 export const revalidate = 86400; // Cache for 24 hours - coupons don't change frequently
-export const dynamic = 'force-dynamic';
+
+const CACHE_CONTROL = 'public, s-maxage=86400, stale-while-revalidate=604800';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (!merchantSlug) {
       return NextResponse.json(
         { error: "Merchant slug is required" },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     });
     
     if (!couponData || !couponData.data || couponData.data.length === 0) {
-      return NextResponse.json({ coupon: null });
+      return NextResponse.json({ coupon: null }, { headers: { 'Cache-Control': CACHE_CONTROL } });
     }
 
     const coupon = couponData.data[0];
@@ -56,12 +57,12 @@ export async function GET(request: NextRequest) {
         affiliate_link: coupon.affiliate_link,
         priority: coupon.priority
       }
-    });
+    }, { headers: { 'Cache-Control': CACHE_CONTROL } });
   } catch (error: any) {
     console.error("Error fetching merchant coupon:", error);
     return NextResponse.json(
       { error: "Failed to fetch merchant coupon" },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

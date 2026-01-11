@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { strapiFetch, qs, absolutizeMedia, rewriteImageUrl } from '@/lib/strapi.server';
 
-// Mark as dynamic since we use request.url
-export const dynamic = 'force-dynamic';
 export const revalidate = 15552000; // 6 months (180 days) - hotstore data rarely changes
+
+const CACHE_CONTROL = 'public, s-maxage=15552000, stale-while-revalidate=604800';
 
 export async function GET(request: Request) {
   try {
@@ -44,10 +44,16 @@ export async function GET(request: Request) {
       }));
     }
 
-    return NextResponse.json({ merchants: hotstoreMerchants });
+    return NextResponse.json(
+      { merchants: hotstoreMerchants },
+      { headers: { 'Cache-Control': CACHE_CONTROL } }
+    );
   } catch (error) {
     console.error('Error fetching hotstore merchants:', error);
-    return NextResponse.json({ merchants: [] }, { status: 500 });
+    return NextResponse.json(
+      { merchants: [] },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+    );
   }
 }
 
