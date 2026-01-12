@@ -930,7 +930,13 @@ export default function BlogView({ blog }: BlogViewProps) {
                                     {headerColumns.map((header, colIndex) => (
                                       <th 
                                         key={colIndex}
-                                        className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"}
+                                        className={[
+                                          hasCustomTheme
+                                            ? "border border-[var(--bt-border)] px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6"
+                                            : "border border-yellow-200 px-4 py-3 text-left font-bold text-xs text-foreground leading-snug first:pl-6",
+                                          // Make "優惠期限" / date column narrower + no-wrap
+                                          colIndex === 2 ? "whitespace-nowrap text-[11px] px-3" : "",
+                                        ].join(" ")}
                                       >
                                         {header}
                                       </th>
@@ -1000,7 +1006,13 @@ export default function BlogView({ blog }: BlogViewProps) {
                                           return (
                                             <td 
                                               key={colIndex}
-                                              className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}
+                                              className={[
+                                                hasCustomTheme
+                                                  ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"
+                                                  : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6",
+                                                // Date column: smaller + no wrap to avoid stacking
+                                                colIndex === 2 ? "whitespace-nowrap break-normal text-[11px] px-3" : "",
+                                              ].join(" ")}
                                             >
                                               {isCodeLinkPlaceholder && !useNewTable ? (
                                                 <div
@@ -1013,16 +1025,16 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                       href={tableRow.landingpage}
                                                       target="_blank"
                                                       rel="noopener noreferrer nofollow sponsored"
-                                                      className="inline-flex items-center"
+                                                      className="inline-flex items-center no-underline hover:no-underline"
                                                     >
-                                                      <Badge variant="secondary" className="font-mono text-[11px]" data-nosnippet="">
+                                                      <span className="font-mono text-xs" data-nosnippet="">
                                                         {cellValue.replace('CODELINK:', '')}
-                                                      </Badge>
+                                                      </span>
                                                     </a>
                                                   ) : (
-                                                    <Badge variant="secondary" className="font-mono text-[11px]" data-nosnippet="">
+                                                    <span className="font-mono text-xs" data-nosnippet="">
                                                       {cellValue.replace('CODELINK:', '')}
-                                                    </Badge>
+                                                    </span>
                                                   )}
                                                 </div>
                                               ) : isLinkPlaceholder && !useNewTable ? (
@@ -1036,7 +1048,7 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                       href={tableRow.landingpage}
                                                       target="_blank"
                                                       rel="noopener noreferrer nofollow sponsored"
-                                                      className="text-[11px] underline underline-offset-2"
+                                                      className="text-xs no-underline hover:no-underline"
                                                     >
                                                       獲取優惠
                                                     </a>
@@ -1067,9 +1079,9 @@ export default function BlogView({ blog }: BlogViewProps) {
                                                   ref={(el) => { buttonRefs.current[buttonId] = el; }}
                                                   className="flex items-center gap-2 flex-wrap"
                                                 >
-                                                  <Badge variant="secondary" className="font-mono text-[11px]">
+                                                  <span className="font-mono text-xs" data-nosnippet="">
                                                     {cellValue.replace('CODE:', '')}
-                                                  </Badge>
+                                                  </span>
                                                 </div>
                                               ) : (
                                                 cellValue || '-'
