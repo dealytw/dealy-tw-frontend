@@ -50,6 +50,7 @@ interface Blog {
       table_promo_code: string;
       landingpage: string;
       table_date: string;
+      show_code?: boolean;
       header_color?: string;
       hover_color?: string;
       border_color?: string;
@@ -77,6 +78,7 @@ interface Blog {
     table_promo_code: string;
     landingpage: string;
     table_date: string;
+    show_code?: boolean;
     header_color?: string;
     hover_color?: string;
     border_color?: string;
@@ -952,8 +954,17 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         if (colIndex === 2) return tableRow.table_date || '-';
                                         if (colIndex === 3) {
                                           // Action column: show button or promo code
-                                          const isRevealed = revealedPromoCodes[buttonId];
                                           const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
+                                          const showCode = tableRow.show_code === true;
+
+                                          // If CMS says "show_code", always render the code directly (no reveal flow).
+                                          if (showCode) {
+                                            if (hasPromoCode) return `CODELINK:${tableRow.table_promo_code}`;
+                                            if (tableRow.landingpage) return 'LINK_PLACEHOLDER';
+                                            return '-';
+                                          }
+
+                                          const isRevealed = revealedPromoCodes[buttonId];
                                           if (tableRow.landingpage && !(isRevealed && hasPromoCode)) {
                                             return 'BUTTON_PLACEHOLDER'; // Special marker for button
                                           }
@@ -978,13 +989,57 @@ export default function BlogView({ blog }: BlogViewProps) {
                                           const cellValue = getCellValue(colIndex);
                                           const isButtonPlaceholder = cellValue === 'BUTTON_PLACEHOLDER';
                                           const isCodePlaceholder = cellValue && typeof cellValue === 'string' && cellValue.startsWith('CODE:');
+                                          const isCodeLinkPlaceholder = cellValue && typeof cellValue === 'string' && cellValue.startsWith('CODELINK:');
+                                          const isLinkPlaceholder = cellValue === 'LINK_PLACEHOLDER';
                                           
                                           return (
                                             <td 
                                               key={colIndex}
                                               className={hasCustomTheme ? "border border-[var(--bt-border)] px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6" : "border border-yellow-200 px-4 py-3 text-xs text-foreground break-words leading-snug first:pl-6"}
                                             >
-                                              {isButtonPlaceholder && !useNewTable ? (
+                                              {isCodeLinkPlaceholder && !useNewTable ? (
+                                                <div
+                                                  id={buttonId}
+                                                  ref={(el) => { buttonRefs.current[buttonId] = el; }}
+                                                  className="flex items-center gap-2 flex-wrap"
+                                                >
+                                                  {tableRow.landingpage ? (
+                                                    <a
+                                                      href={tableRow.landingpage}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer nofollow sponsored"
+                                                      className="inline-flex items-center"
+                                                    >
+                                                      <Badge variant="secondary" className="font-mono text-[11px]" data-nosnippet="">
+                                                        {cellValue.replace('CODELINK:', '')}
+                                                      </Badge>
+                                                    </a>
+                                                  ) : (
+                                                    <Badge variant="secondary" className="font-mono text-[11px]" data-nosnippet="">
+                                                      {cellValue.replace('CODELINK:', '')}
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              ) : isLinkPlaceholder && !useNewTable ? (
+                                                <div
+                                                  id={buttonId}
+                                                  ref={(el) => { buttonRefs.current[buttonId] = el; }}
+                                                  className="flex items-center gap-2 flex-wrap"
+                                                >
+                                                  {tableRow.landingpage ? (
+                                                    <a
+                                                      href={tableRow.landingpage}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer nofollow sponsored"
+                                                      className="text-[11px] underline underline-offset-2"
+                                                    >
+                                                      獲取優惠
+                                                    </a>
+                                                  ) : (
+                                                    '-'
+                                                  )}
+                                                </div>
+                                              ) : isButtonPlaceholder && !useNewTable ? (
                                                 <div 
                                                   id={buttonId}
                                                   ref={(el) => { buttonRefs.current[buttonId] = el; }}
