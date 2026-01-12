@@ -515,6 +515,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
             table_promo_code: tableItem.table_promo_code || '',
             landingpage: tableItem.landingpage || '',
             table_date: tableItem.table_date || '',
+            show_code: tableItem.show_code ?? false,
             header_color: tableItem.header_color || '',
             hover_color: tableItem.hover_color || '',
             border_color: tableItem.border_color || '',

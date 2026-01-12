@@ -955,7 +955,12 @@ export default function BlogView({ blog }: BlogViewProps) {
                                         if (colIndex === 3) {
                                           // Action column: show button or promo code
                                           const hasPromoCode = tableRow.table_promo_code && tableRow.table_promo_code.trim() !== '';
-                                          const showCode = tableRow.show_code === true;
+                                          const showCode =
+                                            tableRow.show_code === true ||
+                                            tableRow.show_code === 'true' ||
+                                            tableRow.show_code === 'TRUE' ||
+                                            tableRow.show_code === 1 ||
+                                            tableRow.show_code === '1';
 
                                           // If CMS says "show_code", always render the code directly (no reveal flow).
                                           if (showCode) {
