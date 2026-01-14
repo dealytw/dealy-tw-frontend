@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp, Facebook, Share2, X } from "lucide-react";
+import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp, Facebook, Share2 } from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
 import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
@@ -560,39 +560,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
     .slice(0, 5);
 
   // Verified code table UX:
-  // - Click code: copy to clipboard + show popup
-  // - After 3s countdown: open affiliate link in new tab
-  const [verifiedCodePopup, setVerifiedCodePopup] = useState<{
-    open: boolean;
-    secondsLeft: number;
-    href: string;
-  }>({ open: false, secondsLeft: 0, href: '' });
-
-  const verifiedPopupIntervalRef = useRef<number | null>(null);
-  const verifiedPopupTimeoutRef = useRef<number | null>(null);
-  const verifiedPopupTabRef = useRef<Window | null>(null);
-
-  const clearVerifiedPopupTimers = () => {
-    if (verifiedPopupIntervalRef.current) {
-      window.clearInterval(verifiedPopupIntervalRef.current);
-      verifiedPopupIntervalRef.current = null;
-    }
-    if (verifiedPopupTimeoutRef.current) {
-      window.clearTimeout(verifiedPopupTimeoutRef.current);
-      verifiedPopupTimeoutRef.current = null;
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      clearVerifiedPopupTimers();
-      try {
-        verifiedPopupTabRef.current?.close?.();
-      } catch {
-        // ignore
-      }
-    };
-  }, []);
+  // - Click button: copy code + open affiliate link in new tab
+  // - Button turns pale green and shows "已複製"
+  const [verifiedCopiedById, setVerifiedCopiedById] = useState<Record<string, boolean>>({});
 
   const copyTextToClipboard = async (text: string) => {
     try {
@@ -619,62 +589,18 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
     }
   };
 
-  const cancelVerifiedCodePopup = () => {
-    clearVerifiedPopupTimers();
-    setVerifiedCodePopup({ open: false, secondsLeft: 0, href: '' });
-    try {
-      verifiedPopupTabRef.current?.close?.();
-    } catch {
-      // ignore
-    }
-    verifiedPopupTabRef.current = null;
-  };
-
-  const handleVerifiedCodeClick = async (code: string, href: string) => {
+  const handleVerifiedCodeClick = async (id: string, code: string, href: string) => {
     if (typeof window === 'undefined') return;
     if (!href || href === '#') return;
 
-    clearVerifiedPopupTimers();
-    // Open a blank tab immediately to avoid popup blockers (user gesture),
-    // then navigate it after the countdown.
     try {
-      verifiedPopupTabRef.current = window.open('about:blank', '_blank', 'noopener,noreferrer');
+      window.open(href, '_blank', 'noopener,noreferrer');
     } catch {
-      verifiedPopupTabRef.current = null;
+      // ignore
     }
 
     await copyTextToClipboard(code);
-
-    setVerifiedCodePopup({ open: true, secondsLeft: 3, href });
-
-    verifiedPopupIntervalRef.current = window.setInterval(() => {
-      setVerifiedCodePopup((prev) => {
-        if (!prev.open) return prev;
-        const next = Math.max(0, prev.secondsLeft - 1);
-        return { ...prev, secondsLeft: next };
-      });
-    }, 1000);
-
-    verifiedPopupTimeoutRef.current = window.setTimeout(() => {
-      try {
-        const tab = verifiedPopupTabRef.current;
-        if (tab && !tab.closed) {
-          tab.location.href = href;
-        } else {
-          window.open(href, '_blank', 'noopener,noreferrer');
-        }
-      } catch {
-        try {
-          window.open(href, '_blank', 'noopener,noreferrer');
-        } catch {
-          // ignore
-        }
-      } finally {
-        verifiedPopupTabRef.current = null;
-        setVerifiedCodePopup({ open: false, secondsLeft: 0, href: '' });
-        clearVerifiedPopupTimers();
-      }
-    }, 3000);
+    setVerifiedCopiedById((prev) => ({ ...prev, [id]: true }));
   };
 
   const formatExpiryDate = (expiresAt: any): string => {
@@ -958,6 +884,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                     <tbody className="text-gray-900">
                       {verifiedPromoCodes.map((c: any) => {
                         const href = c.affiliate_link || "#";
+                        const copied = !!verifiedCopiedById[String(c.id)];
                         return (
                           <tr key={`verified-code-${c.id}`} className="border-t border-yellow-200/60">
                             <td className="py-1 pr-3 align-top">
@@ -973,11 +900,17 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                             <td className="py-1 pr-3 align-top whitespace-nowrap">
                               <button
                                 type="button"
-                                onClick={() => handleVerifiedCodeClick(String(c.code || '').trim(), href)}
-                                className="inline-flex items-center rounded-md border border-yellow-200 bg-white px-2 py-0.5 font-mono hover:bg-yellow-50"
+                                onClick={() => handleVerifiedCodeClick(String(c.id), String(c.code || '').trim(), href)}
+                                className={[
+                                  "inline-flex items-center rounded-md border px-2 py-0.5 font-mono transition-colors",
+                                  copied
+                                    ? "border-green-200 bg-green-50 text-green-800"
+                                    : "border-yellow-200 bg-white hover:bg-yellow-50",
+                                ].join(" ")}
                                 title="Click to copy"
                               >
                                 <span data-nosnippet>{c.code}</span>
+                                {copied && <span className="ml-2 font-sans text-[10px]">已複製</span>}
                               </button>
                               {/* Keep a crawlable outlink in HTML (not used for clicks). */}
                               <a
@@ -1000,34 +933,6 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                       })}
                     </tbody>
                   </table>
-                </div>
-              </div>
-            )}
-
-            {/* Verified-code popup (copy + countdown + redirect) */}
-            {verifiedCodePopup.open && (
-              <div
-                className="fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white shadow-lg">
-                  <div className="flex items-start justify-between gap-3 p-3">
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-gray-900">已複製</div>
-                      <div className="mt-1 text-xs text-gray-600">
-                        即將前往商戶優惠頁面（{verifiedCodePopup.secondsLeft}s）
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={cancelVerifiedCodePopup}
-                      className="shrink-0 rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-                      aria-label="Close"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
