@@ -589,9 +589,13 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
     }
   };
 
-  const handleVerifiedCodeClick = async (id: string, code: string, href: string) => {
+  const handleVerifiedCodeClick = (id: string, code: string, href: string) => {
     if (typeof window === 'undefined') return;
     if (!href || href === '#') return;
+
+    // Flip UI state immediately so the user sees "已複製" right away.
+    // Also reset other rows so only the latest clicked one is highlighted.
+    setVerifiedCopiedById({ [id]: true });
 
     try {
       window.open(href, '_blank', 'noopener,noreferrer');
@@ -599,8 +603,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
       // ignore
     }
 
-    await copyTextToClipboard(code);
-    setVerifiedCopiedById((prev) => ({ ...prev, [id]: true }));
+    void copyTextToClipboard(code);
   };
 
   const formatExpiryDate = (expiresAt: any): string => {
