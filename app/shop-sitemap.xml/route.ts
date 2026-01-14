@@ -58,9 +58,20 @@ function stableDailyJitterMinutes(seed: string, y: number, m: number, d: number)
   return h % 60
 }
 
+function getHourInTimeZone(date: Date, timeZone: string) {
+  const dtf = new Intl.DateTimeFormat('en-US', { timeZone, hour12: false, hour: '2-digit' })
+  const parts = dtf.formatToParts(date)
+  const hour = parts.find((p) => p.type === 'hour')?.value
+  return Number(hour || 0)
+}
+
 function dailyLastmodIso(timeZone: string, seed: string) {
   const now = new Date()
-  const { year, month, day } = getDatePartsInTimeZone(now, timeZone)
+  // Only flip sitemap "today" after 01:00 local time.
+  // Before 01:00, keep "yesterday" so the output time remains within 00:00–01:00 and doesn't jump too early.
+  const hourLocal = getHourInTimeZone(now, timeZone)
+  const effectiveDate = hourLocal < 1 ? new Date(now.getTime() - 24 * 60 * 60 * 1000) : now
+  const { year, month, day } = getDatePartsInTimeZone(effectiveDate, timeZone)
   const jitterMin = stableDailyJitterMinutes(seed, year, month, day)
   const offsetMs = getTimeZoneOffsetMs(timeZone, now)
   // Build a timestamp representing 00:jitter in the target timezone, then convert to UTC ISO.
