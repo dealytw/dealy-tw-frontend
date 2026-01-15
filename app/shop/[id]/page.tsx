@@ -596,7 +596,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       }
       
       // Generate meta tags
-      title = generateMerchantMetaTitle(name, highlights);
+      title = generateMerchantMetaTitle(name, highlights, coupons);
       description = generateMerchantMetaDescription(name, firstCoupon?.coupon_title || '限時優惠', highlight);
     }
 

@@ -65,14 +65,22 @@ function extractKeywords(title: string): { newUser: boolean; freeShipping: boole
   const cleanTitle = title.replace(/\s+/g, '');
   
   const newUserKeywords = /新會員|首購|首單|新客|新用戶/;
-  const freeShippingKeywords = /免運/;
-  const memberDiscountKeywords = /會員優惠|會員折扣/;
+  const freeShippingKeywords = /免運|免郵|包郵/;
+  const memberDiscountKeywords = /會員優惠|會員折扣|會員限定|會員專享|會員價|會員/;
   
   return {
     newUser: newUserKeywords.test(cleanTitle),
     freeShipping: freeShippingKeywords.test(cleanTitle),
     memberDiscount: memberDiscountKeywords.test(cleanTitle)
   };
+}
+
+function hasAnyKeyword(coupons: CouponForSEO[], regex: RegExp): boolean {
+  for (const c of coupons) {
+    const text = `${c.coupon_title || ''} ${c.value || ''}`.replace(/\s+/g, '');
+    if (regex.test(text)) return true;
+  }
+  return false;
 }
 
 /**
@@ -246,12 +254,40 @@ export function getFirstValidCoupon(
  */
 export function generateMerchantMetaTitle(
   merchantName: string,
-  highlights: string // Kept for backward compatibility, but not used
+  highlights: string, // Kept for backward compatibility, but not used
+  coupons?: CouponForSEO[]
 ): string {
   const twDate = getTaiwanDate();
   const month = twDate.getMonth() + 1; // 1-12
   const year = twDate.getFullYear();
 
+  // If coupons are provided, try the new title format that surfaces key benefits.
+  if (coupons && coupons.length > 0) {
+    const today = twDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const validCoupons = coupons.filter((c) => !c.expires_at || c.expires_at >= today);
+
+    const hasMember = hasAnyKeyword(validCoupons, /會員優惠|會員折扣|會員限定|會員專享|會員價|會員/);
+    const hasFreeShipping = hasAnyKeyword(validCoupons, /免運|免運費|免郵|包郵/);
+    const hasShippingDeal = hasAnyKeyword(validCoupons, /運費|配送/);
+
+    let shippingLabel: string | null = null;
+    if (hasFreeShipping) shippingLabel = '免運費';
+    else if (hasShippingDeal) shippingLabel = '運費優惠';
+
+    if (hasMember || shippingLabel) {
+      const prefix = `${merchantName}折扣碼及優惠${year}`;
+      const mid = `${month}月最新折扣`;
+      const tail =
+        hasMember && shippingLabel
+          ? `會員優惠及${shippingLabel}`
+          : hasMember
+            ? '會員優惠'
+            : shippingLabel!;
+      return `${prefix} | ${mid} | ${tail}`;
+    }
+  }
+
+  // Fallback (current behavior)
   return `${merchantName}折扣碼及優惠${year}｜${month}月最新折扣與信用卡優惠 | Dealy`;
 }
 
