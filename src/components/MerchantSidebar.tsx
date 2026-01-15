@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { getDailyUpdatedTime } from "@/lib/jsonld";
 
@@ -259,63 +260,27 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
         </div>
       </Card>
 
-      {/* Popular Merchants Section */}
-      <Card className="p-4">
-        <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
-          <h3 className="text-sm font-semibold text-gray-800">熱門商店</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {hotstoreMerchants && hotstoreMerchants.length > 0 ? (
-            hotstoreMerchants.map((merchant) => (
-              <Link
-                key={merchant.id}
-                href={`/shop/${merchant.slug}`}
-                className="text-center group"
-              >
-                <div className="w-12 h-12 mx-auto mb-1 border rounded-full overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
-                  {merchant.logoUrl ? (
-                    <img
-                      src={merchant.logoUrl}
-                      alt={merchant.name}
-                      width={48}
-                      height={48}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
-                      <span className="text-xs text-gray-400">{merchant.name.charAt(0)}</span>
-                    </div>
-                  )}
-                </div>
-                <p className="text-[10px] text-gray-600 font-medium leading-tight truncate">
-                  {merchant.name}
-                </p>
-              </Link>
-            ))
-          ) : (
-            <div className="col-span-3 text-center py-4">
-              <p className="text-[10px] text-gray-500">No merchants available</p>
-            </div>
-          )}
-        </div>
-      </Card>
+      {/* Store Description Card */}
+      {merchant.store_description && (
+        <Card className="p-4">
+          <div
+            className="text-sm text-gray-700 leading-relaxed whitespace-pre-line"
+            dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}
+          />
+        </Card>
+      )}
 
-      {/* Dealy E-E-A-T Section (between 熱門商店 and store_description) */}
+      {/* Dealy E-E-A-T Section */}
       <Card className="p-4">
         <div className="flex items-start gap-3">
-          <div className="w-14 h-14 shrink-0 bg-white border rounded-lg flex items-center justify-center p-2">
-            <img
-              src="/dealytwlogo.svg"
-              alt="Dealy TW"
-              width={56}
-              height={56}
-              loading="lazy"
-              decoding="async"
-              className="max-w-full max-h-full object-contain"
+          <Avatar className="w-12 h-12">
+            <AvatarImage
+              src="/newdealylogo_48x25.png"
+              alt="Dealy Team"
+              className="aspect-auto object-contain"
             />
-          </div>
+            <AvatarFallback>DT</AvatarFallback>
+          </Avatar>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-gray-900">Dealy TW</div>
             <div className="text-xs text-gray-500 mt-0.5">台灣最新優惠平台</div>
@@ -333,15 +298,42 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
         </div>
       </Card>
 
-      {/* Store Description Card */}
-      {merchant.store_description && (
-        <Card className="p-4">
-          <div
-            className="text-sm text-gray-700 leading-relaxed whitespace-pre-line"
-            dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}
-          />
-        </Card>
-      )}
+      {/* Popular Merchants Section */}
+      <Card className="p-4">
+        <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
+          <h3 className="text-sm font-semibold text-gray-800">熱門商店</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {hotstoreMerchants && hotstoreMerchants.length > 0 ? (
+            hotstoreMerchants.map((merchant) => (
+              <Link key={merchant.id} href={`/shop/${merchant.slug}`} className="text-center group">
+                <div className="w-12 h-12 mx-auto mb-1 border rounded-full overflow-hidden bg-white flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
+                  {merchant.logoUrl ? (
+                    <img
+                      src={merchant.logoUrl}
+                      alt={merchant.name}
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-gray-400">{merchant.name.charAt(0)}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-600 font-medium leading-tight truncate">{merchant.name}</p>
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-4">
+              <p className="text-[10px] text-gray-500">No merchants available</p>
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   );
 };
