@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getDailyUpdatedTime } from "@/lib/jsonld";
 
+const DEALY_EEAT_TEXT_TW =
+  "Dealy TW 是一個專為台灣用戶整理的優惠碼／折扣情報平台，每日更新各大網購平台、旅遊預訂、信用卡回饋與支付／付款優惠。無論你想找 Promo Code、限時特價、會員新戶禮，或比較哪種付款方式最划算，Dealy TW 都用清楚好讀的版面把重點一次整理，讓你快速找到最省的好康、輕鬆入手最划算的 Deal。";
+
 // Helper function to render rich text with formatting preserved (same as page-client)
 function renderRichText(richText: any): string {
   if (!richText) return "";
@@ -256,13 +259,6 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
         </div>
       </Card>
 
-      {/* Store Description Card - Separate card below useful links, above popular stores */}
-      {merchant.store_description && (
-        <Card className="p-4">
-          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}></div>
-        </Card>
-      )}
-
       {/* Popular Merchants Section */}
       <Card className="p-4">
         <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
@@ -305,6 +301,47 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
           )}
         </div>
       </Card>
+
+      {/* Dealy E-E-A-T Section (between 熱門商店 and store_description) */}
+      <Card className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="w-14 h-14 shrink-0 bg-white border rounded-lg flex items-center justify-center p-2">
+            <img
+              src="/dealytwlogo.svg"
+              alt="Dealy TW"
+              width={56}
+              height={56}
+              loading="lazy"
+              decoding="async"
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-gray-900">Dealy TW</div>
+            <div className="text-xs text-gray-500 mt-0.5">台灣最新優惠平台</div>
+          </div>
+        </div>
+
+        <p className="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+          {DEALY_EEAT_TEXT_TW}
+        </p>
+
+        <div className="mt-4">
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/about">關於我們</Link>
+          </Button>
+        </div>
+      </Card>
+
+      {/* Store Description Card */}
+      {merchant.store_description && (
+        <Card className="p-4">
+          <div
+            className="text-sm text-gray-700 leading-relaxed whitespace-pre-line"
+            dangerouslySetInnerHTML={{ __html: renderRichText(merchant.store_description) }}
+          />
+        </Card>
+      )}
     </div>
   );
 };
