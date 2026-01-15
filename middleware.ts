@@ -48,6 +48,14 @@ export function middleware(request: NextRequest) {
 
   // 3. Add cache headers for ISR pages (only for HTML pages, not during revalidation)
   const response = NextResponse.next();
+
+  // Never override Cache-Control for XML sitemaps / robots.txt.
+  // These routes set their own caching and need to update daily.
+  const isXml = pathname.toLowerCase().endsWith('.xml');
+  const isRobots = pathname.toLowerCase() === '/robots.txt';
+  if (isXml || isRobots) {
+    return response;
+  }
   
   // Skip cache headers if this is a revalidation request
   const isRevalidation = 

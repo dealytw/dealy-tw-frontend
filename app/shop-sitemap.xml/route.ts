@@ -82,7 +82,6 @@ function dailyLastmodIso(timeZone: string, seed: string) {
 export async function GET() {
   const domainConfig = getDomainConfigServer()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
-  const lastmodToday = dailyLastmodIso('Asia/Taipei', 'tw-shop-sitemap')
   // Hardcode market to 'tw' - this is the TW frontend, always filter for TW market only
   const market = 'tw'
 
@@ -107,12 +106,14 @@ export async function GET() {
 
     merchantPages = (merchantsData?.data || [])
       .filter((merchant: any) => merchant.publishedAt) // Double-check published status
-      .map((merchant: any) => ({
-        url: `${baseUrl}/shop/${merchant.page_slug || merchant.slug}`,
+      .map((merchant: any) => {
+        const slug = String(merchant.page_slug || merchant.slug || '')
+        const url = `${baseUrl}/shop/${slug}`
         // Intentionally set to "today" to match the UI's "每日更新" semantics.
-        // This ensures /shop URLs show a fresh <lastmod> daily.
-        lastmod: lastmodToday,
-      }))
+        // Use a per-merchant deterministic jitter so each <lastmod> is different.
+        const lastmod = dailyLastmodIso('Asia/Taipei', `tw-shop-sitemap:${slug || 'unknown'}`)
+        return { url, lastmod }
+      })
   } catch (error) {
     console.error('Error fetching merchants for sitemap:', error)
   }

@@ -10,7 +10,7 @@ export const DOMAIN_CONFIG = {
     alternateDomain: 'dealy.hk',
     alternateLocale: 'zh-HK', // For i18n/Next.js
     alternateHreflang: 'zh-Hant-HK', // For SEO output
-    name: 'Dealy TW',
+    name: 'Dealy TW 台灣最新優惠平台',
   },
   'dealy.hk': {
     domain: 'dealy.hk',
@@ -20,7 +20,7 @@ export const DOMAIN_CONFIG = {
     alternateDomain: 'dealy.tw',
     alternateLocale: 'zh-TW', // For i18n/Next.js
     alternateHreflang: 'zh-Hant-TW', // For SEO output
-    name: 'Dealy HK',
+    name: 'Dealy HK 香港最新優惠平台',
   },
   'www.dealy.tw': {
     domain: 'dealy.tw',
@@ -30,7 +30,7 @@ export const DOMAIN_CONFIG = {
     alternateDomain: 'dealy.hk',
     alternateLocale: 'zh-HK', // For i18n/Next.js
     alternateHreflang: 'zh-Hant-HK', // For SEO output
-    name: 'Dealy TW',
+    name: 'Dealy TW 台灣最新優惠平台',
   },
   'www.dealy.hk': {
     domain: 'dealy.hk',
@@ -40,7 +40,7 @@ export const DOMAIN_CONFIG = {
     alternateDomain: 'dealy.tw',
     alternateLocale: 'zh-TW', // For i18n/Next.js
     alternateHreflang: 'zh-Hant-TW', // For SEO output
-    name: 'Dealy HK',
+    name: 'Dealy HK 香港最新優惠平台',
   },
 } as const;
 
