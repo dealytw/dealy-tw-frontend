@@ -46,6 +46,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const DEBUG = process.env.NODE_ENV !== 'production';
   // Get domain configuration (server-side)
   const domainConfig = getDomainConfigServer();
   const marketKey = domainConfig.market;
@@ -123,69 +124,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch (error) {
     console.error('Error fetching hotstore merchants in layout:', error);
     // Silently fail - NavigationMenu will show empty state
-  }
-
-  // Fetch merchants for search - EXACT same approach as /shop page
-  // Using market relation filter: filters[market][key][$eq] to get all merchants for this market
-  let searchMerchants: Array<{ id: string | number; name: string; slug: string; logo: string; website: string }> = [];
-  try {
-    // Match shop page exactly - use same fields and populate structure
-    const merchantParams = {
-      "filters[market][key][$eq]": marketKey, // Filter by market relation key
-      "fields[0]": "id",
-      "fields[1]": "merchant_name",
-      "fields[2]": "page_slug",
-      "fields[3]": "summary",
-      "fields[4]": "site_url", // Use site_url for merchant website
-      "sort[0]": "merchant_name:asc",
-      "pagination[page]": "1",
-      "pagination[pageSize]": "500", // Same as shop page
-      "populate[logo][fields][0]": "url", // Populate logo relation
-      "populate[market][fields][0]": "key", // Populate market relation
-    };
-
-    console.log(`[Layout] Fetching merchants for search via market relation, market: ${marketKey}`);
-    console.log(`[Layout] Query params:`, merchantParams);
-    
-    const merchantsData = await strapiFetch<{ data: any[] }>(
-      `/api/merchants?${qs(merchantParams)}`,
-      { revalidate: 86400, tag: `search:all-merchants:${marketKey}` }
-    );
-
-    console.log(`[Layout] Received merchant data:`, {
-      dataLength: merchantsData?.data?.length || 0,
-      firstMerchant: merchantsData?.data?.[0] ? {
-        id: merchantsData.data[0].id,
-        merchant_name: merchantsData.data[0].merchant_name,
-        slug: merchantsData.data[0].page_slug,
-        hasLogo: !!merchantsData.data[0].logo,
-        hasMarket: !!merchantsData.data[0].market
-      } : null
-    });
-
-    searchMerchants = (merchantsData?.data || []).map((merchant: any) => {
-      const logoUrl = merchant.logo?.url ? absolutizeMedia(merchant.logo.url) : "";
-      return {
-        id: merchant.id,
-        name: merchant.merchant_name,
-        slug: merchant.page_slug,
-        // Rewrite logo URL to use custom domain /upload path for better caching and SEO
-        logo: logoUrl ? rewriteImageUrl(logoUrl, siteUrl) : "",
-        website: merchant.site_url || merchant.website || "",
-      };
-    });
-
-    console.log(`[Layout] Prefetched ${searchMerchants.length} merchants for search`);
-    
-    if (searchMerchants.length === 0) {
-      console.warn(`[Layout] WARNING: No merchants fetched! Check if market '${marketKey}' has merchants or API connection.`);
-    } else {
-      console.log(`[Layout] Sample merchants:`, searchMerchants.slice(0, 3).map(m => ({ name: m.name, slug: m.slug })));
-    }
-  } catch (error: any) {
-    console.error('[Layout] Error fetching merchants for search:', error);
-    console.error('[Layout] Error details:', error.message, error.stack);
-    // Continue with empty array - search will still work but won't have instant results
   }
   
   return (
@@ -314,7 +252,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* End Google Tag Manager (noscript) */}
         
         <Providers>
-          <SearchProvider initialMerchants={searchMerchants} hotstoreMerchants={hotstoreMerchants}>
+          <SearchProvider marketKey={marketKey} hotstoreMerchants={hotstoreMerchants}>
             {children}
             <FloatingActionContainer />
             <CWVTracker />

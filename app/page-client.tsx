@@ -1,17 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-// Removed Next.js Image import - using regular img tags for fixed resolution
-import Script from "next/script";
-import { Search } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { useState } from "react";
 import CouponModal from "@/components/CouponModal";
 import DealySidebar from "@/components/DealySidebar";
-import { Button } from "@/components/ui/button";
 import DealyCouponCard from "@/components/DealyCouponCard";
-import SearchDropdown from "@/components/SearchDropdown";
 
 // Types matching homepage-code-usage.json
 type PopularMerchant = {
@@ -85,142 +76,13 @@ type HomePageData = {
   };
 };
 
-interface MerchantSliderProps {
-  merchants: PopularMerchant[];
-}
-
-// Horizontal auto-scrolling slider component for merchants with infinite loop
-const MerchantSlider = ({ merchants }: MerchantSliderProps) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isPausedRef = useRef(false);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || merchants.length === 0) return;
-
-    // Clean up any existing interval
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-    }
-
-    // Cache maxScroll to avoid forced reflow (querying scrollWidth/clientWidth repeatedly)
-    let maxScroll = container.scrollWidth - container.clientWidth;
-    let lastRecalcTime = Date.now();
-    const RECALC_INTERVAL = 1000; // Recalculate maxScroll every 1 second instead of every frame
-
-    // Function to perform the scroll
-    const performScroll = () => {
-      if (!container || isPausedRef.current) return;
-      
-      const scrollAmount = 1; // Pixels to scroll per step
-      const currentScroll = container.scrollLeft;
-      
-      // Only recalculate maxScroll periodically (not every frame) to reduce forced reflows
-      const now = Date.now();
-      if (now - lastRecalcTime > RECALC_INTERVAL) {
-        maxScroll = container.scrollWidth - container.clientWidth;
-        lastRecalcTime = now;
-      }
-
-      // If we've reached the end, reset to start for seamless loop
-      if (currentScroll >= maxScroll - 1) {
-        container.scrollLeft = 0;
-        // Recalculate maxScroll after reset (container size might have changed)
-        maxScroll = container.scrollWidth - container.clientWidth;
-        lastRecalcTime = Date.now();
-      } else {
-        container.scrollLeft = currentScroll + scrollAmount;
-      }
-    };
-
-    // Start auto-scrolling with setInterval (16ms ≈ 60fps)
-    // Using cached maxScroll reduces forced reflows from querying layout properties every frame
-    scrollIntervalRef.current = setInterval(performScroll, 16);
-
-    // Cleanup on unmount
-    return () => {
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
-    };
-  }, [merchants]);
-
-  // Duplicate merchants for seamless infinite loop
-  const duplicatedMerchants = [...merchants, ...merchants];
-
-  return (
-    <div className="relative overflow-hidden">
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-8 overflow-x-auto scrollbar-hide"
-        style={{
-          scrollBehavior: 'auto',
-          WebkitOverflowScrolling: 'touch',
-        }}
-        onMouseEnter={() => {
-          isPausedRef.current = true;
-        }}
-        onMouseLeave={() => {
-          isPausedRef.current = false;
-        }}
-      >
-        {duplicatedMerchants.map((merchant, index) => (
-          <Link
-            key={`${merchant.id}-${index}`}
-            href={`/shop/${merchant.slug}`}
-            className="merchant-item flex-shrink-0 text-center group cursor-pointer w-[180px] flex flex-col items-center"
-          >
-            <img
-              src={merchant.logoUrl}
-              alt={merchant.name}
-              width={96}
-              height={96}
-              className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg object-cover bg-white group-hover:shadow-xl transition-shadow"
-              loading={index < 6 ? "eager" : "lazy"}
-            />
-            <span className="merchant-name font-semibold text-gray-800 text-sm mb-2">{merchant.name}</span>
-            <span className="coupon-title text-xs text-gray-600 leading-tight px-2">
-              {merchant.topCouponTitle || ""}
-            </span>
-          </Link>
-        ))}
-      </div>
-      
-      {/* Fade gradients on edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-    </div>
-  );
-};
-
-interface HomePageClientProps {
+interface HomeCouponRailClientProps {
   initialData: HomePageData;
 }
 
-const HomePageClient = ({ initialData }: HomePageClientProps) => {
-  const router = useRouter();
+const HomeCouponRailClient = ({ initialData }: HomeCouponRailClientProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [revealedCodes, setRevealedCodes] = useState<Set<string>>(new Set());
-
-  // Calculate time left on client side to avoid hydration mismatch
-  const calculateTimeLeft = (expiresAt?: string): string | null => {
-    if (!expiresAt) return null;
-    
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    
-    if (expiry <= now) return null;
-    
-    const diffMs = expiry.getTime() - now.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-    
-    return `${diffHours} 小時 ${diffMinutes} 分 ${diffSeconds} 秒`;
-  };
 
   // Helper function to extract text from rich text (for plain text display)
   function extractTextFromRichText(richText: any): string {
@@ -376,151 +238,8 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
     navigator.clipboard.writeText(text);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
-    const query = formData.get('search') as string;
-    if (query && query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
-  };
-
-  const handleSearchSubmitFromDropdown = () => {
-    // This will be handled by SearchDropdown component
-  };
-
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      
-      <main id="main-content">
-      {/* CMS: hero.background - with fallback */}
-      <section className="py-16 px-4 relative">
-        {/* Background Image - optimized for LCP performance */}
-        {initialData.hero?.bgUrl && (
-          <div className="absolute inset-0 z-0">
-            <img
-              src={initialData.hero.bgUrl}
-              alt=""
-              width={1920}
-              height={1080}
-              className="w-full h-full object-cover"
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-            />
-          </div>
-        )}
-        <div className="container mx-auto text-center relative z-10">
-          {/* CMS: hero.title */}
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            {initialData.hero?.title || "Dealy TW 台灣每日最新優惠折扣平台"}
-          </h1>
-          {/* CMS: hero.subtitle */}
-          <div className="text-2xl font-semibold text-gray-700 mb-6">
-            {initialData.hero?.subtitle || "NEVER Pay Full Price"}
-          </div>
-          <div className="space-y-2 text-gray-700 mb-8">
-            <div className="text-lg whitespace-pre-line">
-              {"🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）"}
-            </div>
-          </div>
-          
-          {/* Search Bar - Match original design */}
-          <div className="max-w-2xl mx-auto relative z-50">
-            <div className="flex bg-white rounded-full shadow-lg overflow-visible">
-              <div className="flex items-center pl-6 pr-3">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <div className="flex-1 relative overflow-visible">
-                <SearchDropdown 
-                  placeholder={initialData.hero?.searchPlaceholder || "搜尋超值好康"}
-                  className="w-full homepage-search"
-                  inputId="homepage-search-input"
-                />
-              </div>
-              <Button 
-                type="button"
-                onClick={() => {
-                  const input = document.getElementById('homepage-search-input') as HTMLInputElement | null;
-                  if (input?.value.trim()) {
-                    router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
-                  }
-                }}
-                className="m-2 px-8 py-2 bg-[#FF4790] hover:bg-[#E6397A] text-white rounded-full transition-colors"
-              >
-                搜尋
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Merchants */}
-      {initialData.popularMerchants && (
-        <section className="py-12 px-4">
-          <div className="container mx-auto">
-            {/* CMS: popularstore.heading */}
-            <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
-              {initialData.popularMerchants?.heading || "台灣最新折扣優惠"}
-            </h2>
-            
-            {initialData.popularMerchants.items && initialData.popularMerchants.items.length > 0 ? (
-              <MerchantSlider merchants={initialData.popularMerchants.items} />
-            ) : (
-              <div className="w-full text-center py-8">
-                <p className="text-gray-500">No merchants available. Please add merchants in Strapi CMS.</p>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Category Block */}
-      {initialData.categoryBlock?.categories && initialData.categoryBlock.categories.length > 0 && (
-        <section className="py-12 px-4 bg-gray-50">
-          <div className="container mx-auto">
-            {/* CMS: category.heading */}
-            <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
-              {initialData.categoryBlock?.heading || "2025優惠主題一覽"}
-            </h2>
-            
-            <div className="flex flex-wrap justify-center gap-8">
-              {initialData.categoryBlock.categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/special-offers/${category.slug}`}
-                  className="text-center group"
-                >
-                  <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
-                    {category.iconUrl ? (
-                      <img
-                        src={category.iconUrl}
-                        alt={category.name}
-                        width={96}
-                        height={96}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="text-gray-400 text-xs">{category.name}</span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
-                </Link>
-              ))}
-            </div>
-            
-            <div className="text-center mt-8">
-              <p className="text-sm text-gray-600">
-                {initialData.categoryBlock.disclaimer}
-                <Link href="/legal-disclaimer" className="text-blue-600 hover:underline ml-1">了解更多</Link>
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
+    <>
       {/* Coupon Rail */}
       {initialData.couponRail?.items && initialData.couponRail.items.length > 0 && (
         <section id="popular-coupons" className="py-12 px-4 md:px-4 px-2" aria-labelledby="popular-coupons-heading">
@@ -572,33 +291,15 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
         </section>
       )}
 
-      </main>
-
       {/* Coupon Modal */}
       <CouponModal 
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         coupon={selectedCoupon}
       />
-      
-      {/* Footer */}
-      <Footer />
-      
-      {/* Ad Link verification scripts - Only on homepage, before </body> tag */}
-      {/* DISABLED: Commented out to prevent continuous POST requests when adlink not enabled */}
-      {/* Uncomment when adlink is enabled in CMS */}
-      {/*
-      <Script id="converly-init" strategy="afterInteractive">
-        {`var ConverlyCustomData = {channelId: null};`}
-      </Script>
-      <Script 
-        id="adlink-script"
-        src="https://cdn.affiliates.one/production/adlinks/1c6d7c838b3bde9154ede84d8c4ef4ab8420bf1990f82b63a3af81acecfc3323.js"
-        strategy="afterInteractive"
-      />
-      */}
-    </div>
+
+    </>
   );
 };
 
-export default HomePageClient;
+export default HomeCouponRailClient;

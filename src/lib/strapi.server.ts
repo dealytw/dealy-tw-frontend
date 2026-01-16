@@ -5,6 +5,7 @@
 import 'server-only';
 
 type NextInit = RequestInit & { revalidate?: number; tag?: string };
+const DEBUG = process.env.NODE_ENV !== 'production';
 
 export async function strapiFetch<T>(path: string, init?: NextInit) {
   const baseUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_URL;
@@ -15,7 +16,7 @@ export async function strapiFetch<T>(path: string, init?: NextInit) {
   const url = `${baseUrl}${path}`;
   const { revalidate, tag, ...rest } = init || {};
   
-  console.log('strapiFetch: Making request to', url);
+  if (DEBUG) console.log('[strapiFetch] Request', url);
   
   // Note: We use Next.js 'next' option for ISR instead of 'cache: no-store'
   // This provides better performance with automatic revalidation
@@ -122,7 +123,7 @@ export function rewriteImageUrl(url: string | null | undefined, domain?: string)
     return `${cleanDomain}/upload${pathname}`;
   } catch (error) {
     // If URL parsing fails, return original URL
-    console.warn('[rewriteImageUrl] Failed to parse URL:', url, error);
+    if (DEBUG) console.warn('[rewriteImageUrl] Failed to parse URL:', url, error);
     return url;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 interface MerchantSearchData {
   id: string | number;
@@ -25,41 +25,80 @@ interface SearchContextType {
 
 const SearchContext = createContext<SearchContextType>({
   merchants: [],
-  isLoading: false, // Changed to false since we're getting data from server
+  isLoading: false,
   hotstoreMerchants: [],
 });
 
 interface SearchProviderProps {
   children: React.ReactNode;
-  initialMerchants?: MerchantSearchData[]; // Merchants fetched server-side
   hotstoreMerchants?: HotstoreMerchant[]; // Hotstore merchants fetched server-side
+  marketKey: string; // 'hk' | 'tw'
 }
 
-export function SearchProvider({ children, initialMerchants = [], hotstoreMerchants = [] }: SearchProviderProps) {
-  const [merchants, setMerchants] = useState<MerchantSearchData[]>(initialMerchants);
-  const [isLoading, setIsLoading] = useState(false); // No loading needed since data comes from server
+export function SearchProvider({ children, hotstoreMerchants = [], marketKey }: SearchProviderProps) {
+  const [merchants, setMerchants] = useState<MerchantSearchData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Use initial merchants from server
+  const storageKey = useMemo(() => `dealy:search-index:${marketKey.toLowerCase()}`, [marketKey]);
+
   useEffect(() => {
-    console.log(`[SearchProvider] Received initialMerchants:`, {
-      length: initialMerchants.length,
-      sample: initialMerchants.slice(0, 3).map(m => ({ id: m.id, name: m.name, slug: m.slug }))
-    });
-    
-    if (initialMerchants.length > 0) {
-      setMerchants(initialMerchants);
-      console.log(`✅ Loaded ${initialMerchants.length} merchants from server for instant search`);
-      
-      // Debug: Log sample merchants
-      console.log('Sample merchants:', initialMerchants.slice(0, 5).map(m => ({
-        name: m.name,
-        slug: m.slug,
-        website: m.website
-      })));
-    } else {
-      console.warn(`⚠️ [SearchProvider] No merchants received from server! initialMerchants.length = ${initialMerchants.length}`);
+    let cancelled = false;
+
+    const loadFromStorage = () => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as { ts: number; merchants: MerchantSearchData[] } | null;
+        if (!parsed?.ts || !Array.isArray(parsed?.merchants)) return null;
+
+        const ageMs = Date.now() - parsed.ts;
+        const ttlMs = 7 * 24 * 60 * 60 * 1000;
+        if (ageMs > ttlMs) return null;
+        return parsed.merchants;
+      } catch {
+        return null;
+      }
+    };
+
+    const saveToStorage = (data: MerchantSearchData[]) => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ ts: Date.now(), merchants: data }));
+      } catch {
+        // ignore storage quota / disabled
+      }
+    };
+
+    async function run() {
+      const cached = loadFromStorage();
+      if (cached && !cancelled) {
+        setMerchants(cached);
+        setIsLoading(false);
+      }
+
+      // Always fetch in background if we have no data yet.
+      if (cached && cached.length > 0) return;
+
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/search-index', { method: 'GET' });
+        if (!res.ok) throw new Error(`search-index ${res.status}`);
+        const json = (await res.json()) as { merchants?: MerchantSearchData[] };
+        const next = Array.isArray(json?.merchants) ? json.merchants : [];
+        if (!cancelled) {
+          setMerchants(next);
+          setIsLoading(false);
+          saveToStorage(next);
+        }
+      } catch {
+        if (!cancelled) setIsLoading(false);
+      }
     }
-  }, [initialMerchants]);
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [storageKey]);
 
   return (
     <SearchContext.Provider value={{ merchants, isLoading, hotstoreMerchants }}>

@@ -3,7 +3,12 @@
 import { getHomePageData } from "@/lib/homepage-loader";
 import { HOME_REVALIDATE, HOME_TAG } from "@/lib/constants";
 import { pageMeta } from "@/seo/meta";
-import HomePageClient from "./page-client";
+import HomeCouponRailClient from "./page-client";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+import HomeHeroSearchClient from "./HomeHeroSearchClient";
+import HomeMerchantSliderClient from "./HomeMerchantSliderClient";
 import { webPageJsonLd, popularMerchantsItemListJsonLd, getDailyUpdatedTime } from "@/lib/jsonld";
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from "@/lib/domain-config";
 
@@ -44,6 +49,106 @@ export async function generateMetadata() {
       ogImageAlt,
     });
   }
+}
+
+function renderHomePage(homepageData: any) {
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+      <main id="main-content">
+        <section className="py-16 px-4 relative">
+          {homepageData.hero?.bgUrl && (
+            <div className="absolute inset-0 z-0">
+              <img
+                src={homepageData.hero.bgUrl}
+                alt=""
+                width={1920}
+                height={1080}
+                className="w-full h-full object-cover"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </div>
+          )}
+          <div className="container mx-auto text-center relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              {homepageData.hero?.title || "Dealy TW 台灣每日最新優惠折扣平台"}
+            </h1>
+            <div className="text-2xl font-semibold text-gray-700 mb-6">
+              {homepageData.hero?.subtitle || "NEVER Pay Full Price"}
+            </div>
+            <div className="space-y-2 text-gray-700 mb-8">
+              <div className="text-lg whitespace-pre-line">
+                {homepageData.hero?.description ||
+                  "🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）"}
+              </div>
+            </div>
+            <HomeHeroSearchClient placeholder={homepageData.hero?.searchPlaceholder || "搜尋超值好康"} />
+          </div>
+        </section>
+
+        {homepageData.popularMerchants && (
+          <section className="py-12 px-4">
+            <div className="container mx-auto">
+              <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
+                {homepageData.popularMerchants?.heading || "台灣最新折扣優惠"}
+              </h2>
+              {homepageData.popularMerchants.items && homepageData.popularMerchants.items.length > 0 ? (
+                <HomeMerchantSliderClient merchants={homepageData.popularMerchants.items} />
+              ) : (
+                <div className="w-full text-center py-8">
+                  <p className="text-gray-500">No merchants available. Please add merchants in Strapi CMS.</p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {homepageData.categoryBlock?.categories && homepageData.categoryBlock.categories.length > 0 && (
+          <section className="py-12 px-4 bg-gray-50">
+            <div className="container mx-auto">
+              <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
+                {homepageData.categoryBlock?.heading || "2025優惠主題一覽"}
+              </h2>
+              <div className="flex flex-wrap justify-center gap-8">
+                {homepageData.categoryBlock.categories.map((category: any) => (
+                  <Link key={category.id} href={`/special-offers/${category.slug}`} className="text-center group">
+                    <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
+                      {category.iconUrl ? (
+                        <img
+                          src={category.iconUrl}
+                          alt={category.name}
+                          width={96}
+                          height={96}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-gray-400 text-xs">{category.name}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
+                  </Link>
+                ))}
+              </div>
+              <div className="text-center mt-8">
+                <p className="text-sm text-gray-600">
+                  {homepageData.categoryBlock.disclaimer}
+                  <Link href="/legal-disclaimer" className="text-blue-600 hover:underline ml-1">
+                    了解更多
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <HomeCouponRailClient initialData={homepageData} />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default async function HomePage() {
@@ -94,7 +199,7 @@ export default async function HomePage() {
     // Note: Hero image preload is handled automatically by Next.js Image component with priority prop
     return (
       <>
-        <HomePageClient initialData={homepageData} />
+        {renderHomePage(homepageData)}
         {/* WebPage JSON-LD for homepage */}
         <script
           type="application/ld+json"
@@ -144,6 +249,6 @@ export default async function HomePage() {
       }
     };
     
-    return <HomePageClient initialData={fallbackData} />;
+    return renderHomePage(fallbackData);
   }
 }

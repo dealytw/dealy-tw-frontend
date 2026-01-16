@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { useSearchMerchants } from "./SearchProvider";
 
+const DEBUG = process.env.NODE_ENV !== "production";
+
 interface SearchSuggestion {
   id: string | number;
   name: string;
@@ -50,12 +52,12 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
   }
 
   if (globalMerchantsCache.length === 0) {
-    console.warn('⚠️ Search cache is empty! Prefetch may not have completed yet.');
+    if (DEBUG) console.warn('[SearchDropdown] Search cache is empty');
     return [];
   }
 
   const q = query.trim().toLowerCase();
-  console.log(`🔍 Filtering ${globalMerchantsCache.length} merchants for query: "${q}"`);
+  if (DEBUG) console.log(`[SearchDropdown] Filtering ${globalMerchantsCache.length} merchants for query: "${q}"`);
   
   const scored = globalMerchantsCache
     .map((merchant) => {
@@ -88,9 +90,9 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
     .slice(0, 5)
     .map(({ score, ...rest }) => rest);
 
-  console.log(`✅ Found ${scored.length} matching merchants`);
-  if (scored.length > 0) {
-    console.log('Matched merchants:', scored.map(s => s.name));
+  if (DEBUG) {
+    console.log(`[SearchDropdown] Found ${scored.length} matching merchants`);
+    if (scored.length > 0) console.log('[SearchDropdown] Matched merchants:', scored.map(s => s.name));
   }
   
   return scored;
@@ -122,17 +124,19 @@ export default function SearchDropdown({
   useEffect(() => {
     if (prefetchedMerchants.length > 0) {
       globalMerchantsCache = [...prefetchedMerchants]; // Create new array to ensure freshness
-      console.log(`✅ Loaded ${globalMerchantsCache.length} merchants into search cache`);
+      if (DEBUG) console.log(`[SearchDropdown] Loaded ${globalMerchantsCache.length} merchants into search cache`);
       
       // Debug: Log first few merchants to verify data structure
       if (globalMerchantsCache.length > 0) {
-        console.log('Sample merchants in cache:', globalMerchantsCache.slice(0, 5).map(m => ({
-          id: m.id,
-          name: m.name,
-          slug: m.slug,
-          website: m.website,
-          hasLogo: !!m.logo
-        })));
+        if (DEBUG) {
+          console.log('[SearchDropdown] Sample merchants in cache:', globalMerchantsCache.slice(0, 5).map(m => ({
+            id: m.id,
+            name: m.name,
+            slug: m.slug,
+            website: m.website,
+            hasLogo: !!m.logo
+          })));
+        }
         
         // Check if "kkday" would match anything
         const testQuery = 'kkday';
@@ -141,12 +145,14 @@ export default function SearchDropdown({
           m.slug?.toLowerCase().includes(testQuery.toLowerCase()) ||
           m.website?.toLowerCase().includes(testQuery.toLowerCase())
         );
-        console.log(`Test search for "kkday": Found ${testMatches.length} matches`, 
-          testMatches.slice(0, 3).map(m => ({ name: m.name, slug: m.slug }))
-        );
+        if (DEBUG) {
+          console.log(`[SearchDropdown] Test search for "kkday": Found ${testMatches.length} matches`,
+            testMatches.slice(0, 3).map(m => ({ name: m.name, slug: m.slug }))
+          );
+        }
       }
     } else if (!merchantsLoading) {
-      console.warn('⚠️ No merchants loaded and not loading! Check SearchProvider.');
+      if (DEBUG) console.warn('[SearchDropdown] No merchants loaded and not loading (check SearchProvider)');
     }
   }, [prefetchedMerchants, merchantsLoading]);
 
@@ -211,7 +217,7 @@ export default function SearchDropdown({
 
     // If cache is empty but merchants are still loading, wait a bit
     if (merchantsLoading && globalMerchantsCache.length === 0) {
-      console.log('⏳ Waiting for merchants to load...');
+      if (DEBUG) console.log('[SearchDropdown] Waiting for merchants to load...');
       setIsLoading(true);
       setShowDropdown(true);
       return;

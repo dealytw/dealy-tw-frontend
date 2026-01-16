@@ -16,6 +16,7 @@ export function middleware(request: NextRequest) {
 
   // Skip API routes, Next.js internals, and static files
   const pathname = url.pathname;
+  const sp = url.searchParams;
   
   if (
     pathname.startsWith('/api/') ||
@@ -26,6 +27,32 @@ export function middleware(request: NextRequest) {
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2|ttf|eot)$/)
   ) {
     return NextResponse.next();
+  }
+
+  // Canonicalize listing pagination/filter URLs (query -> path) so pages can be ISR cached.
+  // This avoids `Cache-Control: private, no-store` for query-driven listings.
+  if (pathname === '/blog') {
+    const category = (sp.get('category') || '').trim();
+    const pageRaw = (sp.get('page') || '').trim();
+    const pageNum = pageRaw ? Math.max(1, Number(pageRaw) || 1) : 1;
+
+    if (category || pageNum > 1) {
+      url.search = '';
+      url.pathname = category
+        ? (pageNum > 1 ? `/blog/category/${category}/page/${pageNum}` : `/blog/category/${category}`)
+        : `/blog/page/${pageNum}`;
+      return NextResponse.redirect(url, 301);
+    }
+  }
+
+  if (pathname === '/shop') {
+    const pageRaw = (sp.get('page') || '').trim();
+    const pageNum = pageRaw ? Math.max(1, Number(pageRaw) || 1) : 1;
+    if (pageNum > 1) {
+      url.search = '';
+      url.pathname = `/shop/page/${pageNum}`;
+      return NextResponse.redirect(url, 301);
+    }
   }
 
   // 1. Remove trailing slash (except for root)
@@ -86,11 +113,19 @@ export function middleware(request: NextRequest) {
     if (pathname === '/') {
       sMaxAge = 86400; // 24 hours
     }
+    // Shop listing pages: 24 hours (ISR: 86400s)
+    else if (pathname === '/shop' || pathname.startsWith('/shop/page/')) {
+      sMaxAge = 86400; // 24 hours
+    }
     // Merchant pages: 12 hours (ISR: 43200s)
     else if (pathname.startsWith('/shop/')) {
       sMaxAge = 43200; // 12 hours
     }
-    // Blog pages: 30 days (ISR: 2592000s)
+    // Blog listing pages: 24 hours (ISR: 86400s)
+    else if (pathname === '/blog' || pathname.startsWith('/blog/page/') || pathname.startsWith('/blog/category/')) {
+      sMaxAge = 86400; // 24 hours
+    }
+    // Blog post pages: 30 days (ISR: 2592000s)
     else if (pathname.startsWith('/blog/')) {
       sMaxAge = 2592000; // 30 days
     }

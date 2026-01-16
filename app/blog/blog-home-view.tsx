@@ -66,11 +66,14 @@ export default function BlogHomeView({
   };
 
   const buildBlogHref = (opts: { page?: number; category?: string | null }) => {
-    const params = new URLSearchParams();
-    if (opts.category) params.set("category", opts.category);
-    if (opts.page && opts.page > 1) params.set("page", String(opts.page));
-    const qs = params.toString();
-    return qs ? `/blog?${qs}` : "/blog";
+    const page = Number(opts.page || 1);
+    const category = (opts.category || "").trim();
+
+    if (category) {
+      return page > 1 ? `/blog/category/${category}/page/${page}` : `/blog/category/${category}`;
+    }
+
+    return page > 1 ? `/blog/page/${page}` : "/blog";
   };
 
   const pageNumbers = useMemo(() => {

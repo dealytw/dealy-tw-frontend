@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,10 +72,6 @@ interface MerchantSidebarProps {
 }
 
 const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerchants = [] }: MerchantSidebarProps) => {
-  // Debug: Log merchant data to see what fields are available
-  console.log('MerchantSidebar received merchant:', merchant);
-  console.log('store_description:', merchant.store_description);
-  
   // Combine active and expired coupons for statistics
   const allCoupons = [...coupons, ...expiredCoupons];
   

@@ -59,7 +59,7 @@ export default function MerchantIndex({
   }, [filteredMerchants]);
 
   const handlePageChange = (newPage: number) => {
-    router.push(`/shop?page=${newPage}`);
+    router.push(newPage > 1 ? `/shop/page/${newPage}` : `/shop`);
   };
 
   return (

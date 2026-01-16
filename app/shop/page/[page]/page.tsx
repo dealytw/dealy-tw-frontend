@@ -1,26 +1,13 @@
-// app/shop/page.tsx - Server Component with ISR
 import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from '@/lib/strapi.server';
-import MerchantIndex from './merchant-index';
+import MerchantIndex from '../../merchant-index';
 
-export const revalidate = 86400; // ISR - revalidate every 24 hours (merchants don't change often)
+export const revalidate = 86400;
 
-/**
- * Extract the first English letter from a merchant name.
- * If the name starts with Chinese or other non-English characters,
- * find the first English letter in the name.
- * Falls back to 'A' if no English letter is found.
- */
 function getFirstEnglishLetter(name: string): string {
   if (!name) return 'A';
-  
-  // Try to find the first English letter (A-Z, a-z) in the name
   const englishLetterMatch = name.match(/[A-Za-z]/);
-  if (englishLetterMatch) {
-    return englishLetterMatch[0].toUpperCase();
-  }
-  
-  // Fallback to 'A' if no English letter found
+  if (englishLetterMatch) return englishLetterMatch[0].toUpperCase();
   return 'A';
 }
 
@@ -32,14 +19,16 @@ export async function generateMetadata() {
   });
 }
 
-export default async function ShopIndex({ 
-}: { 
+export default async function ShopIndexByPage({
+  params,
+}: {
+  params: Promise<{ page: string }>;
 }) {
-  const pageNum = 1;
+  const { page } = await params;
+  const pageNum = Math.max(1, Number(page || 1) || 1);
   const market = process.env.NEXT_PUBLIC_MARKET_KEY || 'tw';
 
   try {
-    // Fetch merchants with explicit fields and minimal populate
     const merchantParams = {
       "filters[market][key][$eq]": market,
       "fields[0]": "id",
@@ -48,7 +37,7 @@ export default async function ShopIndex({
       "fields[3]": "summary",
       "fields[4]": "default_affiliate_link",
       "pagination[page]": String(pageNum),
-      "pagination[pageSize]": "500", // Increased to fetch all merchants
+      "pagination[pageSize]": "500",
       "sort[0]": "merchant_name:asc",
       "populate[logo][fields][0]": "url",
       "populate[market][fields][0]": "key",
@@ -59,7 +48,6 @@ export default async function ShopIndex({
       { revalidate: 86400, tag: 'merchant:list' }
     );
 
-    // Transform merchants data
     const merchants = (merchantsData?.data || []).map((merchant: any) => {
       const logo = merchant.logo?.url
         ? rewriteImageUrl(absolutizeMedia(merchant.logo.url))
@@ -78,23 +66,15 @@ export default async function ShopIndex({
     });
 
     return (
-      <MerchantIndex 
+      <MerchantIndex
         merchants={merchants}
         pagination={merchantsData?.meta?.pagination}
         initialPage={pageNum}
       />
     );
-
   } catch (error) {
     console.error('Error fetching merchants:', error);
-    
-    // Fallback to empty state
-    return (
-      <MerchantIndex 
-        merchants={[]}
-        pagination={undefined}
-        initialPage={pageNum}
-      />
-    );
+    return <MerchantIndex merchants={[]} pagination={undefined} initialPage={pageNum} />;
   }
 }
+
