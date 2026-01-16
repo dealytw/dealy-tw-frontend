@@ -20,6 +20,7 @@ interface SearchDropdownProps {
   placeholder?: string;
   className?: string;
   onClose?: () => void;
+  inputId?: string;
 }
 
 // Global cache for all merchants (set once on page load)
@@ -98,7 +99,8 @@ function filterMerchantsFromCache(query: string): SearchSuggestion[] {
 export default function SearchDropdown({ 
   placeholder = "搜尋超值好康",
   className = "",
-  onClose
+  onClose,
+  inputId
 }: SearchDropdownProps) {
   const router = useRouter();
   const { merchants: prefetchedMerchants, isLoading: merchantsLoading } = useSearchMerchants();
@@ -393,6 +395,7 @@ export default function SearchDropdown({
         )}
         <input
           ref={inputRef}
+          id={inputId}
           type="text"
           value={query}
           onChange={handleInputChange}

@@ -436,12 +436,13 @@ const HomePageClient = ({ initialData }: HomePageClientProps) => {
                 <SearchDropdown 
                   placeholder={initialData.hero?.searchPlaceholder || "搜尋超值好康"}
                   className="w-full homepage-search"
+                  inputId="homepage-search-input"
                 />
               </div>
               <Button 
                 type="button"
                 onClick={() => {
-                  const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                  const input = document.getElementById('homepage-search-input') as HTMLInputElement | null;
                   if (input?.value.trim()) {
                     router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
                   }
