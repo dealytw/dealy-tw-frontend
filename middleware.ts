@@ -49,6 +49,20 @@ export function middleware(request: NextRequest) {
   // 3. Add cache headers for ISR pages (only for HTML pages, not during revalidation)
   const response = NextResponse.next();
 
+  // Never override Cache-Control for Next.js App Router RSC / prefetch requests.
+  // These requests are used for client-side navigation. Overriding caching here can cause
+  // mismatched RSC payloads (e.g. URL changes but UI stays on previous page) due to
+  // intermediate caches serving the wrong variant.
+  const isRscOrPrefetchRequest =
+    request.headers.get('rsc') !== null ||
+    request.headers.get('next-router-prefetch') !== null ||
+    request.headers.get('next-router-state-tree') !== null ||
+    request.headers.get('next-router-segment-prefetch') !== null ||
+    (request.headers.get('accept') || '').includes('text/x-component');
+  if (isRscOrPrefetchRequest) {
+    return response;
+  }
+
   // Never override Cache-Control for XML sitemaps / robots.txt.
   // These routes set their own caching and need to update daily.
   const isXml = pathname.toLowerCase().endsWith('.xml');
