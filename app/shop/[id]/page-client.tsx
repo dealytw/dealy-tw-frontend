@@ -1361,10 +1361,10 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
               {/* FAQ Section */}
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     <HelpCircle className="w-5 h-5" />
                     常見問題
-                  </CardTitle>
+                  </h2>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {merchant.faqs && Array.isArray(merchant.faqs) && merchant.faqs.length > 0 ? (
@@ -1424,7 +1424,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
               {/* Related Shopping Categories and Guides */}
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-800">相關購物分類及攻略</CardTitle>
+                  <h2 className="text-xl font-bold text-gray-800">相關購物分類及攻略</h2>
                 </CardHeader>
                 <CardContent>
                   {(() => {
@@ -1463,9 +1463,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
               {/* How to Use Coupons Guide */}
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-pink-600 flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-pink-600 flex items-center gap-2">
                     如何於{merchant.name}使用優惠碼
-                  </CardTitle>
+                  </h2>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* How To Images */}
@@ -1566,7 +1566,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
               {/* Contact Form */}
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-800">聯絡我們</CardTitle>
+                  <h2 className="text-xl font-bold text-gray-800">聯絡我們</h2>
                 </CardHeader>
                 <CardContent>
                   <ContactForm merchantName={merchant.name} />
