@@ -1,14 +1,234 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import DealyCouponCard from "@/components/DealyCouponCard";
+import MerchantSidebar from "@/components/MerchantSidebar";
 import CouponModal from "@/components/CouponModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp, Facebook, Share2 } from "lucide-react";
+import { ShareDialog } from "@/components/ShareDialog";
+import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CouponCard from "@/components/CouponCard";
+import RelatedMerchantCouponCard from "@/components/RelatedMerchantCouponCard";
 import MerchantRating from "@/components/MerchantRating";
+import { toast as sonnerToast } from "sonner";
+
+// Get Taiwan time (UTC+8)
+function getTaiwanDate() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+}
+
+/**
+ * Convert Strapi blocks to HTML
+ */
+function blocksToHTML(blocks: any): string {
+  if (!blocks) return '';
+  if (!Array.isArray(blocks)) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text' || child.text !== undefined) {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  return blocks.map((block: any) => {
+    if (block.type === 'paragraph') {
+      const content = processChildren(block.children || []);
+      // If paragraph is empty or just whitespace, treat as line break
+      if (!content || content.trim() === '') {
+        return '<br>';
+      }
+      return `<p style="margin: 0; margin-bottom: 0.5em;">${content}</p>`;
+    }
+    
+    if (block.type === 'heading') {
+      const level = block.level || 2;
+      const content = processChildren(block.children || []);
+      // H3 should be styled as a small title within the section
+      if (level === 3) {
+        return `<h3 style="font-size: 1rem; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; color: #374151;">${content}</h3>`;
+      }
+      return `<h${level}>${content}</h${level}>`;
+    }
+    
+    if (block.type === 'list') {
+      const isOrdered = block.format === 'ordered';
+      const items = (block.children || []).map((item: any) => {
+        const content = processChildren(item.children || []);
+        return `<li>${content}</li>`;
+      }).join('');
+      return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+    }
+    
+    // Handle image blocks
+    if (block.type === 'image' && block.image) {
+      let imageData = block.image;
+      if (imageData?.data) {
+        imageData = imageData.data;
+      }
+      
+      const imageUrl = imageData?.attributes?.url || imageData?.url || '';
+      const altText = imageData?.attributes?.alternativeText || imageData?.alternativeText || block.caption || '';
+      
+      if (imageUrl) {
+        const escapedAlt = altText.replace(/"/g, '&quot;');
+        
+        if (block.caption) {
+          const caption = processChildren(block.caption || []);
+          return `<figure style="margin: 1em 0;"><img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" /><figcaption style="margin-top: 0.5em; font-size: 0.875em; color: #666; text-align: center;">${caption}</figcaption></figure>`;
+        }
+        return `<img src="${imageUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1em 0;" />`;
+      }
+    }
+    
+    return '';
+  }).join('\n');
+}
+
+// Contact Form Component
+function ContactForm({ merchantName }: { merchantName: string }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      message: formData.get('message') as string,
+      merchantName: merchantName,
+    };
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        // Try to parse error response
+        let errorMessage = '請稍後再試。';
+        try {
+          const errorResult = await response.json();
+          errorMessage = errorResult.error || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        
+        console.error('Contact form submission failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorMessage,
+        });
+        
+        sonnerToast.error("提交失敗", {
+          description: errorMessage,
+          duration: 5000,
+        });
+        return;
+      }
+
+      const result = await response.json();
+      
+      if (result.message) {
+        sonnerToast.success("✅ 提交成功！", {
+          description: result.message,
+          duration: 5000, // Show for 5 seconds
+        });
+        // Reset form safely
+        if (formRef.current) {
+          formRef.current.reset();
+        }
+      } else {
+        // Unexpected response format
+        console.warn('Unexpected response format:', result);
+        sonnerToast.success("✅ 提交成功！", {
+          description: "我們會盡快回覆您的訊息。",
+          duration: 5000, // Show for 5 seconds
+        });
+        if (formRef.current) {
+          formRef.current.reset();
+        }
+      }
+    } catch (error) {
+      console.error('Contact form submission error:', error);
+      sonnerToast.error("提交失敗", {
+        description: error instanceof Error ? error.message : "網路錯誤，請檢查連線後再試。",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="contact-name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+          ✍️ 你的名字 *
+        </Label>
+        <Input id="contact-name" name="name" required className="mt-1" />
+      </div>
+      <div>
+        <Label htmlFor="contact-email" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+          💗 你的電郵 *
+        </Label>
+        <Input id="contact-email" name="email" type="email" required className="mt-1" />
+      </div>
+      <div>
+        <Label htmlFor="contact-message" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+          ✍️ 你的信息 （歡迎任何意見或問題） *
+        </Label>
+        <Textarea id="contact-message" name="message" rows={6} required className="mt-1" />
+      </div>
+      <Button 
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 disabled:opacity-50"
+      >
+        {isSubmitting ? '提交中...' : '📧提交'}
+      </Button>
+    </form>
+  );
+}
 
 // Helper function to extract text from Strapi rich text
 function extractTextFromRichText(richText: any): string {
@@ -60,13 +280,231 @@ function renderRichText(richText: any): string {
   return "";
 }
 
+/**
+ * Clean question text by removing leading "?" or ":?"
+ * Keeps emoji in the text
+ */
+function cleanQuestionText(text: string): string {
+  if (!text) return '';
+  // Remove leading "?" or ":?" but keep everything else including emoji
+  return text.replace(/^[:\?]+\s*/, '').trim();
+}
+
+// Helper function to convert a block to HTML, preserving list structure
+function blockToHTML(block: any): string {
+  if (!block) return '';
+  
+  // Process children to extract text with formatting
+  const processChildren = (children: any[]): string => {
+    if (!children || !Array.isArray(children)) return '';
+    
+    return children.map((child: any) => {
+      if (child.type === 'text' || child.text !== undefined) {
+        let text = child.text || '';
+        // Apply formatting
+        if (child.bold) text = `<strong>${text}</strong>`;
+        if (child.italic) text = `<em>${text}</em>`;
+        if (child.code) text = `<code>${text}</code>`;
+        if (child.strikethrough) text = `<s>${text}</s>`;
+        if (child.underline) text = `<u>${text}</u>`;
+        return text;
+      }
+      if (child.type === 'link') {
+        const linkText = processChildren(child.children || []);
+        return `<a href="${child.url || '#'}">${linkText}</a>`;
+      }
+      if (child.children) {
+        return processChildren(child.children);
+      }
+      return '';
+    }).join('');
+  };
+  
+  // Handle different block types
+  if (block.type === 'paragraph') {
+    const content = processChildren(block.children || []);
+    return `<p>${content || '<br>'}</p>`;
+  }
+  
+  if (block.type === 'heading') {
+    const level = block.level || 2;
+    const content = processChildren(block.children || []);
+    return `<h${level}>${content}</h${level}>`;
+  }
+  
+  if (block.type === 'list') {
+    const isOrdered = block.format === 'ordered';
+    const items = (block.children || []).map((item: any) => {
+      const content = processChildren(item.children || []);
+      return `<li>${content}</li>`;
+    }).join('');
+    return isOrdered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+  }
+  
+  return '';
+}
+
+// Helper function to parse FAQ rich text into question-answer pairs
+function parseFAQs(richText: any): Array<{question: string, answer: string}> {
+  if (!richText || !Array.isArray(richText)) return [];
+  
+  const faqs: Array<{question: string, answer: string}> = [];
+  let currentQuestion = "";
+  let currentAnswer = "";
+  
+  for (const item of richText) {
+    // Check for H3 headings only
+    if (item.type === "heading" && item.level === 3) {
+      // If we have a previous question-answer pair, save it
+      if (currentQuestion && currentAnswer) {
+        faqs.push({
+          question: currentQuestion,
+          answer: currentAnswer.trim()
+        });
+      }
+      // Start new question - extract text and clean it (remove leading ?)
+      const rawQuestion = item.children?.map((child: any) => child.text || "").join("") || "";
+      currentQuestion = cleanQuestionText(rawQuestion);
+      currentAnswer = "";
+    } else if (currentQuestion) {
+      // Convert block to HTML to preserve list structure
+      const html = blockToHTML(item);
+      if (html) {
+        currentAnswer += html;
+      }
+    }
+  }
+  
+  // Don't forget the last FAQ
+  if (currentQuestion && currentAnswer) {
+    faqs.push({
+      question: currentQuestion,
+      answer: currentAnswer.trim()
+    });
+  }
+  
+  return faqs;
+}
+
+// Helper function to parse how-to rich text into structured content
+function parseHowTo(richText: any): Array<{title: string, content: string}> {
+  if (!richText || !Array.isArray(richText)) return [];
+  
+  const howToSections: Array<{title: string, content: string}> = [];
+  let currentTitle = "";
+  let currentContent = "";
+  
+  for (const item of richText) {
+    if (item.type === "paragraph") {
+      const paragraphText = item.children?.map((child: any) => {
+        return child.text || "";
+      }).join("") || "";
+      
+      // Check if this paragraph contains bold text (step title)
+      const hasBoldText = item.children?.some((child: any) => child.bold);
+      
+      if (hasBoldText) {
+        // If we have a previous section, save it
+        if (currentTitle && currentContent) {
+          howToSections.push({
+            title: currentTitle,
+            content: currentContent.trim()
+          });
+        }
+        // Start new section with bold text as title (plain text, no HTML tags)
+        currentTitle = paragraphText;
+        currentContent = "";
+      } else if (currentTitle) {
+        // Add to current content
+        if (currentContent) {
+          currentContent += " " + paragraphText;
+        } else {
+          currentContent = paragraphText;
+        }
+      }
+    } else if (item.type === "list" && currentTitle) {
+      // Handle bullet points
+      const listItems = item.children?.map((child: any) => {
+        if (child.children && Array.isArray(child.children)) {
+          return child.children.map((grandChild: any) => {
+            return grandChild.text || "";
+          }).join("");
+        }
+        return child.text || "";
+      }).join("\n• ") || "";
+      
+      if (currentContent) {
+        currentContent += "\n• " + listItems;
+      } else {
+        currentContent = "• " + listItems;
+      }
+    }
+  }
+  
+  // Don't forget the last section
+  if (currentTitle && currentContent) {
+    howToSections.push({
+      title: currentTitle,
+      content: currentContent.trim()
+    });
+  }
+  
+  return howToSections;
+}
+
 interface MerchantProps {
   merchant: TransformedShop;
   coupons: any[];
   expiredCoupons: any[];
+  relatedMerchants: any[];
+  hotstoreMerchants?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+  }>;
+  market: string;
+  specialOffers?: Array<{
+    id: number;
+    title: string;
+    slug: string;
+    type?: string;
+  }>;
+  relatedBlogs?: Array<{
+    id: number;
+    title: string;
+    slug: string;
+    type?: string;
+  }>;
+  alternateUrl?: string | null;
+  smallBlogSection?: any;
+  smallBlogSectionTitle?: string | null;
 }
 
-const MerchantCouponsClient = ({ merchant, coupons, expiredCoupons }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [], relatedBlogs = [], smallBlogSection, smallBlogSectionTitle }: MerchantProps) => {
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  
+  const handleShare = (platform: string) => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const title = merchant.h1Title || merchant.page_title_h1 || merchant.name;
+    const encodedUrl = encodeURIComponent(url);
+    const encodedTitle = encodeURIComponent(title);
+    
+    switch (platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`, '_blank');
+        break;
+      case 'share-dialog':
+        setIsShareDialogOpen(true);
+        break;
+      default:
+        navigator.clipboard.writeText(url);
+        break;
+    }
+  };
 
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -349,7 +787,77 @@ const MerchantCouponsClient = ({ merchant, coupons, expiredCoupons }: MerchantPr
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
+      <Header />
+      
+      {/* Affiliate Disclaimer */}
+      <div className="bg-gray-50 border-b border-gray-200 py-1 px-2">
+        <div className="max-w-full mx-auto px-2">
+          <p className="text-[8px] text-gray-600 text-center leading-tight">
+            透過本站鏈接完成購物可享，我們可能會因此獲得佣金，而您無需額外付費。
+          </p>
+        </div>
+      </div>
+      
+      <main id="main" className="container mx-auto md:px-4 px-2 py-4" itemScope itemType="https://schema.org/CreativeWork">
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Left Column - Content */}
+          <div className="lg:col-span-4">
+            {/* Page Title */}
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center lg:hidden relative">
+                {merchant.logo && (
+                  <img
+                    src={merchant.logo}
+                    alt={merchant.name}
+                    width={48}
+                    height={48}
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    className="object-contain max-w-full max-h-full"
+                  />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex flex-col mb-2">
+                  <h1 className="text-lg md:text-3xl font-bold text-gray-900 mb-2">
+                    {merchant.h1Title || merchant.page_title_h1 || '錯誤：無法載入標題'}
+                  </h1>
+                  <div className="flex items-center justify-between md:justify-start">
+                    <span className="text-xs text-gray-600 sm:mb-1">
+                      最近更新：<time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate || '錯誤：無法載入日期'}</time>（每日更新）{" "}
+                      <Link href="/about" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
+                        by Dealy TW Team
+                      </Link>
+                    </span>
+                    <div className="flex items-center gap-2 md:hidden">
+                      <Button variant="outline" size="sm" className="rounded-full h-7 w-7 p-0" onClick={() => handleShare('facebook')}>
+                        <Facebook className="w-3.5 h-3.5 text-blue-600" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="rounded-full h-7 w-7 p-0" onClick={() => handleShare('whatsapp')}>
+                        <svg
+                          className="w-3.5 h-3.5 text-green-500"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .96 4.534.96 10.09c0 1.744.413 3.379 1.144 4.826L.06 24l9.305-2.533a11.714 11.714 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.89-11.89a11.898 11.898 0 00-3.48-8.413Z" />
+                        </svg>
+                      </Button>
+                      <Button variant="outline" size="sm" className="rounded-full h-7 w-7 p-0" onClick={() => handleShare('share-dialog')}>
+                        <Share2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-6">
+              {merchant.description || ""}
+            </p>
+
             {/* Latest verified codes (max 5 promo_code). Hide when none. */}
             {verifiedPromoCodes.length > 0 && (
               <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50/60 p-3">
@@ -812,11 +1320,288 @@ const MerchantCouponsClient = ({ merchant, coupons, expiredCoupons }: MerchantPr
                 </section>
               )}
 
-      </div>
+              {/* Related Merchants Section */}
+              <section
+                id="related-store-coupons"
+                aria-labelledby={`${merchant.slug}-related-heading`}
+                className="mb-10"
+              >
+                <h2
+                  id={`${merchant.slug}-related-heading`}
+                  className="text-lg md:text-xl font-bold mb-4"
+                >
+                  同類商戶折扣優惠
+                </h2>
+                <Card id="related-merchants-section" className="shadow-md">
+                  <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {relatedMerchants && relatedMerchants.length > 0 ? (
+                      relatedMerchants.map((relatedMerchant) => (
+                        <RelatedMerchantCouponCard 
+                          key={relatedMerchant.id} 
+                          relatedMerchant={relatedMerchant}
+                        />
+                      ))
+                    ) : (
+                      <div className="col-span-full text-center text-gray-500 py-8">
+                        暫無同類商戶折扣優惠
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
 
+              {/* FAQ Section */}
+              <Card className="shadow-md">
+                <CardHeader>
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5" />
+                    常見問題
+                  </h2>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {merchant.faqs && Array.isArray(merchant.faqs) && merchant.faqs.length > 0 ? (
+                    merchant.faqs.map((faq: any, index: number) => {
+                      // Handle both parsed format {question, answer} and raw blocks format
+                      let question = faq?.question || faq?.q || '';
+                      let answer = faq?.answer || faq?.a || '';
+                      
+                      // If it's still in blocks format, parse it
+                      if (!question && !answer && faq.type) {
+                        const parsed = parseFAQs([faq]);
+                        if (parsed.length > 0) {
+                          const parsedFaq = parsed[0];
+                          return (
+                            <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                              <h3 className="font-medium text-pink-600 mb-2">
+                                {parsedFaq.question}
+                              </h3>
+                              <div 
+                                className="text-sm text-gray-600 ml-6 faq-answer-content" 
+                                dangerouslySetInnerHTML={{ __html: parsedFaq.answer }}
+                              />
+                            </div>
+                          );
+                        }
+                        return null;
+                      }
+                      
+                      // Use parsed format directly
+                      if (question && answer) {
+                        // Clean question if it still contains leading "?"
+                        question = cleanQuestionText(question);
+                        
+                        return (
+                          <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                            <h3 className="font-medium text-pink-600 mb-2">
+                              {question}
+                            </h3>
+                            <div 
+                              className="text-sm text-gray-600 ml-6 faq-answer-content" 
+                              dangerouslySetInnerHTML={{ __html: answer }}
+                            />
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    }).filter(Boolean)
+                  ) : (
+                    <div className="text-center text-gray-500 py-8">
+                      暫無常見問題
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Related Shopping Categories and Guides */}
+              <Card className="shadow-md">
+                <CardHeader>
+                  <h2 className="text-xl font-bold text-gray-800">相關購物分類及攻略</h2>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    // Combine related_blogs (first) and special_offers (second)
+                    const allItems = [
+                      ...(relatedBlogs || []).map(blog => ({ ...blog, type: 'blog' })),
+                      ...(specialOffers || []).map(offer => ({ ...offer, type: 'special_offer' }))
+                    ];
+                    
+                    if (allItems.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {allItems.map((item) => (
+                            <Link
+                              key={`${item.type}-${item.id}`}
+                              href={item.type === 'blog' ? `/blog/${item.slug}` : `/special-offers/${item.slug}`}
+                            >
+                              <Badge variant="outline" className="cursor-pointer px-3 py-1 text-sm border-gray-300 hover:bg-gray-50 transition-colors">
+                                {item.title}
+                              </Badge>
+                            </Link>
+                          ))}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="text-center text-gray-500 py-8">
+                          <p>暫無相關購物攻略</p>
+                        </div>
+                      );
+                    }
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* How to Use Coupons Guide */}
+              <Card className="shadow-md">
+                <CardHeader>
+                  <h2 className="text-xl font-bold text-pink-600 flex items-center gap-2">
+                    如何於{merchant.name}使用優惠碼
+                  </h2>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* How To Images */}
+                  {merchant.how_to_image && Array.isArray(merchant.how_to_image) && merchant.how_to_image.length > 0 && (
+                    <div className="mb-4">
+                      {merchant.how_to_image.map((imageUrl: string, imgIndex: number) => (
+                        <img
+                          key={imgIndex}
+                          src={imageUrl}
+                          alt={`如何於${merchant.name}使用優惠碼 - 步驟 ${imgIndex + 1}`}
+                          className="w-full max-w-[427px] h-auto rounded-lg border border-gray-200"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {merchant.how_to && Array.isArray(merchant.how_to) && merchant.how_to.length > 0 ? (
+                    merchant.how_to.map((item: any, index: number) => {
+                      // Handle both parsed format {step, descriptions} and raw blocks format
+                      const step = item?.step || item?.title || '';
+                      const descriptions = Array.isArray(item?.descriptions) ? item.descriptions : 
+                                          (item?.content ? [item.content] : []);
+                      
+                      // If it's still in blocks format, parse it
+                      if (!step && !descriptions.length && item.type) {
+                        const parsed = parseHowTo([item]);
+                        if (parsed.length > 0) {
+                          const parsedItem = parsed[0];
+                          return (
+                            <div key={index} className="space-y-3">
+                              <h4 className="font-semibold text-gray-800 text-lg">
+                                {index + 1}. {parsedItem.title}
+                              </h4>
+                              <div className="text-sm text-gray-600 space-y-2 whitespace-pre-line">
+                                {parsedItem.content}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }
+                      
+                      // Use parsed format directly
+                      if (step && descriptions.length > 0) {
+                        return (
+                          <div key={index} className="space-y-3">
+                            <h4 className="font-semibold text-gray-800 text-lg">
+                              {index + 1}. {step}
+                            </h4>
+                            <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
+                              {descriptions.map((desc: string, descIndex: number) => (
+                                <li key={descIndex}>{desc}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    }).filter(Boolean)
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="font-medium">1) 先在本頁按「顯示優惠碼」/「獲取折扣」</p>
+                      <p className="font-medium">2) 登入 {merchant.name} 帳戶</p>
+                      <p className="font-medium">3) 選擇產品加入購物車</p>
+                      <p className="font-medium">4) 結帳頁輸入或套用優惠</p>
+                      <p className="font-medium">5) 確認折扣已生效再付款。</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Small Blog Section */}
+              {smallBlogSection && 
+               (typeof smallBlogSection === 'string' ? smallBlogSection.trim() !== '' : 
+                (Array.isArray(smallBlogSection) ? smallBlogSection.length > 0 : true)) && (
+                <Card className="shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-gray-800">
+                      {smallBlogSectionTitle || `精選${merchant.name}優惠懶人包`}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div 
+                      className="prose prose-sm max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ 
+                        __html: typeof smallBlogSection === 'string' 
+                          ? smallBlogSection 
+                          : blocksToHTML(smallBlogSection) 
+                      }} 
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Contact Form */}
+              <Card className="shadow-md">
+                <CardHeader>
+                  <h2 className="text-xl font-bold text-gray-800">聯絡我們</h2>
+                </CardHeader>
+                <CardContent>
+                  <ContactForm merchantName={merchant.name} />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          
+          {/* Right Column - Sidebar */}
+          <div className="lg:col-span-1">
+            <MerchantSidebar merchant={merchant} coupons={uniqueCoupons} expiredCoupons={uniqueExpiredCoupons} hotstoreMerchants={hotstoreMerchants} />
+          </div>
+        </div>
+
+        {/* Breadcrumb */}
+        <nav className="mt-8 pt-6 border-t border-gray-200" aria-label="Breadcrumb">
+          <div className="flex items-center text-sm text-blue-600 mb-4">
+            <Link href="/" className="cursor-pointer hover:underline">
+              Dealy.TW 最新優惠平台
+            </Link>
+            <ChevronRight className="w-4 h-4 mx-2" />
+            <Link href="/shop" className="cursor-pointer hover:underline">所有商店</Link>
+            <ChevronRight className="w-4 h-4 mx-2" />
+            <span className="text-gray-600">{merchant.name}</span>
+          </div>
+        </nav>
+      </main>
+
+      {/* Coupon Modal */}
       <CouponModal open={isModalOpen} onOpenChange={setIsModalOpen} coupon={selectedCoupon} />
-    </>
+      
+      {/* Share Dialog */}
+      <ShareDialog 
+        open={isShareDialogOpen} 
+        onOpenChange={setIsShareDialogOpen} 
+        url={typeof window !== 'undefined' ? window.location.href : ''} 
+        title={merchant.h1Title || merchant.page_title_h1 || merchant.name} 
+      />
+      
+      {/* Footer */}
+      <Footer alternateUrl={alternateUrl} />
+    </div>
   );
 };
 
-export default MerchantCouponsClient;
+export default Merchant;

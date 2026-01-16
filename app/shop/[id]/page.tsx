@@ -2,12 +2,7 @@ import { notFound } from 'next/navigation';
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterParams } from '@/lib/strapi.server';
 import { pageMeta, extractUrlFromRichText } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import MerchantSidebar from "@/components/MerchantSidebar";
-import MerchantCouponsClient from "./page-client";
-import MerchantExtraSections from "./MerchantExtraSections";
-import MerchantShareButtons from "./MerchantShareButtons";
+import Merchant from './page-client'; // Merchant page component
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, generateRatingCount } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
@@ -1278,95 +1273,19 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
             dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo, null, 0) }}
           />
         )}
-        <div className="min-h-screen bg-white">
-          <Header />
-          <main className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center lg:hidden relative">
-                    {merchant.logo && (
-                      <img
-                        src={merchant.logo}
-                        alt={merchant.name}
-                        width={48}
-                        height={48}
-                        loading="eager"
-                        fetchPriority="high"
-                        decoding="async"
-                        className="object-contain max-w-full max-h-full"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex flex-col mb-2">
-                      <h1 className="text-lg md:text-3xl font-bold text-gray-900 mb-2">
-                        {merchant.h1Title || merchant.page_title_h1 || "錯誤：無法載入標題"}
-                      </h1>
-                      <div className="flex items-center justify-between md:justify-start">
-                        <span className="text-xs text-gray-600 sm:mb-1">
-                          最近更新：
-                          <time dateTime={merchant.lastUpdatedDateISO || undefined}>
-                            {merchant.lastUpdatedDate || "錯誤：無法載入日期"}
-                          </time>
-                          （每日更新）{" "}
-                          <a href="/about" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
-                            by Dealy TW Team
-                          </a>
-                        </span>
-                        <MerchantShareButtons
-                          title={merchant.h1Title || merchant.page_title_h1 || merchant.name}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-6">
-                  {merchant.description || ""}
-                </p>
-
-                <MerchantCouponsClient
-                  merchant={merchant as any}
-                  coupons={activeCoupons}
-                  expiredCoupons={expiredCoupons}
-                />
-
-                <MerchantExtraSections
-                  merchant={merchant as any}
-                  relatedMerchants={relatedMerchants}
-                  relatedBlogs={merchant.related_blogs || []}
-                  specialOffers={merchant.special_offers || []}
-                  smallBlogSection={merchant.small_blog_section || null}
-                  smallBlogSectionTitle={merchant.small_blog_section_title || null}
-                />
-              </div>
-
-              <div className="lg:col-span-1">
-                <MerchantSidebar
-                  merchant={merchant as any}
-                  coupons={activeCoupons}
-                  expiredCoupons={expiredCoupons}
-                  hotstoreMerchants={hotstoreMerchants}
-                />
-              </div>
-            </div>
-
-            <nav className="mt-8 pt-6 border-t border-gray-200" aria-label="Breadcrumb">
-              <div className="flex items-center text-sm text-blue-600 mb-4">
-                <a href="/" className="cursor-pointer hover:underline">
-                  Dealy.TW 最新優惠平台
-                </a>
-                <span className="mx-2 text-gray-400">/</span>
-                <a href="/shop" className="cursor-pointer hover:underline">
-                  所有商店
-                </a>
-                <span className="mx-2 text-gray-400">/</span>
-                <span className="text-gray-600">{merchant.name}</span>
-              </div>
-            </nav>
-          </main>
-          <Footer alternateUrl={alternateUrl || null} />
-        </div>
+        <Merchant
+          merchant={merchant as any}
+          coupons={activeCoupons}
+          expiredCoupons={expiredCoupons}
+          relatedMerchants={relatedMerchants}
+          hotstoreMerchants={hotstoreMerchants}
+          market={marketKey}
+          specialOffers={merchant.special_offers || []}
+          relatedBlogs={merchant.related_blogs || []}
+          alternateUrl={alternateUrl || null}
+          smallBlogSection={merchant.small_blog_section || null}
+          smallBlogSectionTitle={merchant.small_blog_section_title || null}
+        />
       </>
     );
   } catch (error) {
