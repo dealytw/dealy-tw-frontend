@@ -5,6 +5,9 @@ import SpecialOffersClient from '../special-offers-client';
 import { notFound } from 'next/navigation';
 import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Link from 'next/link';
 
 export const revalidate = 86400; // ISR - revalidate every 24 hours (same as homepage)
 export const dynamic = 'auto'; // Allow on-demand ISR for dynamic routes (generates on first request, then caches)
@@ -209,12 +212,63 @@ export default async function SpecialOfferPage({
 
     return (
       <>
-        <SpecialOffersClient 
-          specialOffer={specialOffer}
-          featuredMerchants={featuredMerchants}
-          flashDeals={flashDeals}
-          alternateUrl={alternateUrl}
-        />
+        <div className="min-h-screen bg-background">
+          <Header />
+
+          {/* Affiliate Disclaimer */}
+          <div className="bg-muted/30 border-b border-border py-2 px-4">
+            <div className="container mx-auto">
+              <p className="text-xs text-muted-foreground text-center">
+                透過本站鏈接完成購物可享，我們可能會因此獲得佣金，而您無需額外付費。
+                <Link href="/legal-disclaimer" className="text-primary hover:underline ml-1">
+                  了解更多
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          <main className="container mx-auto px-4 py-8">
+            {/* Hero Section */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                {specialOffer.title || '✨ 限時搶購！最新快閃優惠一覽 🔔'}
+              </h1>
+              {specialOffer.intro && (
+                <div className="text-muted-foreground mb-4 leading-relaxed whitespace-pre-line text-left" style={{ lineHeight: '1.6' }}>
+                  {typeof specialOffer.intro === 'string' ? specialOffer.intro : ''}
+                </div>
+              )}
+            </div>
+
+            {/* Featured Merchants Section */}
+            {featuredMerchants.length > 0 && (
+              <section className="mb-12" aria-labelledby="featured-merchants-heading">
+                <h2 id="featured-merchants-heading" className="text-2xl font-bold text-foreground mb-6 text-center">
+                  優惠主題熱門商店
+                </h2>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                  {featuredMerchants.map((merchant) => (
+                    <Link
+                      key={merchant.id}
+                      href={merchant.link}
+                      className="flex flex-col items-center p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow cursor-pointer group"
+                    >
+                      <div className="w-24 h-24 mb-3 flex items-center justify-center bg-white rounded-lg p-2">
+                        <img src={merchant.logo} alt={merchant.name} className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <h3 className="font-semibold text-sm text-foreground mb-1 text-center">{merchant.name}</h3>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <SpecialOffersClient flashDeals={flashDeals} />
+          </main>
+
+          <Footer alternateUrl={alternateUrl} />
+        </div>
         {/* Breadcrumb JSON-LD */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       </>

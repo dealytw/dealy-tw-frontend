@@ -1,11 +1,10 @@
-"use client";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CategoryCouponCard from "@/components/CategoryCouponCard";
 import { Clock } from "lucide-react";
 // Removed Next.js Image import - using regular img tags for fixed resolution
+import CategoryCouponsGridClient from "./CategoryCouponsGridClient";
 
 interface Merchant {
   id: string;
@@ -143,26 +142,7 @@ export default function CategoryView({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Left Column - Coupons */}
                   <div className="lg:col-span-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {coupons.map((coupon) => (
-                        <CategoryCouponCard
-                          key={coupon.id}
-                          coupon={{
-                            id: coupon.id,
-                            title: coupon.title,
-                            code: coupon.code,
-                            discount: coupon.discount,
-                            coupon_type: coupon.coupon_type,
-                            affiliate_link: coupon.affiliate_link,
-                            merchant: {
-                              name: coupon.merchant.name,
-                              logo: coupon.merchant.logo,
-                              slug: coupon.merchant.slug,
-                            },
-                          }}
-                        />
-                      ))}
-                    </div>
+                    <CategoryCouponsGridClient coupons={coupons} gridClassName="grid grid-cols-1 md:grid-cols-2 gap-6" />
                   </div>
 
                   {/* Right Column - Blog Sidebar (Desktop) */}
@@ -202,26 +182,7 @@ export default function CategoryView({
                 </div>
               ) : (
                 /* If no blogs, show original single-column layout */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {coupons.map((coupon) => (
-                    <CategoryCouponCard
-                      key={coupon.id}
-                      coupon={{
-                        id: coupon.id,
-                        title: coupon.title,
-                        code: coupon.code,
-                        discount: coupon.discount,
-                        coupon_type: coupon.coupon_type,
-                        affiliate_link: coupon.affiliate_link,
-                        merchant: {
-                          name: coupon.merchant.name,
-                          logo: coupon.merchant.logo,
-                          slug: coupon.merchant.slug,
-                        },
-                      }}
-                    />
-                  ))}
-                </div>
+                <CategoryCouponsGridClient coupons={coupons} gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" />
               )}
 
               {/* Blog Sidebar (Mobile - Stacked at bottom) */}

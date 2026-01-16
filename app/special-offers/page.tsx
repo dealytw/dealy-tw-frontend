@@ -3,6 +3,9 @@ import { pageMeta } from '@/seo/meta';
 import { strapiFetch, absolutizeMedia, qs } from '@/lib/strapi.server';
 import SpecialOffersIndexClient from './special-offers-index-client';
 import { notFound } from 'next/navigation';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Link from 'next/link';
 
 export const revalidate = 86400; // ISR - revalidate every 24 hours (same as homepage)
 
@@ -54,9 +57,34 @@ export default async function SpecialOffersIndex() {
     }));
 
     return (
-      <SpecialOffersIndexClient 
-        specialOffers={transformedSpecialOffers}
-      />
+      <div className="min-h-screen bg-background">
+        <Header />
+
+        {/* Affiliate Disclaimer */}
+        <div className="bg-muted/30 border-b border-border py-2 px-4">
+          <div className="container mx-auto">
+            <p className="text-xs text-muted-foreground text-center">
+              透過本站鏈接完成購物可享，我們可能會因此獲得佣金，而您無需額外付費。
+              <Link href="/legal-disclaimer" className="text-primary hover:underline ml-1">
+                了解更多
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        <main className="container mx-auto px-4 py-8">
+          {/* Hero Section */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">✨ 特別優惠專區 🔔</h1>
+            <p className="text-muted-foreground mb-4">精選最新特別優惠與限時活動，助您以最優惠價格入手心水產品</p>
+            <p className="text-sm text-orange-600 font-medium">⭐ 定期更新最新優惠資訊，立即查看所有特別優惠！</p>
+          </div>
+
+          <SpecialOffersIndexClient specialOffers={transformedSpecialOffers} />
+        </main>
+
+        <Footer />
+      </div>
     );
   } catch (error) {
     console.error('Error fetching special offers index data:', error);
