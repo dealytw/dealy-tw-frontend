@@ -2,6 +2,8 @@
 // This file is server-only (used in Server Components)
 import { getDomainConfig } from '@/lib/domain-config';
 
+const DEBUG = process.env.NODE_ENV !== 'production';
+
 export function canonical(pathOrAbs?: string) {
   if (!pathOrAbs) return undefined;
   if (pathOrAbs.startsWith('http')) return pathOrAbs;
@@ -180,9 +182,9 @@ export function getHreflangLinks(
           hreflang: hreflangCode,
           href: url
         });
-        console.log(`[getHreflangLinks] Added alternate hreflang from CMS: ${hreflangCode} -> ${url}`);
+        if (DEBUG) console.log(`[getHreflangLinks] Added alternate hreflang from CMS: ${hreflangCode} -> ${url}`);
       } else {
-        console.warn(`[getHreflangLinks] Could not determine hreflang code from URL: ${url}`);
+        if (DEBUG) console.warn(`[getHreflangLinks] Could not determine hreflang code from URL: ${url}`);
       }
     }
   } else {
@@ -190,7 +192,7 @@ export function getHreflangLinks(
     // Do NOT fallback to homepage for merchant/category/special-offer pages
     // This follows SEO best practice: hreflang should only link equivalent pages
     if (isMerchantPage || isCategoryPage || isSpecialOfferPage) {
-      console.log(`[getHreflangLinks] No alternate URL provided for ${currentPath}, only showing self (no homepage fallback)`);
+      if (DEBUG) console.log(`[getHreflangLinks] No alternate URL provided for ${currentPath}, only showing self (no homepage fallback)`);
     }
   }
   
@@ -255,12 +257,13 @@ export function pageMeta({
   const url = canonical(canonicalOverride ?? path);
   const robots = noindex ? { index: false, follow: false, nocache: true } : undefined;
   
-  // Debug: Log hreflang generation
-  console.log(`[pageMeta] Generating metadata for path: ${path}, alternateUrl: ${alternateUrl || 'null'}, includeHreflang: ${includeHreflang}`);
+  if (DEBUG) {
+    console.log(`[pageMeta] Generating metadata for path: ${path}, alternateUrl: ${alternateUrl || 'null'}, includeHreflang: ${includeHreflang}`);
+  }
   
   // Generate hreflang links (with alternate URL from CMS if provided)
   const hreflangLinks = includeHreflang && path ? getHreflangLinks(path, alternateUrl) : [];
-  console.log(`[pageMeta] Generated ${hreflangLinks.length} hreflang links:`, hreflangLinks);
+  if (DEBUG) console.log(`[pageMeta] Generated ${hreflangLinks.length} hreflang links:`, hreflangLinks);
   const alternates: { canonical?: string; languages?: Record<string, string> } = {};
   
   if (url) {

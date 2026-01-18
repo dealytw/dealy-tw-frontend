@@ -207,14 +207,6 @@ export default function BlogView({ blog }: BlogViewProps) {
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
-  // Debug: Log blog_table data
-  useEffect(() => {
-    console.log('Blog object:', blog);
-    console.log('Blog table data:', blog.blog_table);
-    console.log('Blog table length:', blog.blog_table?.length);
-    console.log('Blog table exists?', !!blog.blog_table);
-  }, [blog]);
-
   // Handle scroll to button and reveal promo code on page load (if hash exists)
   useEffect(() => {
     if (typeof window !== 'undefined') {

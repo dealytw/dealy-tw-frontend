@@ -243,7 +243,7 @@ export default function SearchDropdown({
           return;
         }
 
-        console.log('🔍 Search cache empty - fetching 7d cached index');
+        if (DEBUG) console.log('[SearchDropdown] Cache empty; fetching 7d cached index');
         const response = await fetch(`/api/search-index`, {
           signal: abortControllerRef.current?.signal,
         });
@@ -255,7 +255,7 @@ export default function SearchDropdown({
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => response.statusText);
-          console.error('❌ API Error:', response.status, errorText);
+          console.error('[SearchDropdown] API error:', response.status, errorText);
           throw new Error(`Search failed: ${response.status} ${errorText.slice(0, 100)}`);
         }
         
@@ -285,7 +285,7 @@ export default function SearchDropdown({
           return;
         }
         
-        console.error('Search index fetch error:', error);
+        console.error('[SearchDropdown] Search index fetch error:', error);
         setError('搜尋時發生錯誤，請稍後再試');
         setSuggestions([]);
         setIsLoading(false);

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
+const DEBUG = process.env.NODE_ENV !== 'production';
+
 // Lazy-safe Resend client: avoid throwing at import time when API key is missing
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
@@ -32,13 +34,15 @@ export async function POST(request: Request) {
     // Check if Resend API key is configured
     if (!resend) {
       console.error('RESEND_API_KEY is not configured');
-      // Still return success to user, but log the submission
-      console.log('Contact form submission (email service not configured):', {
-        name,
-        email,
-        message,
-        merchantName,
-      });
+      // Still return success to user, but DO NOT log PII to server logs
+      if (DEBUG) {
+        console.warn('[contact] Email service not configured; dropping submission', {
+          hasName: !!name,
+          hasEmail: !!email,
+          hasMessage: !!message,
+          hasMerchantName: !!merchantName,
+        });
+      }
       return NextResponse.json(
         { message: '提交成功！我們會盡快回覆您的訊息。' },
         { status: 200 }
@@ -94,15 +98,16 @@ ${message}
 
       const fromEmail = process.env.RESEND_FROM_EMAIL || 'Dealy TW Team <info@dealy.tw>';
 
-      console.log('Sending contact form email:', {
-        to: 'info@dealy.tw',
-        from: fromEmail,
-        subject: emailSubject,
-        hasName: !!name,
-        hasEmail: !!email,
-        hasMessage: !!message,
-        hasMerchantName: !!merchantName,
-      });
+      if (DEBUG) {
+        console.log('[contact] Sending email', {
+          to: 'info@dealy.tw',
+          from: fromEmail,
+          hasName: !!name,
+          hasEmail: !!email,
+          hasMessage: !!message,
+          hasMerchantName: !!merchantName,
+        });
+      }
 
       const emailResult = await resend.emails.send({
         from: fromEmail,
@@ -113,7 +118,7 @@ ${message}
         html: emailHtml,
       });
 
-      console.log('Email sent successfully:', emailResult);
+      if (DEBUG) console.log('[contact] Email sent');
 
       return NextResponse.json(
         { message: '提交成功！我們會盡快回覆您的訊息。' },

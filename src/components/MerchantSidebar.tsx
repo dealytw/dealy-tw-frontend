@@ -9,22 +9,32 @@ import { getDailyUpdatedTime } from "@/lib/jsonld";
 const DEALY_EEAT_TEXT_TW =
   "Dealy TW 是一個專為台灣用戶整理的優惠碼／折扣情報平台，每日更新各大網購平台、旅遊預訂、信用卡回饋與支付／付款優惠。無論你想找 Promo Code、限時特價、會員新戶禮，或比較哪種付款方式最划算，Dealy TW 都用清楚好讀的版面把重點一次整理，讓你快速找到最省的好康、輕鬆入手最划算的 Deal。";
 
+function escapeHtml(text: string): string {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Helper function to render rich text with formatting preserved (same as page-client)
 function renderRichText(richText: any): string {
   if (!richText) return "";
-  if (typeof richText === "string") return richText;
+  if (typeof richText === "string") return escapeHtml(richText);
   if (Array.isArray(richText)) {
     return richText.map(item => {
       if (item.type === "paragraph") {
         let paragraphContent = "";
         if (item.children && Array.isArray(item.children)) {
           paragraphContent = item.children.map((child: any) => {
-            if (child.bold) return `<strong>${child.text || ""}</strong>`;
-            if (child.italic) return `<em>${child.text || ""}</em>`;
-            return child.text || "";
+            const t = escapeHtml(child.text || "");
+            if (child.bold) return `<strong>${t}</strong>`;
+            if (child.italic) return `<em>${t}</em>`;
+            return t;
           }).join("");
         } else {
-          paragraphContent = item.text || "";
+          paragraphContent = escapeHtml(item.text || "");
         }
         // Wrap paragraph content in <p> tag for proper line breaks
         return `<p>${paragraphContent}</p>`;
@@ -32,13 +42,13 @@ function renderRichText(richText: any): string {
       if (item.type === "list") {
         const listItems = item.children?.map((child: any) => {
           if (child.children && Array.isArray(child.children)) {
-            return child.children.map((grandChild: any) => grandChild.text || "").join("");
+            return child.children.map((grandChild: any) => escapeHtml(grandChild.text || "")).join("");
           }
-          return child.text || "";
+          return escapeHtml(child.text || "");
         }).join("</li><li>") || "";
         return `<ul><li>${listItems}</li></ul>`;
       }
-      return item.text || "";
+      return escapeHtml(item.text || "");
     }).join("");
   }
   return "";
