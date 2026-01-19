@@ -278,7 +278,7 @@ export function pageMeta({
 
   // Get domain config for site name and locale
   const config = getDomainConfig();
-  const siteName = config.name || 'Dealy TW 台灣最新優惠平台';
+  const siteName = 'Dealy TW';
   
   // Convert hreflang for og:locale (e.g., "zh-Hant-TW" -> "zh_TW")
   // Note: Open Graph uses underscore format (zh_TW) and short format (no script)

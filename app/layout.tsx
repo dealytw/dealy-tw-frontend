@@ -137,7 +137,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(
               websiteJsonLd({
-                siteName: domainConfig.name,
+                siteName: "Dealy TW",
                 siteUrl: siteUrl,
                 searchUrl: `${siteUrl}/search`,
                 locale: marketLocale,
@@ -156,7 +156,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(
               organizationJsonLd({
-                name: domainConfig.name,
+                name: "Dealy TW",
                 url: siteUrl,
                 logo: `${siteUrl}/dealytwlogo.svg`,
                 sameAs: sameAs,
