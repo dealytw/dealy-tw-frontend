@@ -826,12 +826,14 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                     {merchant.h1Title || merchant.page_title_h1 || '錯誤：無法載入標題'}
                   </h1>
                   <div className="flex items-center justify-between md:justify-start">
-                    <span className="text-xs text-gray-600 sm:mb-1">
-                      最近更新：<time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate || '錯誤：無法載入日期'}</time>（每日更新）{" "}
-                      <Link href="/about" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
-                        by Dealy TW Team
-                      </Link>
-                    </span>
+                    {merchant.lastUpdatedDate && (
+                      <span className="text-xs text-gray-600 sm:mb-1">
+                        最近更新：<time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate}</time>（每日更新）{" "}
+                        <Link href="/about" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
+                          by Dealy TW Team
+                        </Link>
+                      </span>
+                    )}
                     <div className="flex items-center gap-2 md:hidden">
                       <Button variant="outline" size="sm" className="rounded-full h-7 w-7 p-0" onClick={() => handleShare('facebook')}>
                         <Facebook className="w-3.5 h-3.5 text-blue-600" />

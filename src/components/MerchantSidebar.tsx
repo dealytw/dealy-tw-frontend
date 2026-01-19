@@ -151,7 +151,11 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
             <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
             <span className="text-sm font-semibold">今日已驗證有效優惠</span>
           </div>
-          <p className="text-xs text-gray-500">最近更新日期：{lastUpdatedDate}</p>
+          {merchant.lastUpdatedDate && (
+            <p className="text-xs text-gray-500">
+              最近更新：<time dateTime={merchant.lastUpdatedDateISO || undefined}>{lastUpdatedDate}</time>（每日更新）
+            </p>
+          )}
         </div>
 
         {/* Stats */}
