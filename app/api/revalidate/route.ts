@@ -1,12 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { warmPaths } from '@/lib/warm';
+import { strapiFetch, qs } from '@/lib/strapi.server';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 export const preferredRegion = ['sin1']; // Singapore (close to Strapi)
 export const dynamic = 'force-dynamic'; // never cache this route
 
 const ORIGIN = 'https://dealy.tw';
+const DAILY_MARKET = 'tw';
+
+function buildDailyPaths(slugs: string[]) {
+  return Array.from(
+    new Set([
+      ...slugs.map((slug) => `/shop/${slug}`),
+      '/shop-sitemap.xml',
+    ])
+  );
+}
+
+async function revalidateDailyMerchants() {
+  const merchantParams = {
+    "filters[market][key][$eq]": DAILY_MARKET,
+    "filters[publishedAt][$notNull]": "true",
+    "fields[0]": "page_slug",
+    "pagination[pageSize]": "500",
+  };
+
+  const merchantsData = await strapiFetch<{ data: any[] }>(
+    `/api/merchants?${qs(merchantParams)}`,
+    { revalidate: 0 }
+  );
+
+  const slugs = (merchantsData?.data || [])
+    .map((merchant: any) => String(merchant.page_slug || merchant.slug || '').trim())
+    .filter(Boolean);
+
+  for (const slug of slugs) {
+    revalidateTag(`merchant:${slug}`);
+    revalidatePath(`/shop/${slug}`);
+  }
+
+  revalidateTag('sitemap:merchants');
+  revalidatePath('/shop-sitemap.xml');
+
+  return { totalMerchants: slugs.length, slugs };
+}
+
+function isCronRequest(req: NextRequest): boolean {
+  return req.headers.has('x-vercel-cron');
+}
+
+export async function GET(req: NextRequest) {
+  const secret = req.nextUrl.searchParams.get('secret');
+  const daily = req.nextUrl.searchParams.get('daily');
+  const purge = req.nextUrl.searchParams.get('purge') === '1';
+
+  if (!isCronRequest(req) && secret !== process.env.REVALIDATE_SECRET) {
+    return NextResponse.json({ ok: false, error: 'Invalid secret' }, { status: 401 });
+  }
+
+  if (daily !== '1') {
+    return NextResponse.json({ ok: false, error: 'Missing daily=1' }, { status: 400 });
+  }
+
+  const result = await revalidateDailyMerchants();
+
+  if (purge) {
+    const dailyPaths = buildDailyPaths(result.slugs || []);
+    if (dailyPaths.length) {
+      await warmPaths(dailyPaths, {
+        origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
+        concurrency: 3,
+        timeoutMs: 10000,
+        retries: 2,
+      });
+
+      await purgeCF(dailyPaths.map((path) => `${ORIGIN}${path}`));
+
+      await warmPaths(dailyPaths, {
+        origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
+        concurrency: 3,
+        timeoutMs: 4000,
+        retries: 2,
+      });
+    }
+  }
+
+  return NextResponse.json({ ok: true, mode: 'daily', purged: purge, ...result });
+}
 
 async function purgeCF(urls: string[]) {
   if (!process.env.CF_API_TOKEN || !process.env.CF_ZONE_ID) return;

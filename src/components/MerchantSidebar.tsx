@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getDailyUpdatedTime } from "@/lib/jsonld";
 
 const DEALY_EEAT_TEXT_TW =
   "Dealy TW 是一個專為台灣用戶整理的優惠碼／折扣情報平台，每日更新各大網購平台、旅遊預訂、信用卡回饋與支付／付款優惠。無論你想找 Promo Code、限時特價、會員新戶禮，或比較哪種付款方式最划算，Dealy TW 都用清楚好讀的版面把重點一次整理，讓你快速找到最省的好康、輕鬆入手最划算的 Deal。";
@@ -113,10 +112,8 @@ const MerchantSidebar = ({ merchant, coupons, expiredCoupons = [], hotstoreMerch
     return best;
   }, null);
 
-  // Get daily updated time (server-side, always today's date)
-  const dailyUpdatedTime = getDailyUpdatedTime();
-  // Format date as YYYY/MM/DD to match merchant page format
-  const lastUpdatedDate = merchant.lastUpdatedDate || dailyUpdatedTime.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
+  // Always rely on server-rendered date to avoid client-time drift
+  const lastUpdatedDate = merchant.lastUpdatedDate || '';
 
   return (
     <div className="space-y-6 -mt-2">
