@@ -227,13 +227,41 @@ function LegalPageContent({ content }: { content: any }) {
 }
 
 // Helper function to extract text from rich text nodes
+function escapeHtml(text: string): string {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escapeAttr(text: string): string {
+  return escapeHtml(text);
+}
+
+function sanitizeHref(href: string): string {
+  const trimmed = href.trim();
+  if (!trimmed) return "#";
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith("javascript:")) return "#";
+  return trimmed;
+}
+
 function extractText(nodes: any[]): string {
   if (!nodes || !Array.isArray(nodes)) return '';
   
   return nodes.map((node: any) => {
-    if (typeof node === 'string') return node;
+    if (typeof node === 'string') return escapeHtml(node);
+
+    if (node.type === 'link') {
+      const rawHref = node.url || node.href || '';
+      const href = escapeAttr(sanitizeHref(String(rawHref)));
+      const label = extractText(node.children || []);
+      return `<a href="${href}">${label}</a>`;
+    }
     
-    let text = node.text || '';
+    let text = escapeHtml(node.text || '');
     
     if (node.bold) text = `<strong>${text}</strong>`;
     if (node.italic) text = `<em>${text}</em>`;
