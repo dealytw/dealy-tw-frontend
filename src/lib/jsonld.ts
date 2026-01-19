@@ -3,6 +3,35 @@
 
 type UrlString = string;
 
+function getDatePartsInTimeZone(date: Date, timeZone: string) {
+  const dtf = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = dtf.formatToParts(date);
+  const map: Record<string, string> = {};
+  for (const p of parts) {
+    if (p.type !== "literal") map[p.type] = p.value;
+  }
+  return { year: Number(map.year), month: Number(map.month), day: Number(map.day) };
+}
+
+function getHourInTimeZone(date: Date, timeZone: string) {
+  const dtf = new Intl.DateTimeFormat("en-US", { timeZone, hour12: false, hour: "2-digit" });
+  const parts = dtf.formatToParts(date);
+  const hour = parts.find((p) => p.type === "hour")?.value;
+  return Number(hour || 0);
+}
+
+function stableDailyJitterMinutes(seed: string, y: number, m: number, d: number) {
+  const s = `${seed}:${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % 60;
+}
+
 function toTaipeiIso(dateStr?: string | null): string | undefined {
   if (!dateStr) return undefined;
   const d = new Date(dateStr);
@@ -12,28 +41,18 @@ function toTaipeiIso(dateStr?: string | null): string | undefined {
 }
 
 /**
- * Generate a consistent daily updated time (midnight 12-1am) that updates every day.
- * This ensures all updated time references match throughout the day.
- * The time is deterministic based on the date (same date = same time).
+ * Generate a consistent daily updated time (00:00–00:59).
+ * Only flips to "today" after 01:00 local time.
  */
-export function getDailyUpdatedTime(): Date {
-  // Get current Taiwan time
-  const taiwanDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
-  const year = taiwanDate.getFullYear();
-  const month = taiwanDate.getMonth();
-  const day = taiwanDate.getDate();
-  
-  // Use date as seed for consistent random minute (0-59) throughout the day
-  // This creates a deterministic "random" time between 00:00-00:59
-  const seed = year * 10000 + month * 100 + day;
-  const randomMinute = seed % 60; // 0-59 minutes
-  
-  // Create date at midnight (00:00) with random minute (00:00-00:59) in Taiwan timezone
-  // Format: YYYY-MM-DDTHH:mm:ss+08:00
-  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:${String(randomMinute).padStart(2, '0')}:00+08:00`;
-  const taiwanUpdatedDate = new Date(dateStr);
-  
-  return taiwanUpdatedDate;
+export function getDailyUpdatedTime(seed: string = "daily-updated-tw"): Date {
+  const timeZone = "Asia/Taipei";
+  const now = new Date();
+  const hourLocal = getHourInTimeZone(now, timeZone);
+  const effectiveDate = hourLocal < 1 ? new Date(now.getTime() - 24 * 60 * 60 * 1000) : now;
+  const { year, month, day } = getDatePartsInTimeZone(effectiveDate, timeZone);
+  const randomMinute = stableDailyJitterMinutes(seed, year, month, day);
+  const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T00:${String(randomMinute).padStart(2, "0")}:00+08:00`;
+  return new Date(dateStr);
 }
 
 /**
