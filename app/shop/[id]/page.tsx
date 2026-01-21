@@ -3,7 +3,7 @@ import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl, getStartsAtFilterPar
 import { pageMeta, extractUrlFromRichText } from '@/seo/meta';
 import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
-import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, generateRatingCount } from '@/lib/jsonld';
+import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, getDailyUpdatedTimeIso, generateRatingCount } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
 
 /**
@@ -892,10 +892,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
     const dailyUpdatedTime = getDailyUpdatedTime();
     
     // Format last updated date for server-side display
-    const lastUpdatedDate = dailyUpdatedTime.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
+    const lastUpdatedDate = dailyUpdatedTime.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
     
-    // Format updated time as ISO string for schema and meta tags
-    const updatedTimeISO = dailyUpdatedTime.toISOString();
+    // Format updated time as ISO string with local offset
+    const updatedTimeISO = getDailyUpdatedTimeIso();
 
     // Rewrite logo URL to custom domain (for both client component and schema)
     const originalLogoUrl = merchantData.logo?.url ? absolutizeMedia(merchantData.logo.url) : null;

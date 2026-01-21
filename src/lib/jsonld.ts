@@ -3,6 +3,9 @@
 
 type UrlString = string;
 
+const TIME_ZONE = "Asia/Taipei";
+const TIME_OFFSET = "+08:00";
+
 function getDatePartsInTimeZone(date: Date, timeZone: string) {
   const dtf = new Intl.DateTimeFormat("en-CA", {
     timeZone,
@@ -25,6 +28,32 @@ function getHourInTimeZone(date: Date, timeZone: string) {
   return Number(hour || 0);
 }
 
+function getTimePartsInTimeZone(date: Date, timeZone: string) {
+  const dtf = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = dtf.formatToParts(date);
+  const map: Record<string, string> = {};
+  for (const p of parts) {
+    if (p.type !== "literal") map[p.type] = p.value;
+  }
+  return {
+    year: map.year,
+    month: map.month,
+    day: map.day,
+    hour: map.hour,
+    minute: map.minute,
+    second: map.second,
+  };
+}
+
 function stableDailyJitterMinutes(seed: string, y: number, m: number, d: number) {
   const s = `${seed}:${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   let h = 0;
@@ -45,14 +74,20 @@ function toTaipeiIso(dateStr?: string | null): string | undefined {
  * Only flips to "today" after 01:00 local time.
  */
 export function getDailyUpdatedTime(seed: string = "daily-updated-tw"): Date {
-  const timeZone = "Asia/Taipei";
+  const timeZone = TIME_ZONE;
   const now = new Date();
   const hourLocal = getHourInTimeZone(now, timeZone);
   const effectiveDate = hourLocal < 1 ? new Date(now.getTime() - 24 * 60 * 60 * 1000) : now;
   const { year, month, day } = getDatePartsInTimeZone(effectiveDate, timeZone);
   const randomMinute = stableDailyJitterMinutes(seed, year, month, day);
-  const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T00:${String(randomMinute).padStart(2, "0")}:00+08:00`;
+  const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T00:${String(randomMinute).padStart(2, "0")}:00${TIME_OFFSET}`;
   return new Date(dateStr);
+}
+
+export function getDailyUpdatedTimeIso(seed: string = "daily-updated-tw"): string {
+  const time = getDailyUpdatedTime(seed);
+  const parts = getTimePartsInTimeZone(time, TIME_ZONE);
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}${TIME_OFFSET}`;
 }
 
 /**

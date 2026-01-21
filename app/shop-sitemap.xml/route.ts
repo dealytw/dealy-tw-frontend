@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { strapiFetch, qs } from '@/lib/strapi.server'
 import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
-import { getDailyUpdatedTime } from '@/lib/jsonld'
+import { getDailyUpdatedTimeIso } from '@/lib/jsonld'
 
 // Daily refresh: keep sitemap <lastmod> aligned with "每日更新" UI.
 export const revalidate = 86400 // 24 hours
@@ -40,7 +40,7 @@ export async function GET() {
         const url = `${baseUrl}/shop/${slug}`
         // Intentionally set to "today" to match the UI's "每日更新" semantics.
         // Use a per-merchant deterministic jitter so each <lastmod> is different.
-        const lastmod = getDailyUpdatedTime(`tw-shop-sitemap:${slug || 'unknown'}`).toISOString()
+        const lastmod = getDailyUpdatedTimeIso(`tw-shop-sitemap:${slug || 'unknown'}`)
         return { url, lastmod }
       })
   } catch (error) {
