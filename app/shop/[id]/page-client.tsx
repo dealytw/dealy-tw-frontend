@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CouponCard from "@/components/CouponCard";
 import RelatedMerchantCouponCard from "@/components/RelatedMerchantCouponCard";
 import MerchantRating from "@/components/MerchantRating";
+import ContactFormClient from "./ContactFormClient";
 import { toast as sonnerToast } from "sonner";
 
 // Get Taiwan time (UTC+8)
@@ -113,121 +114,6 @@ function blocksToHTML(blocks: any): string {
     
     return '';
   }).join('\n');
-}
-
-// Contact Form Component
-function ContactForm({ merchantName }: { merchantName: string }) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      message: formData.get('message') as string,
-      merchantName: merchantName,
-    };
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        // Try to parse error response
-        let errorMessage = '請稍後再試。';
-        try {
-          const errorResult = await response.json();
-          errorMessage = errorResult.error || errorMessage;
-        } catch (parseError) {
-          // If JSON parsing fails, use status text
-          errorMessage = response.statusText || errorMessage;
-        }
-        
-        console.error('Contact form submission failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorMessage,
-        });
-        
-        sonnerToast.error("提交失敗", {
-          description: errorMessage,
-          duration: 5000,
-        });
-        return;
-      }
-
-      const result = await response.json();
-      
-      if (result.message) {
-        sonnerToast.success("✅ 提交成功！", {
-          description: result.message,
-          duration: 5000, // Show for 5 seconds
-        });
-        // Reset form safely
-        if (formRef.current) {
-          formRef.current.reset();
-        }
-      } else {
-        // Unexpected response format
-        console.warn('Unexpected response format:', result);
-        sonnerToast.success("✅ 提交成功！", {
-          description: "我們會盡快回覆您的訊息。",
-          duration: 5000, // Show for 5 seconds
-        });
-        if (formRef.current) {
-          formRef.current.reset();
-        }
-      }
-    } catch (error) {
-      console.error('Contact form submission error:', error);
-      sonnerToast.error("提交失敗", {
-        description: error instanceof Error ? error.message : "網路錯誤，請檢查連線後再試。",
-        duration: 5000,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="contact-name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-          ✍️ 你的名字 *
-        </Label>
-        <Input id="contact-name" name="name" required className="mt-1" />
-      </div>
-      <div>
-        <Label htmlFor="contact-email" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-          💗 你的電郵 *
-        </Label>
-        <Input id="contact-email" name="email" type="email" required className="mt-1" />
-      </div>
-      <div>
-        <Label htmlFor="contact-message" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-          ✍️ 你的信息 （歡迎任何意見或問題） *
-        </Label>
-        <Textarea id="contact-message" name="message" rows={6} required className="mt-1" />
-      </div>
-      <Button 
-        type="submit"
-        disabled={isSubmitting}
-        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 disabled:opacity-50"
-      >
-        {isSubmitting ? '提交中...' : '📧提交'}
-      </Button>
-    </form>
-  );
 }
 
 // Helper function to extract text from Strapi rich text
@@ -1563,7 +1449,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   <h2 className="text-xl font-bold text-gray-800">聯絡我們</h2>
                 </CardHeader>
                 <CardContent>
-                  <ContactForm merchantName={merchant.name} />
+                  <ContactFormClient merchantName={merchant.name} />
                 </CardContent>
               </Card>
             </div>

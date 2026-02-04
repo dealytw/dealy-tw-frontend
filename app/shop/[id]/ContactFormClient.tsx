@@ -1,18 +1,56 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import Script from "next/script";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast as sonnerToast } from "sonner";
 
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
 export default function ContactFormClient({ merchantName }: { merchantName: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileWidgetIdRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const pageLoadTsRef = useRef<number>(Date.now());
+
+  const resetTurnstile = () => {
+    if (typeof window !== "undefined" && (window as any).turnstile && turnstileWidgetIdRef.current) {
+      try {
+        (window as any).turnstile.reset(turnstileWidgetIdRef.current);
+        turnstileWidgetIdRef.current = null;
+        setTurnstileToken(null);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && (window as any).turnstile && turnstileWidgetIdRef.current) {
+        try {
+          (window as any).turnstile.remove(turnstileWidgetIdRef.current);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      sonnerToast.error("提交失敗", {
+        description: "請稍候，驗證尚未完成。",
+        duration: 5000,
+      });
+      return;
+    }
     setIsSubmitting(true);
 
     const form = e.currentTarget;
@@ -22,6 +60,9 @@ export default function ContactFormClient({ merchantName }: { merchantName: stri
       email: formData.get("email") as string,
       message: formData.get("message") as string,
       merchantName: merchantName,
+      turnstileToken: turnstileToken || undefined,
+      pageLoadTs: pageLoadTsRef.current,
+      company_website: formData.get("company_website") as string | undefined,
     };
 
     try {
@@ -51,6 +92,7 @@ export default function ContactFormClient({ merchantName }: { merchantName: stri
       });
 
       if (formRef.current) formRef.current.reset();
+      resetTurnstile();
     } catch (error) {
       sonnerToast.error("提交失敗", {
         description: error instanceof Error ? error.message : "網路錯誤，請檢查連線後再試。",
@@ -63,6 +105,44 @@ export default function ContactFormClient({ merchantName }: { merchantName: stri
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+      {/* Honeypot - hidden from users, bots will fill it */}
+      <div className="absolute -left-[9999px] w-1 h-1 overflow-hidden" aria-hidden="true">
+        <label htmlFor="company_website">請勿填寫</label>
+        <input
+          id="company_website"
+          name="company_website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+      {TURNSTILE_SITE_KEY && (
+        <>
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="lazyOnload"
+            onLoad={() => {
+              if (
+                typeof window !== "undefined" &&
+                (window as any).turnstile &&
+                turnstileContainerRef.current &&
+                !turnstileWidgetIdRef.current
+              ) {
+                const w = (window as any).turnstile.render(turnstileContainerRef.current, {
+                  sitekey: TURNSTILE_SITE_KEY,
+                  callback: (token: string) => {
+                    setTurnstileToken(token);
+                  },
+                  "error-callback": () => setTurnstileToken(null),
+                  "expired-callback": () => setTurnstileToken(null),
+                });
+                turnstileWidgetIdRef.current = w;
+              }
+            }}
+          />
+          <div ref={turnstileContainerRef} />
+        </>
+      )}
       <div>
         <Label htmlFor="contact-name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
           ✍️ 你的名字 *
@@ -91,4 +171,3 @@ export default function ContactFormClient({ merchantName }: { merchantName: stri
     </form>
   );
 }
-

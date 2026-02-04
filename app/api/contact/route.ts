@@ -2,10 +2,39 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 const DEBUG = process.env.NODE_ENV !== 'production';
+const MIN_SUBMIT_MS = 1500; // Too fast = likely bot
 
 // Lazy-safe Resend client: avoid throwing at import time when API key is missing
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+function getClientIp(request: Request): string | null {
+  const cf = request.headers.get('cf-connecting-ip');
+  if (cf) return cf;
+  const xff = request.headers.get('x-forwarded-for');
+  return xff ? xff.split(',')[0].trim() : null;
+}
+
+async function verifyTurnstile(token: string): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return true; // Skip if not configured (dev)
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const data = await res.json();
+    return !!data?.success;
+  } catch (e) {
+    if (DEBUG) console.warn('[contact] Turnstile verify error:', e);
+    return false;
+  }
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export async function POST(request: Request) {
   try {
@@ -15,19 +44,69 @@ export async function POST(request: Request) {
     } catch (parseError) {
       console.error('Error parsing request body:', parseError);
       return NextResponse.json(
-        { error: '無效的請求格式' },
-        { status: 400 }
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
       );
     }
 
-    const { name, email, message, merchantName } = body;
+    const { name, email, message, merchantName, turnstileToken, pageLoadTs, company_website } = body;
+
+    // Anti-spam: honeypot filled → return 200 (don't send)
+    if (company_website && String(company_website).trim()) {
+      if (DEBUG) console.log('[contact] Blocked: honeypot filled');
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
+
+    // Anti-spam: submission too fast (< 1500ms from page load)
+    if (typeof pageLoadTs === 'number' && Date.now() - pageLoadTs < MIN_SUBMIT_MS) {
+      if (DEBUG) console.log('[contact] Blocked: submission too fast');
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
+
+    // Anti-spam: verify Turnstile server-side
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      if (!turnstileToken || typeof turnstileToken !== 'string') {
+        if (DEBUG) console.log('[contact] Blocked: missing Turnstile token');
+        return NextResponse.json(
+          { message: '提交成功！我們會盡快回覆您的訊息。' },
+          { status: 200 }
+        );
+      }
+      const ok = await verifyTurnstile(turnstileToken);
+      if (!ok) {
+        if (DEBUG) console.log('[contact] Blocked: Turnstile verification failed');
+        return NextResponse.json(
+          { message: '提交成功！我們會盡快回覆您的訊息。' },
+          { status: 200 }
+        );
+      }
+    }
 
     // Validate required fields
     if (!name || !email || !message) {
-      console.error('Missing required fields:', { name: !!name, email: !!email, message: !!message });
       return NextResponse.json(
-        { error: '姓名、電郵地址和訊息為必填項' },
-        { status: 400 }
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
+
+    // Validate email format and message length
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
+    if (String(message).length > 10000) {
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
       );
     }
 
@@ -59,6 +138,10 @@ export async function POST(request: Request) {
         .replace(/'/g, '&#039;');
     };
 
+    // Include source and IP for inbox/debugging
+    const source = request.headers.get('origin') || request.headers.get('referer') || 'https://dealy.tw';
+    const clientIp = getClientIp(request);
+
     // Send email to info@dealy.tw
     const emailSubject = `[Dealy.TW] 聯絡我們${merchantName ? ` - ${merchantName}` : ''} - ${name}`;
     const emailText = `
@@ -67,6 +150,8 @@ export async function POST(request: Request) {
 姓名：${name}
 電郵：${email}
 ${merchantName ? `商家：${merchantName}\n` : ''}
+來源：${source}
+${clientIp ? `IP：${clientIp}\n` : ''}
 訊息：
 ${message}
 
@@ -81,6 +166,8 @@ ${message}
           <p><strong>姓名：</strong>${escapeHtml(name)}</p>
           <p><strong>電郵：</strong><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
           ${merchantName ? `<p><strong>商家：</strong>${escapeHtml(merchantName)}</p>` : ''}
+          <p><strong>來源：</strong>${escapeHtml(source)}</p>
+          ${clientIp ? `<p><strong>IP：</strong>${escapeHtml(clientIp)}</p>` : ''}
         </div>
         <div style="margin: 20px 0;">
           <h3 style="color: #333;">訊息：</h3>
@@ -140,9 +227,10 @@ ${message}
     }
   } catch (error) {
     console.error('Error submitting contact form:', error);
+    // Always return 200 + generic success to avoid leaking info to bots
     return NextResponse.json(
-      { error: '提交失敗，請稍後再試。' },
-      { status: 500 }
+      { message: '提交成功！我們會盡快回覆您的訊息。' },
+      { status: 200 }
     );
   }
 }
