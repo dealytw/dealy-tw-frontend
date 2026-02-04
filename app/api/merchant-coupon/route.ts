@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { strapiFetch, qs, getStartsAtFilterParams } from "@/lib/strapi.server";
 
+export const dynamic = 'force-dynamic'; // Uses request.url for searchParams
 export const runtime = 'nodejs';
 export const revalidate = 86400; // Cache for 24 hours - coupons don't change frequently
 

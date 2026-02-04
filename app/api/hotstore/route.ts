@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { strapiFetch, qs, absolutizeMedia, rewriteImageUrl } from '@/lib/strapi.server';
 
+export const dynamic = 'force-dynamic'; // Uses request.url for searchParams
 export const revalidate = 15552000; // 6 months (180 days) - hotstore data rarely changes
 
 const CACHE_CONTROL = 'public, s-maxage=15552000, stale-while-revalidate=604800';
