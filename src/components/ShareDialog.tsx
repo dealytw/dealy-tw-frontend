@@ -21,8 +21,16 @@ interface ShareDialogProps {
 export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps) {
   const [copied, setCopied] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
+  const [clientUrl, setClientUrl] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Resolve url on client only to avoid hydration mismatch (#418)
+  useEffect(() => {
+    if (typeof window !== 'undefined') setClientUrl(window.location.href);
+  }, []);
+
+  const effectiveUrl = clientUrl || url;
 
   // Check if scrolling is needed
   useEffect(() => {
@@ -48,7 +56,7 @@ export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(effectiveUrl);
       setCopied(true);
       toast({
         title: "已複製",
@@ -65,7 +73,7 @@ export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps
   };
 
   const handleShare = (platform: string) => {
-    const encodedUrl = encodeURIComponent(url);
+    const encodedUrl = encodeURIComponent(effectiveUrl);
     const encodedTitle = encodeURIComponent(title);
 
     switch (platform) {
@@ -191,7 +199,7 @@ export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Input
-                value={url}
+                value={effectiveUrl}
                 readOnly
                 className="flex-1"
               />

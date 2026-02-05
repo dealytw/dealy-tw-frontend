@@ -47,7 +47,7 @@ export default function MerchantShareButtons({ title }: { title: string }) {
       <ShareDialog
         open={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
-        url={typeof window !== "undefined" ? window.location.href : ""}
+        url=""
         title={title}
       />
     </>

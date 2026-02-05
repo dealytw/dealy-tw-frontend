@@ -24,11 +24,6 @@ import MerchantRating from "@/components/MerchantRating";
 import ContactFormClient from "./ContactFormClient";
 import { toast as sonnerToast } from "sonner";
 
-// Get Taiwan time (UTC+8)
-function getTaiwanDate() {
-  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
-}
-
 /**
  * Convert Strapi blocks to HTML
  */
@@ -713,7 +708,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   </h1>
                   <div className="flex items-center justify-between md:justify-start">
                     {merchant.lastUpdatedDate && (
-                      <span className="text-xs text-gray-600 sm:mb-1">
+                      <span className="text-xs text-gray-600 sm:mb-1" suppressHydrationWarning>
                         最近更新：<time dateTime={merchant.lastUpdatedDateISO || undefined}>{merchant.lastUpdatedDate}</time>（每日更新）{" "}
                         <Link href="/about" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
                           by Dealy TW Team
@@ -1482,7 +1477,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
       <ShareDialog 
         open={isShareDialogOpen} 
         onOpenChange={setIsShareDialogOpen} 
-        url={typeof window !== 'undefined' ? window.location.href : ''} 
+        url="" 
         title={merchant.h1Title || merchant.page_title_h1 || merchant.name} 
       />
       
