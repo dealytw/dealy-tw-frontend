@@ -5,7 +5,7 @@
 import 'server-only';
 
 type NextInit = RequestInit & { revalidate?: number; tag?: string };
-const DEBUG = process.env.NODE_ENV !== 'production';
+const DEBUG_STRAPI = process.env.DEBUG_STRAPI === '1';
 
 export async function strapiFetch<T>(path: string, init?: NextInit) {
   const baseUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_URL;
@@ -16,7 +16,7 @@ export async function strapiFetch<T>(path: string, init?: NextInit) {
   const url = `${baseUrl}${path}`;
   const { revalidate, tag, ...rest } = init || {};
   
-  if (DEBUG) console.log('[strapiFetch] Request', url);
+  if (DEBUG_STRAPI) console.log('[strapiFetch] Request', url);
   
   // Note: We use Next.js 'next' option for ISR instead of 'cache: no-store'
   // This provides better performance with automatic revalidation

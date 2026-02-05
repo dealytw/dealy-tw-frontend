@@ -453,16 +453,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       notFound();
     }
 
-    // Fetch ogImage and logo separately (with populate) - keep this separate to avoid breaking title/description
-    // This keeps getMerchantSEO response in flat format while still getting images
+    // Fetch logo separately (with populate) - keep this separate to avoid breaking title/description
+    // Note: ogImage is not in Strapi merchant schema; use logo or fallback to og-image.png
     let merchantLogo: any = null;
-    let merchantOgImage: any = null;
     
     try {
       const imageRes = await strapiFetch<{ data: any[] }>(`/api/merchants?${qs({
         'filters[page_slug][$eq]': id,
         'fields[0]': 'id',
-        'populate[ogImage][fields][0]': 'url',
         'populate[logo][fields][0]': 'url',
       })}`, {
         revalidate: 43200, // Cache for 12 hours - merchant images don't change frequently
@@ -471,7 +469,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       
       const imageMerchant = imageRes.data?.[0];
       if (imageMerchant) {
-        // Extract ogImage and logo from populated response
+        // Extract logo from populated response
         const getPopulatedField = (fieldName: string) => {
           const attrField = imageMerchant.attributes?.[fieldName];
           const rootField = imageMerchant[fieldName];
@@ -487,8 +485,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
           return rootField || null;
         };
         
-        // Inject ogImage and logo into merchant object
-        merchantOgImage = getPopulatedField('ogImage');
         merchantLogo = getPopulatedField('logo');
       }
     } catch (imageError) {
@@ -616,10 +612,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       // Use merchant logo for og:image
       const absoluteLogo = absolutizeMedia(merchantLogo.url);
       ogImageUrl = rewriteImageUrl(absoluteLogo, siteUrl);
-    } else if (merchantOgImage?.url) {
-      // Fallback to ogImage if logo is not available
-      const absoluteOgImage = absolutizeMedia(merchantOgImage.url);
-      ogImageUrl = rewriteImageUrl(absoluteOgImage, siteUrl);
     }
     
     // Fallback to default OG image if no merchant image available
