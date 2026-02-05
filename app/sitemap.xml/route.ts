@@ -1,30 +1,43 @@
 import { NextResponse } from 'next/server'
-import { getDomainConfig as getDomainConfigServer } from '@/lib/domain-config'
+import { getDomainConfig } from '@/lib/domain-config'
+import {
+  getPageSitemapData,
+  getBlogSitemapData,
+  getShopSitemapData,
+  getTopicpageSitemapData,
+  getCategorySitemapData,
+} from '@/lib/sitemap-data'
 
-// Long cache: sitemaps are heavily crawled; keep edge-cached to reduce Strapi API calls.
 export const revalidate = 259200 // 72 hours (3 days)
 
 const SITEMAP_CACHE_CONTROL = 'public, s-maxage=259200, stale-while-revalidate=86400' // 72 hours
 
 export async function GET() {
-  const domainConfig = getDomainConfigServer()
+  const domainConfig = getDomainConfig()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${domainConfig.domain}`
-  const currentDate = new Date()
+  const market = 'tw'
 
-  // Build sitemap index XML
+  const [pageData, blogData, shopData, topicpageData, categoryData] = await Promise.all([
+    getPageSitemapData(baseUrl, market),
+    getBlogSitemapData(baseUrl, market),
+    getShopSitemapData(baseUrl, market),
+    getTopicpageSitemapData(baseUrl, market),
+    getCategorySitemapData(baseUrl, market),
+  ])
+
   const sitemaps = [
-    `${baseUrl}/page-sitemap.xml`,
-    `${baseUrl}/blog-sitemap.xml`,
-    `${baseUrl}/shop-sitemap.xml`,
-    `${baseUrl}/topicpage-sitemap.xml`,
-    `${baseUrl}/category-sitemap.xml`,
+    { url: `${baseUrl}/page-sitemap.xml`, lastmod: pageData.maxLastmod },
+    { url: `${baseUrl}/blog-sitemap.xml`, lastmod: blogData.maxLastmod },
+    { url: `${baseUrl}/shop-sitemap.xml`, lastmod: shopData.maxLastmod },
+    { url: `${baseUrl}/topicpage-sitemap.xml`, lastmod: topicpageData.maxLastmod },
+    { url: `${baseUrl}/category-sitemap.xml`, lastmod: categoryData.maxLastmod },
   ]
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${sitemaps.map(url => `  <sitemap>
-    <loc>${url}</loc>
-    <lastmod>${currentDate.toISOString()}</lastmod>
+${sitemaps.map(s => `  <sitemap>
+    <loc>${s.url}</loc>
+    <lastmod>${s.lastmod}</lastmod>
   </sitemap>`).join('\n')}
 </sitemapindex>`
 
@@ -35,4 +48,3 @@ ${sitemaps.map(url => `  <sitemap>
     },
   })
 }
-
