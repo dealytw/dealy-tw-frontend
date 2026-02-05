@@ -66,37 +66,60 @@ const nextConfig: NextConfig = {
       },
     ];
 
-    // Full security headers for HTML pages
+    // Base CSP (no Turnstile - used for all pages except /shop/*)
+    const baseCsp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
+      "frame-src 'self' https://www.googletagmanager.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "upgrade-insecure-requests",
+    ].join('; ');
+
+    // CSP for /shop/* only: add Turnstile allowlist (contact form pages)
+    const turnstileCsp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com https://challenges.cloudflare.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr https://challenges.cloudflare.com",
+      "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "upgrade-insecure-requests",
+    ].join('; ');
+
     const fullHeaders = [
       ...commonHeaders,
-      {
-        key: 'X-Frame-Options',
-        value: 'SAMEORIGIN',
-      },
-      {
-        key: 'Content-Security-Policy',
-        value: [
-          "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com",
-          "style-src 'self' 'unsafe-inline'",
-          "img-src 'self' data: https: blob:",
-          "font-src 'self' data:", // Only allow self-hosted fonts and data URIs - use browser default fonts (blocks external font loading from extensions/third-party scripts)
-          "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
-          "frame-src 'self' https://www.googletagmanager.com",
-          "object-src 'none'",
-          "base-uri 'self'",
-          "form-action 'self'",
-          "frame-ancestors 'self'",
-          "upgrade-insecure-requests",
-        ].join('; '),
-      },
+      { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+      { key: 'Content-Security-Policy', value: baseCsp },
+    ];
+
+    const shopFullHeaders = [
+      ...commonHeaders,
+      { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+      { key: 'Content-Security-Policy', value: turnstileCsp },
     ];
 
     return [
-      // Apply full headers to HTML pages (exclude static assets)
+      // Base: full headers for all HTML pages
       {
         source: '/:path*',
         headers: fullHeaders,
+      },
+      // Override for /shop/*: CSP includes Turnstile (contact form)
+      {
+        source: '/shop/:path*',
+        headers: shopFullHeaders,
       },
       // Apply basic security headers to Next.js static assets (JS, CSS, images)
       {

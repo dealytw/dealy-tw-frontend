@@ -3,6 +3,31 @@ import { Resend } from 'resend';
 
 const DEBUG = process.env.NODE_ENV !== 'production';
 const MIN_SUBMIT_MS = 1500; // Too fast = likely bot
+const RATE_LIMIT_PER_MIN = 10;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+
+// In-memory per-IP rate limit (serverless: per-instance; sufficient for basic abuse protection)
+const ipCounts = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string | null): boolean {
+  if (!ip) return true; // Allow if IP unknown (e.g. dev)
+  const now = Date.now();
+  const entry = ipCounts.get(ip);
+  if (!entry) {
+    ipCounts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (now >= entry.resetAt) {
+    ipCounts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  entry.count += 1;
+  if (entry.count > RATE_LIMIT_PER_MIN) {
+    if (DEBUG) console.log('[contact] Blocked: rate limit exceeded for IP');
+    return false;
+  }
+  return true;
+}
 
 // Lazy-safe Resend client: avoid throwing at import time when API key is missing
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -50,6 +75,14 @@ export async function POST(request: Request) {
     }
 
     const { name, email, message, merchantName, turnstileToken, pageLoadTs, company_website } = body;
+
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(clientIp)) {
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
 
     // Anti-spam: honeypot filled → return 200 (don't send)
     if (company_website && String(company_website).trim()) {
@@ -140,7 +173,6 @@ export async function POST(request: Request) {
 
     // Include source and IP for inbox/debugging
     const source = request.headers.get('origin') || request.headers.get('referer') || 'https://dealy.tw';
-    const clientIp = getClientIp(request);
 
     // Send email to info@dealy.tw
     const emailSubject = `[Dealy.TW] 聯絡我們${merchantName ? ` - ${merchantName}` : ''} - ${name}`;
