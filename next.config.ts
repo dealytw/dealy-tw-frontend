@@ -66,15 +66,15 @@ const nextConfig: NextConfig = {
       },
     ];
 
-    // Base CSP (no Turnstile - used for all pages except /shop/*)
+    // Base CSP (includes Turnstile - widget only loads on /shop/* but allowlist needed for script)
     const baseCsp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https: blob:",
       "font-src 'self' data: https://fonts.gstatic.com https://challenges.cloudflare.com https://cdn.cloudflare.com",
-      "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
-      "frame-src 'self' https://www.googletagmanager.com",
+      "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr https://challenges.cloudflare.com",
+      "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

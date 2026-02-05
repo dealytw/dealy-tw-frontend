@@ -315,7 +315,7 @@ const DealyCouponCard = ({
               <span>優惠期限 {coupon.expiry}</span>
             )}
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
+            <span className="text-gray-600" suppressHydrationWarning>{coupon.usageCount} 人已使用</span>
           </p>
 
           {/* Expose promo code in initial HTML for crawling (visually hidden). */}
