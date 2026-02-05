@@ -47,16 +47,19 @@ export const DOMAIN_CONFIG = {
 export type DomainConfig = typeof DOMAIN_CONFIG[keyof typeof DOMAIN_CONFIG];
 
 /**
- * Get domain configuration based on hostname (client-side only)
+ * Get domain configuration based on hostname
  * Client-side: Uses window.location.hostname
+ * Server-side: Uses NEXT_PUBLIC_SITE_URL for hydration consistency (avoids React #418)
  */
 export function getDomainConfig(): DomainConfig {
   if (typeof window === 'undefined') {
-    // Server-side fallback - should not be called in client components
-    // Default to TW
+    // Server-side: use env to match client (avoids hydration mismatch)
+    const siteUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SITE_URL || '' : '';
+    if (siteUrl.includes('dealy.hk')) return DOMAIN_CONFIG['dealy.hk'];
+    if (siteUrl.includes('dealy.tw')) return DOMAIN_CONFIG['dealy.tw'];
     return DOMAIN_CONFIG['dealy.tw'];
   }
-  
+
   const hostname = window.location.hostname;
   return DOMAIN_CONFIG[hostname as keyof typeof DOMAIN_CONFIG] || DOMAIN_CONFIG['dealy.tw'];
 }
