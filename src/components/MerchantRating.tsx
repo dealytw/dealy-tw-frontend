@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Star } from "lucide-react";
-import { generateRatingCount } from "@/lib/jsonld";
 
 interface MerchantRatingProps {
   merchantName: string;
+  ratingCount: number; // Server-computed for hydration consistency
 }
 
-export default function MerchantRating({ merchantName }: MerchantRatingProps) {
+export default function MerchantRating({ merchantName, ratingCount }: MerchantRatingProps) {
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -16,9 +16,6 @@ export default function MerchantRating({ merchantName }: MerchantRatingProps) {
   // Default rating display (fake 5/5)
   const defaultRating = 5;
   const displayRating = selectedRating ?? defaultRating;
-
-  // Generate deterministic random rating count (shared with schema markup)
-  const ratingCount = generateRatingCount(merchantName);
 
   const handleStarClick = (rating: number) => {
     if (hasVoted) return;
@@ -78,7 +75,7 @@ export default function MerchantRating({ merchantName }: MerchantRatingProps) {
         })}
       </div>
       
-      <span className="text-sm text-gray-500 whitespace-nowrap" suppressHydrationWarning>
+      <span className="text-sm text-gray-500 whitespace-nowrap">
         平均評分:{displayRating}/5 {ratingCount}人已評分
       </span>
       

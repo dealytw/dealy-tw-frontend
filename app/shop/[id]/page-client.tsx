@@ -487,22 +487,6 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
     void copyTextToClipboard(code);
   };
 
-  const formatExpiryDate = (expiresAt: any): string => {
-    if (!expiresAt) return "長期有效";
-    if (typeof expiresAt === "string") {
-      // Prefer YYYY-MM-DD if it's an ISO string
-      if (expiresAt.length >= 10) return expiresAt.slice(0, 10);
-      return expiresAt;
-    }
-    try {
-      const d = new Date(expiresAt);
-      if (Number.isNaN(d.getTime())) return "長期有效";
-      return d.toISOString().slice(0, 10);
-    } catch {
-      return "長期有效";
-    }
-  };
-  
   // Determine which filters to show based on merchant settings
   // When location_filtering and creditcard_filtering are false (default), show simple filters
   const useSimpleFilters = !merchant.location_filtering && !merchant.creditcard_filtering;
@@ -809,8 +793,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 {c.coupon_title || merchant.name}
                               </a>
                             </td>
-                            <td className="py-1 align-top whitespace-nowrap text-gray-700" suppressHydrationWarning>
-                              {formatExpiryDate(c.expires_at)}
+                            <td className="py-1 align-top whitespace-nowrap text-gray-700">
+                              {c.expires_at_formatted ?? "長期有效"}
                             </td>
                           </tr>
                         );
@@ -1091,7 +1075,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
 
               {/* Merchant Rating Section */}
               <div className="mb-10 py-4 border-t border-b border-gray-200">
-                <MerchantRating merchantName={merchant.name} />
+                <MerchantRating merchantName={merchant.name} ratingCount={merchant.ratingCount ?? 0} />
               </div>
 
               {/* Expired Coupons Section */}

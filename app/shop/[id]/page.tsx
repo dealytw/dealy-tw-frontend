@@ -956,6 +956,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       h1Title: h1Title, // Pre-generated H1 title from server
       lastUpdatedDate: lastUpdatedDate, // Pre-formatted date from server
       lastUpdatedDateISO: updatedTimeISO, // ISO date string for <time datetime>
+      ratingCount: generateRatingCount(merchantData.merchant_name), // Server-computed for hydration consistency
       special_offers: (() => {
         // Handle different formats for manyToMany relation (same as related_merchants)
         let specialOffersFromCMS = [];
@@ -1069,6 +1070,22 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
       console.warn(`[MerchantPage] Full hotstoreRes:`, JSON.stringify(hotstoreRes, null, 2).substring(0, 1000));
     }
 
+    // Format expiry date for display (server-side for hydration consistency)
+    const formatExpiryDate = (expiresAt: any): string => {
+      if (!expiresAt) return "長期有效";
+      if (typeof expiresAt === "string") {
+        if (expiresAt.length >= 10) return expiresAt.slice(0, 10);
+        return expiresAt;
+      }
+      try {
+        const d = new Date(expiresAt);
+        if (Number.isNaN(d.getTime())) return "長期有效";
+        return d.toISOString().slice(0, 10);
+      } catch {
+        return "長期有效";
+      }
+    };
+
     // Transform coupons data
     const transformedCoupons = allCoupons.map((coupon: any) => {
       // Rewrite merchant logo to custom /upload domain for all coupon cards & modal
@@ -1085,6 +1102,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         value: coupon.value,
         code: coupon.code,
         expires_at: coupon.expires_at,
+        expires_at_formatted: formatExpiryDate(coupon.expires_at), // Server-computed for hydration consistency
         user_count: coupon.user_count || 0,
         display_count: coupon.display_count || 0, // Add display_count for usage tracking
         description: coupon.description || "",

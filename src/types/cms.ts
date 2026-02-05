@@ -330,6 +330,7 @@ export type TransformedShop = {
   h1Title?: string; // Pre-generated H1 title from server
   lastUpdatedDate?: string; // Pre-formatted date from server
   lastUpdatedDateISO?: string; // ISO date string for <time datetime>
+  ratingCount?: number; // Server-computed for hydration consistency
 };
 
 export type TransformedCoupon = {
