@@ -21,16 +21,12 @@ interface ShareDialogProps {
 export function ShareDialog({ open, onOpenChange, url, title }: ShareDialogProps) {
   const [copied, setCopied] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
-  const [clientUrl, setClientUrl] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Resolve url on client only to avoid hydration mismatch (#418)
-  useEffect(() => {
-    if (typeof window !== 'undefined') setClientUrl(window.location.href);
-  }, []);
+  // url is server-rendered from parent - no client resolution needed
 
-  const effectiveUrl = clientUrl || url;
+  const effectiveUrl = url;
 
   // Check if scrolling is needed
   useEffect(() => {

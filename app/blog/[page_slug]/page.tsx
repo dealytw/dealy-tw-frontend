@@ -633,7 +633,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
     return (
       <>
-        <BlogView blog={transformedBlog} />
+        <BlogView blog={transformedBlog} shareUrl={blogPostUrl} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       </>
     );

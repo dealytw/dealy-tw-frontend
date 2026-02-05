@@ -310,9 +310,10 @@ interface MerchantProps {
   alternateUrl?: string | null;
   smallBlogSection?: any;
   smallBlogSectionTitle?: string | null;
+  shareUrl?: string;
 }
 
-const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [], relatedBlogs = [], smallBlogSection, smallBlogSectionTitle }: MerchantProps) => {
+const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alternateUrl, hotstoreMerchants = [], market, specialOffers = [], relatedBlogs = [], smallBlogSection, smallBlogSectionTitle, shareUrl = '' }: MerchantProps) => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   
   const handleShare = (platform: string) => {
@@ -1374,7 +1375,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
       <ShareDialog 
         open={isShareDialogOpen} 
         onOpenChange={setIsShareDialogOpen} 
-        url="" 
+        url={shareUrl} 
         title={merchant.h1Title || merchant.page_title_h1 || merchant.name} 
       />
       

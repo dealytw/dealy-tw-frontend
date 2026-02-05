@@ -107,6 +107,7 @@ interface Blog {
 
 interface BlogViewProps {
   blog: Blog;
+  shareUrl?: string;
 }
 
 // Helper function to convert Strapi rich text blocks to HTML
@@ -196,7 +197,7 @@ function blocksToHTML(blocks: any): string {
   }).join('\n');
 }
 
-export default function BlogView({ blog }: BlogViewProps) {
+export default function BlogView({ blog, shareUrl = '' }: BlogViewProps) {
   const [tableOfContents, setTableOfContents] = useState<{id: string, title: string}[]>([]);
   const [revealedPromoCodes, setRevealedPromoCodes] = useState<Record<string, boolean>>({});
   const [isTOCOpen, setIsTOCOpen] = useState(false);
@@ -1524,7 +1525,7 @@ export default function BlogView({ blog }: BlogViewProps) {
       <ShareDialog 
         open={isShareDialogOpen} 
         onOpenChange={setIsShareDialogOpen} 
-        url={typeof window !== 'undefined' ? window.location.href : ''} 
+        url={shareUrl} 
         title={blog.title} 
       />
     </div>

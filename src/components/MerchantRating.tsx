@@ -75,7 +75,7 @@ export default function MerchantRating({ merchantName, ratingCount }: MerchantRa
         })}
       </div>
       
-      <span className="text-sm text-gray-500 whitespace-nowrap">
+      <span className="text-sm text-gray-500 whitespace-nowrap" suppressHydrationWarning>
         平均評分:{displayRating}/5 {ratingCount}人已評分
       </span>
       

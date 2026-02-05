@@ -1308,6 +1308,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
           alternateUrl={alternateUrl || null}
           smallBlogSection={merchant.small_blog_section || null}
           smallBlogSectionTitle={merchant.small_blog_section_title || null}
+          shareUrl={merchantUrl}
         />
       </>
     );
