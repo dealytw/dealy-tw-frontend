@@ -18,6 +18,11 @@ export default {
 				'2xl': '1400px'
 			}
 		},
+		fontFamily: {
+			sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+			serif: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],
+			mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+		},
 		extend: {
 			colors: {
 				border: 'hsl(var(--border))',
@@ -127,7 +132,14 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+			},
+			typography: ({ theme }) => ({
+				DEFAULT: {
+					css: {
+						fontFamily: theme('fontFamily.sans').join(', ')
+					}
+				}
+			})
 		}
 	},
 	plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
