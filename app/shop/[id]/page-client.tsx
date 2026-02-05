@@ -809,7 +809,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 {c.coupon_title || merchant.name}
                               </a>
                             </td>
-                            <td className="py-1 align-top whitespace-nowrap text-gray-700">
+                            <td className="py-1 align-top whitespace-nowrap text-gray-700" suppressHydrationWarning>
                               {formatExpiryDate(c.expires_at)}
                             </td>
                           </tr>

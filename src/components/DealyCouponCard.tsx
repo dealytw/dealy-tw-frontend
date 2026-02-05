@@ -301,12 +301,12 @@ const DealyCouponCard = ({
           
           {/* Show countdown timer if within 48 hours (but not if expired) */}
           {timeDisplay && !isExpired && (
-            <p className="text-sm text-orange-600 mb-3">
+            <p className="text-sm text-orange-600 mb-3" suppressHydrationWarning>
               ⏳ {timeDisplay}
             </p>
           )}
           
-          <p className="text-xs text-red-500 mb-3 flex items-center gap-2">
+          <p className="text-xs text-red-500 mb-3 flex items-center gap-2" suppressHydrationWarning>
             {isExpired ? (
               <span className="text-red-500">{timeDisplay}</span>
             ) : timeDisplay ? (
@@ -512,12 +512,12 @@ const DealyCouponCard = ({
             
             {/* Show countdown timer if within 48 hours (but not if expired) */}
             {timeDisplay && !isExpired && (
-              <p className="text-xs text-orange-600 mb-2">
+              <p className="text-xs text-orange-600 mb-2" suppressHydrationWarning>
                 ⏳ {timeDisplay}
               </p>
             )}
             
-            <p className="text-xs text-red-500 mb-3 flex items-center gap-2">
+            <p className="text-xs text-red-500 mb-3 flex items-center gap-2" suppressHydrationWarning>
               {isExpired ? (
                 <span className="text-red-500">{timeDisplay}</span>
               ) : timeDisplay ? (
