@@ -111,56 +111,6 @@ function blocksToHTML(blocks: any): string {
   }).join('\n');
 }
 
-// Helper function to extract text from Strapi rich text
-function extractTextFromRichText(richText: any): string {
-  if (!richText) return "";
-  if (typeof richText === "string") return richText;
-  if (Array.isArray(richText)) {
-    return richText.map(item => {
-      if (item.children && Array.isArray(item.children)) {
-        return item.children.map((child: any) => child.text || "").join("");
-      }
-      return item.text || "";
-    }).join(" ");
-  }
-  return "";
-}
-
-// Helper function to render rich text with formatting preserved
-function renderRichText(richText: any): string {
-  if (!richText) return "";
-  if (typeof richText === "string") return richText;
-  if (Array.isArray(richText)) {
-    return richText.map(item => {
-      if (item.type === "paragraph") {
-        let paragraphContent = "";
-        if (item.children && Array.isArray(item.children)) {
-          paragraphContent = item.children.map((child: any) => {
-            if (child.bold) return `<strong>${child.text || ""}</strong>`;
-            if (child.italic) return `<em>${child.text || ""}</em>`;
-            return child.text || "";
-          }).join("");
-        } else {
-          paragraphContent = item.text || "";
-        }
-        // Wrap paragraph content in <p> tag for proper line breaks
-        return `<p>${paragraphContent}</p>`;
-      }
-      if (item.type === "list") {
-        const listItems = item.children?.map((child: any) => {
-          if (child.children && Array.isArray(child.children)) {
-            return child.children.map((grandChild: any) => grandChild.text || "").join("");
-          }
-          return child.text || "";
-        }).join("</li><li>") || "";
-        return `<ul><li>${listItems}</li></ul>`;
-      }
-      return item.text || "";
-    }).join(""); // Join without \n since we're using HTML tags now
-  }
-  return "";
-}
-
 /**
  * Clean question text by removing leading "?" or ":?"
  * Keeps emoji in the text
@@ -549,44 +499,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
     }
   };
 
-  // Transform CMS coupons to DealyCouponCard format
-  const transformCoupon = (coupon: any) => {
-    // Add null safety checks
-    if (!coupon) {
-      console.error('transformCoupon: coupon is null or undefined');
-      return null;
-    }
-
-    if (!coupon.merchant) {
-      console.error('transformCoupon: coupon.merchant is missing', coupon.id);
-      return null;
-    }
-
-    // Handle null/undefined values safely
-    const value = coupon.value || '';
-    // Enhanced regex to handle currencies: TWD, HKD, USD, etc. and symbols: $, ¥, €, etc.
-    const currencyPattern = /(\d+)\s*(?:TWD|HKD|USD|EUR|JPY|CNY|SGD|MYR|THB|PHP|IDR|VND|KRW|INR|AUD|CAD|GBP|CHF|NZD|SEK|NOK|DKK|PLN|CZK|HUF|RUB|BRL|MXN|ARS|CLP|COP|PEN|UYU|VEF|ZAR|TRY|ILS|AED|SAR|QAR|KWD|BHD|OMR|JOD|LBP|EGP|MAD|TND|DZD|NGN|KES|UGX|TZS|ZMW|BWP|MWK|MZN|AOA|XOF|XAF|XPF|MUR|SCR|KMF|DJF|ERN|ETB|SOS|SLL|GMD|GNF|LRD|CDF|RWF|BIF|CVE|STN|SZL|LSL|NAD|BND|FJD|PGK|SBD|TOP|VUV|WST|TVD|KID|NPR|BTN|MVR|AFN|PKR|LKR|BDT|MMK|LAK|KHR|MOP)?\s*\$?\s*(%|折|off|減|扣|折|優惠)/i;
-    const discountValue = value ? value.replace(currencyPattern, '$1') : '0';
-    
-    return {
-      id: coupon.id,
-      code: coupon.code || '',
-      title: coupon.coupon_title || 'Untitled Coupon',
-      description: extractTextFromRichText(coupon.description), // This will show in the main description area
-      discount: value,
-      discountValue: discountValue,
-      expiry: coupon.expires_at || "長期有效",
-      usageCount: coupon.display_count || coupon.user_count || 0, // Use display_count (calculated) instead of user_count (actual clicks)
-      steps: renderRichText(coupon.description), // Map description to steps with formatting preserved
-      terms: renderRichText(coupon.editor_tips), // Map editor_tips to terms with formatting preserved (⚠️ 溫馨提示)
-      affiliateLink: coupon.affiliate_link || '#',
-      coupon_type: coupon.coupon_type,
-      merchant: {
-        name: coupon.merchant.name || '',
-        logo: coupon.merchant.logo || '',
-      }
-    };
-  };
+  // Use server-computed display (coupon.display) for hydration consistency
+  const getDisplay = (coupon: any) => coupon?.display ?? null;
 
   // Auto scroll to coupon if hash is present
   useEffect(() => {
@@ -610,10 +524,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
           // Find and open the corresponding coupon modal
           const coupon = uniqueCoupons.find(c => c.id === couponId) || uniqueExpiredCoupons.find(c => c.id === couponId);
           if (coupon) {
-            // Transform the coupon for the modal using the same transformation
-            const transformedCoupon = transformCoupon(coupon);
-            if (transformedCoupon) {
-              setSelectedCoupon(transformedCoupon);
+            const display = getDisplay(coupon);
+            if (display) {
+              setSelectedCoupon(display);
               setIsModalOpen(true);
             }
           }
@@ -964,8 +877,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                       }
                     })
                     .map((coupon, index) => {
-                      const transformedCoupon = transformCoupon(coupon);
-                      if (!transformedCoupon) {
+                      const display = getDisplay(coupon);
+                      if (!display) {
                         console.error('Skipping invalid coupon:', coupon);
                         return null;
                       }
@@ -976,7 +889,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                           key={coupon.id}
                           id={`coupon-${coupon.id}`}
                           className={shouldHide ? 'hidden' : ''}
-                          coupon={transformedCoupon} 
+                          coupon={display} 
                           onClick={() => handleCouponClick(coupon)}
                           isScrolledTo={scrolledToCouponId === coupon.id}
                           merchantSlug={merchant.slug}
@@ -1053,8 +966,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                     {uniqueCoupons
                       .filter((coupon) => isCreditCardCoupon(coupon.coupon_title || ""))
                       .map((coupon, index) => {
-                        const transformedCoupon = transformCoupon(coupon);
-                        if (!transformedCoupon) {
+                        const display = getDisplay(coupon);
+                        if (!display) {
                           console.error('Skipping invalid credit card coupon:', coupon);
                           return null;
                         }
@@ -1062,7 +975,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                           <DealyCouponCard 
                             key={coupon.id}
                             id={`credit-card-coupon-${coupon.id}`}
-                            coupon={transformedCoupon} 
+                            coupon={display} 
                             onClick={() => handleCouponClick(coupon)}
                             isScrolledTo={scrolledToCouponId === coupon.id}
                             merchantSlug={merchant.slug}
@@ -1095,8 +1008,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                     <Card className="shadow-md relative">
                       <CardContent className="space-y-4">
                         {uniqueExpiredCoupons.map((coupon, index) => {
-                          const transformedCoupon = transformCoupon(coupon);
-                          if (!transformedCoupon) {
+                          const display = getDisplay(coupon);
+                          if (!display) {
                             console.error('Skipping invalid expired coupon:', coupon);
                             return null;
                           }
@@ -1113,8 +1026,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                   <div className="text-center min-w-[80px]">
                                   <div className="w-12 h-12 mb-2 mx-auto flex items-center justify-center relative">
                                     <img
-                                      src={transformedCoupon.merchant?.logo || merchant.logo}
-                                      alt={transformedCoupon.merchant?.name || merchant.name}
+                                      src={display.merchant?.logo || merchant.logo}
+                                      alt={display.merchant?.name || merchant.name}
                                       width={48}
                                       height={48}
                                       loading="lazy"
@@ -1122,12 +1035,12 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                       className="object-contain max-w-full max-h-full"
                                     />
                                   </div>
-                                  <div className="text-lg font-bold text-purple-600">{transformedCoupon.discount}</div>
+                                  <div className="text-lg font-bold text-purple-600">{display.discount}</div>
                                   <div className="text-sm text-gray-500">優惠</div>
                                 </div>
                                 <div className="flex-1">
                                   <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
-                                  <h3 className="text-sm font-medium text-blue-600 mb-2">{transformedCoupon.title}</h3>
+                                  <h3 className="text-sm font-medium text-blue-600 mb-2">{display.title}</h3>
                                    <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
                                      {getButtonText(coupon.coupon_type)} ➤
                                    </Button>
@@ -1146,16 +1059,16 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                      
                                      {showDetails && (
                                        <div className="mt-3 space-y-3">
-                                         {transformedCoupon.steps && (
+                                         {display.steps && (
                                            <div className="text-xs text-gray-600">
-                                             <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: transformedCoupon.steps }}></div>
+                                             <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: display.steps }}></div>
                                            </div>
                                          )}
-                                         {transformedCoupon.terms && (
+                                         {display.terms && (
                                            <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
                                              <div className="text-xs">
                                                <div className="font-medium text-yellow-800 mb-1">💡 溫馨提示：</div>
-                                               <div className="text-yellow-700">{transformedCoupon.terms}</div>
+                                               <div className="text-yellow-700">{display.terms}</div>
                                              </div>
                                            </div>
                                          )}

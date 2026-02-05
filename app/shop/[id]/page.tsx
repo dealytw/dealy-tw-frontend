@@ -5,6 +5,7 @@ import { getMerchantSEO } from '@/lib/seo.server';
 import Merchant from './page-client'; // Merchant page component
 import { breadcrumbJsonLd, organizationJsonLd, offersItemListJsonLd, faqPageJsonLd, howToJsonLd, webPageJsonLd, imageObjectJsonLd, aggregateOfferJsonLd, storeJsonLd, websiteJsonLd, getDailyUpdatedTime, getDailyUpdatedTimeIso, generateRatingCount } from '@/lib/jsonld';
 import { getDomainConfig as getDomainConfigServer, getMarketLocale } from '@/lib/domain-config';
+import { transformCouponToDisplay } from '@/lib/coupon-display.server';
 
 /**
  * Parse FAQs from rich text (HTML format)
@@ -1093,7 +1094,7 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         ? rewriteImageUrl(absolutizeMedia(coupon.merchant.logo.url), siteUrl)
         : "";
 
-      return {
+      const base = {
         id: (coupon.id?.toString() || coupon.documentId?.toString() || '').toString(),
         coupon_title: coupon.coupon_title,
         coupon_type: coupon.coupon_type,
@@ -1117,6 +1118,10 @@ export default async function MerchantPage({ params, searchParams }: MerchantPag
         market: {
           key: coupon.market?.key || marketKey.toUpperCase(),
         },
+      };
+      return {
+        ...base,
+        display: transformCouponToDisplay(base), // Server-computed for hydration consistency
       };
     });
 
