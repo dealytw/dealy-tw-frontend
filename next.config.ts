@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https: blob:",
-      "font-src 'self' data: https://fonts.gstatic.com https://challenges.cloudflare.com",
+      "font-src 'self' data: https://fonts.gstatic.com https://challenges.cloudflare.com https://cdn.cloudflare.com",
       "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr",
       "frame-src 'self' https://www.googletagmanager.com",
       "object-src 'none'",
@@ -88,7 +88,7 @@ const nextConfig: NextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https: blob:",
-      "font-src 'self' data: https://fonts.gstatic.com https://challenges.cloudflare.com",
+      "font-src 'self' data: https://fonts.gstatic.com https://challenges.cloudflare.com https://cdn.cloudflare.com",
       "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://*.googleapis.com https://*.strapiapp.com https://cms.dealy.tw https://cms.dealy.hk https://cms.dealy.sg https://cms.dealy.jp https://cms.dealy.kr https://challenges.cloudflare.com",
       "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
       "object-src 'none'",
@@ -111,15 +111,16 @@ const nextConfig: NextConfig = {
     ];
 
     return [
-      // Base: full headers for all HTML pages
-      {
-        source: '/:path*',
-        headers: fullHeaders,
-      },
-      // Override for /shop/*: CSP includes Turnstile (contact form)
+      // IMPORTANT: More specific routes first - Next.js uses first match
+      // /shop/*: CSP includes Turnstile (contact form)
       {
         source: '/shop/:path*',
         headers: shopFullHeaders,
+      },
+      // Base: full headers for all other HTML pages
+      {
+        source: '/:path*',
+        headers: fullHeaders,
       },
       // Apply basic security headers to Next.js static assets (JS, CSS, images)
       {
