@@ -675,6 +675,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 target="_blank"
                                 rel="noopener noreferrer nofollow sponsored"
                                 className="inline-flex items-start hover:underline leading-snug"
+                                suppressHydrationWarning
                               >
                                 {c.coupon_title || "優惠碼"}
                               </a>
@@ -703,6 +704,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 aria-hidden="true"
                                 tabIndex={-1}
                                 data-nosnippet=""
+                                suppressHydrationWarning
                               >
                                 {c.coupon_title || merchant.name}
                               </a>

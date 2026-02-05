@@ -295,6 +295,7 @@ const DealyCouponCard = ({
           <h3 
             className="text-lg font-semibold text-gray-800 mb-3 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
             onClick={handleTitleClick}
+            suppressHydrationWarning
           >
             {coupon.title}
           </h3>
@@ -337,6 +338,7 @@ const DealyCouponCard = ({
               tabIndex={-1}
               data-coupon-id={coupon.id}
               data-nosnippet=""
+              suppressHydrationWarning
             >
               {coupon.title}
             </a>
@@ -460,6 +462,7 @@ const DealyCouponCard = ({
                     return '1rem';                         // Very long: fallback
                     })()
                   }}
+                suppressHydrationWarning
                 >
                   {(() => {
                     // Remove currency symbols for mobile view only (but keep $)
@@ -526,7 +529,7 @@ const DealyCouponCard = ({
                 <span>優惠期限 {coupon.expiry}</span>
               )}
               <span className="text-gray-400">•</span>
-              <span className="text-gray-600">{coupon.usageCount} 人已使用</span>
+              <span className="text-gray-600" suppressHydrationWarning>{coupon.usageCount} 人已使用</span>
             </p>
 
             {/* Mobile Buttons - Same as Desktop */}
