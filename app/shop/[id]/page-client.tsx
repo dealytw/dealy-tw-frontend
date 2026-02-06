@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp, Facebook, Share2 } from "lucide-react";
+import { ChevronRight, HelpCircle, Clock, User, Calendar, ArrowUp, Heart, ChevronDown, ChevronUp, Facebook, Share2, Copy, ExternalLink } from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
 import { getMerchantLogo } from "@/lib/data";
 import { TransformedShop } from "@/types/cms";
@@ -421,21 +421,22 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
     }
   };
 
-  const handleVerifiedCodeClick = (id: string, code: string, href: string) => {
+  const handleCopyCode = (id: string, code: string) => {
+    if (typeof window === 'undefined') return;
+    setVerifiedCopiedById({ [id]: true });
+    void copyTextToClipboard(code);
+    const el = document.getElementById(`coupon-${id}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleOpenLink = (href: string) => {
     if (typeof window === 'undefined') return;
     if (!href || href === '#') return;
-
-    // Flip UI state immediately so the user sees "已複製" right away.
-    // Also reset other rows so only the latest clicked one is highlighted.
-    setVerifiedCopiedById({ [id]: true });
-
     try {
       window.open(href, '_blank', 'noopener,noreferrer');
     } catch {
       // ignore
     }
-
-    void copyTextToClipboard(code);
   };
 
   // Determine which filters to show based on merchant settings
@@ -681,21 +682,35 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 {c.coupon_title || "優惠碼"}
                               </a>
                             </td>
-                            <td className="py-1 pr-3 align-top whitespace-nowrap">
-                              <button
-                                type="button"
-                                onClick={() => handleVerifiedCodeClick(String(c.id), String(c.code || '').trim(), href)}
-                                className={[
-                                  "inline-flex items-center rounded-md border px-2 py-0.5 font-mono transition-colors",
-                                  copied
-                                    ? "border-green-200 bg-green-50 text-green-800"
-                                    : "border-yellow-200 bg-white hover:bg-yellow-50",
-                                ].join(" ")}
-                                title="Click to copy"
-                              >
-                                <span data-nosnippet>{c.code}</span>
-                                {copied && <span className="ml-2 font-sans text-[10px]">已複製</span>}
-                              </button>
+                            <td className="py-1 pr-3 align-top">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span data-nosnippet className="font-mono text-xs bg-white border border-yellow-200 rounded px-2 py-0.5">
+                                  {c.code}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyCode(String(c.id), String(c.code || '').trim())}
+                                  className={[
+                                    "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] transition-colors",
+                                    copied
+                                      ? "border-green-200 bg-green-50 text-green-800"
+                                      : "border-yellow-200 bg-white hover:bg-yellow-50",
+                                  ].join(" ")}
+                                  title="複製優惠碼"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                  {copied ? "已複製" : "複製"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenLink(href)}
+                                  className="inline-flex items-center gap-1 rounded-md border border-yellow-200 bg-white px-2 py-0.5 text-[10px] hover:bg-yellow-50 transition-colors"
+                                  title="前往優惠"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  前往優惠
+                                </button>
+                              </div>
                               {/* Keep a crawlable outlink in HTML (not used for clicks). */}
                               <a
                                 href={href}
