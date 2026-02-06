@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 // Removed Next.js Image import - using regular img tags for fixed resolution
 import { X } from "lucide-react";
@@ -14,7 +14,6 @@ interface NavigationMenuProps {
 }
 
 export default function NavigationMenu({ open, onOpenChange }: NavigationMenuProps) {
-  const router = useRouter();
   const pathname = usePathname();
   // Get hotstore merchants from context (fetched server-side in layout.tsx)
   const { hotstoreMerchants } = useSearchMerchants();
@@ -29,19 +28,6 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
     { href: "/submit-coupons", label: "聯絡我們" },
     { href: "/about-us", label: "關於我們" },
   ];
-
-  const handleLinkClick = (href: string) => {
-    if (href.startsWith("#")) {
-      // Handle anchor links
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-    } else {
-      router.push(href);
-    }
-    onOpenChange(false);
-  };
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -65,7 +51,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
       <div className="p-6 pt-16 md:pt-6">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold">
-            <Link href="/" onClick={() => onOpenChange(false)} className="flex items-center">
+            <a href="/" className="flex items-center" onClick={() => onOpenChange(false)}>
               <img 
                 src="/newdealylogo_150x79.png"
                 alt="dealy logo"
@@ -75,24 +61,25 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                 className="h-auto"
                 loading="lazy"
               />
-            </Link>
+            </a>
           </SheetTitle>
         </SheetHeader>
 
-        {/* Navigation Links */}
+        {/* Navigation Links - Use Link for progressive enhancement (works before hydration) */}
         <nav className="space-y-2 mb-8">
           {navigationLinks.map((link) => (
-            <button
+            <Link
               key={link.href}
-              onClick={() => handleLinkClick(link.href)}
-              className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+              href={link.href}
+              onClick={() => onOpenChange(false)}
+              className={`block w-full text-left px-4 py-3 rounded-lg transition-colors ${
                 isActive(link.href)
                   ? "bg-gray-100 text-red-600 font-semibold"
                   : "text-gray-900 hover:bg-gray-100"
               }`}
             >
               {link.label}
-            </button>
+            </Link>
           ))}
         </nav>
 

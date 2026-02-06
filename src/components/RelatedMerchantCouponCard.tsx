@@ -174,20 +174,36 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
         )}
       </div>
 
-      {/* Pink Footer */}
+      {/* Pink Footer - <a> for instant response (works before hydration) */}
       <div className="bg-pink-500 px-2 py-1.5 flex items-center justify-between mt-0">
         <div className="text-white">
           <div className="text-xs font-bold">{discountValue} 折扣</div>
         </div>
         
-        <Button 
-          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-2 py-1 text-[10px] h-7"
-          size="sm"
-          onClick={handleButtonClick}
-          aria-describedby={affiliateRelId}
-        >
-          {getButtonText(coupon.coupon_type)}
-        </Button>
+        {coupon.affiliate_link && coupon.affiliate_link !== '#' ? (
+          <a
+            href={coupon.affiliate_link}
+            target="_blank"
+            rel="noopener noreferrer nofollow sponsored"
+            onClick={(e) => {
+              e.preventDefault();
+              handleButtonClick();
+            }}
+            aria-describedby={affiliateRelId}
+            className="inline-flex items-center justify-center bg-white text-pink-500 hover:bg-gray-50 font-medium px-2 py-1 text-[10px] h-7 rounded-md cursor-pointer"
+          >
+            {getButtonText(coupon.coupon_type)}
+          </a>
+        ) : (
+          <Button 
+            className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-2 py-1 text-[10px] h-7"
+            size="sm"
+            onClick={handleButtonClick}
+            aria-describedby={affiliateRelId}
+          >
+            {getButtonText(coupon.coupon_type)}
+          </Button>
+        )}
       </div>
     </article>
   );

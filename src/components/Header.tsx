@@ -15,9 +15,9 @@ const Header = () => {
       <div className="container h-16 px-4">
         {/* Desktop Layout */}
         <div className="hidden md:flex h-full items-center justify-between">
-          {/* Logo */}
+          {/* Logo - plain <a> for instant response (works before hydration) */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <a href="/" className="flex items-center">
               <img 
                 src="/newdealylogo_150x79.png"
                 alt="dealy logo"
@@ -28,7 +28,7 @@ const Header = () => {
                 loading="eager"
                 fetchPriority="high"
               />
-            </Link>
+            </a>
           </div>
 
           {/* Navigation */}
@@ -37,22 +37,19 @@ const Header = () => {
             <SearchDropdown placeholder="搜尋超值好康" className="w-80" />
           </nav>
 
-          {/* Right Actions */}
+          {/* Right Actions - Use Link directly for progressive enhancement (works before hydration) */}
           <div className="flex items-center space-x-3">
-            <Link href="/special-offers">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-sm"
-                type="button"
-              >
-                特別優惠專區
-              </Button>
+            <Link 
+              href="/special-offers" 
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-9 px-4 transition-colors"
+            >
+              特別優惠專區
             </Link>
-            <Link href="/submit-coupons">
-              <Button variant="ghost" size="sm" className="text-sm">
-                提交優惠券
-              </Button>
+            <Link 
+              href="/submit-coupons" 
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-9 px-4 transition-colors"
+            >
+              提交優惠券
             </Link>
             {/* Hamburger Menu Button */}
             <Button 
@@ -68,9 +65,9 @@ const Header = () => {
 
         {/* Mobile Layout - Search bar gets flex-1 for full width */}
         <div className="md:hidden flex h-full items-center gap-2 min-w-0">
-          {/* Logo - Left */}
+          {/* Logo - plain <a> for instant response (works before hydration) */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center">
+            <a href="/" className="flex items-center">
               <img 
                 src="/newdealylogo_120x63.png"
                 alt="dealy logo"
@@ -81,7 +78,7 @@ const Header = () => {
                 loading="eager"
                 fetchPriority="high"
               />
-            </Link>
+            </a>
           </div>
 
           {/* Search Bar - Center, takes remaining space (flex-1 + min-w-0 for proper flex shrink) */}

@@ -684,9 +684,12 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                             </td>
                             <td className="py-1 pr-3 align-top">
                               <div className="flex flex-wrap items-center gap-1.5">
-                                <button
-                                  type="button"
-                                  onClick={() => handleCopyCode(String(c.id), String(c.code || '').trim())}
+                                <a
+                                  href={`#coupon-${c.id}`}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleCopyCode(String(c.id), String(c.code || '').trim());
+                                  }}
                                   className={[
                                     "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-xs transition-colors",
                                     copied
@@ -697,30 +700,18 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 >
                                   <Copy className="h-3 w-3 shrink-0" />
                                   <span data-nosnippet>{copied ? "已複製" : c.code}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenLink(href)}
+                                </a>
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer nofollow sponsored"
                                   className="inline-flex items-center gap-1 rounded-md border border-yellow-200 bg-white px-2 py-0.5 text-[10px] hover:bg-yellow-50 transition-colors"
                                   title="前往優惠"
                                 >
                                   <ExternalLink className="h-3 w-3" />
                                   前往優惠
-                                </button>
+                                </a>
                               </div>
-                              {/* Keep a crawlable outlink in HTML (not used for clicks). */}
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer nofollow sponsored"
-                                className="sr-only"
-                                aria-hidden="true"
-                                tabIndex={-1}
-                                data-nosnippet=""
-                                suppressHydrationWarning
-                              >
-                                {c.coupon_title || merchant.name}
-                              </a>
                             </td>
                             <td className="py-1 align-top whitespace-nowrap text-gray-700">
                               {c.expires_at_formatted ?? "長期有效"}
@@ -1056,9 +1047,24 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 <div className="flex-1">
                                   <div className="text-xs text-gray-500 mb-1">折扣碼/優惠</div>
                                   <h3 className="text-sm font-medium text-blue-600 mb-2">{display.title}</h3>
-                                   <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
-                                     {getButtonText(coupon.coupon_type)} ➤
-                                   </Button>
+                                   {coupon.affiliate_link && coupon.affiliate_link !== '#' ? (
+                                     <a
+                                       href={coupon.affiliate_link}
+                                       target="_blank"
+                                       rel="noopener noreferrer nofollow sponsored"
+                                       onClick={(e) => {
+                                         e.preventDefault();
+                                         handleCouponClick(coupon);
+                                       }}
+                                       className="inline-block bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2 rounded-md cursor-pointer"
+                                     >
+                                       {getButtonText(coupon.coupon_type)} ➤
+                                     </a>
+                                   ) : (
+                                     <Button className="bg-purple-400 hover:bg-purple-500 text-white text-sm px-6 py-2 mb-2" onClick={() => handleCouponClick(coupon)}>
+                                       {getButtonText(coupon.coupon_type)} ➤
+                                     </Button>
+                                   )}
                                    
                                    {/* Collapsible Description Section */}
                                    <div className="mt-2">

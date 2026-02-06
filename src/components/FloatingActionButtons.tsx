@@ -1,7 +1,6 @@
 "use client";
 
 // Removed Next.js Image import - using regular img tags for fixed resolution
-import Link from "next/link";
 import { FloatingButton } from "@/lib/floating-buttons";
 
 interface FloatingActionButtonsProps {
@@ -32,7 +31,7 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
         const href = getHref(button);
 
         return (
-          <Link
+          <a
             key={button.id}
             href={href}
             className="relative flex items-center justify-center w-16 h-16 rounded-full shadow-2xl transition-all duration-300 ease-in-out overflow-hidden
@@ -62,7 +61,7 @@ export default function FloatingActionButtons({ buttons }: FloatingActionButtons
             ) : (
               <span className="text-sm font-semibold">{label?.charAt(0).toUpperCase()}</span>
             )}
-          </Link>
+          </a>
         );
       })}
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Link from "next/link";
 
 type PopularMerchant = {
   id: number;
@@ -76,7 +75,7 @@ export default function HomeMerchantSliderClient({ merchants }: { merchants: Pop
         }}
       >
         {duplicatedMerchants.map((merchant, index) => (
-          <Link
+          <a
             key={`${merchant.id}-${index}`}
             href={`/shop/${merchant.slug}`}
             className="merchant-item flex-shrink-0 text-center group cursor-pointer w-[140px] sm:w-[160px] md:w-[180px] flex flex-col items-center"
@@ -93,7 +92,7 @@ export default function HomeMerchantSliderClient({ merchants }: { merchants: Pop
             <span className="coupon-title text-xs text-gray-600 leading-tight px-1 sm:px-2">
               {merchant.topCouponTitle || ""}
             </span>
-          </Link>
+          </a>
         ))}
       </div>
 

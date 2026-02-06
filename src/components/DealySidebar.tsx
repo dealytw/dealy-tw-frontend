@@ -1,7 +1,6 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import Link from "next/link";
 // Removed Next.js Image import - using regular img tags for fixed resolution
 
 interface DealySidebarProps {
@@ -34,7 +33,7 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
           <div className="grid grid-cols-4 lg:grid-cols-2 gap-2 lg:gap-4">
             {popularMerchants.items && popularMerchants.items.length > 0 ? (
               popularMerchants.items.map((merchant: any) => (
-                <Link 
+                <a 
                   key={merchant.id} 
                   href={`/shop/${merchant.slug}`}
                   className="text-center group"
@@ -52,7 +51,7 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
                   <p className="text-xs text-blue-600 font-medium leading-tight">
                     {merchant.name}
                   </p>
-                </Link>
+                </a>
               ))
             ) : (
               <div className="col-span-2 text-center py-4">
@@ -72,13 +71,13 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
           <div className="flex flex-wrap gap-1.5 lg:gap-2">
             {sidebarCategories.categories && sidebarCategories.categories.length > 0 ? (
               sidebarCategories.categories.map((category: any) => (
-                <Link
+                <a
                   key={category.id}
                   href={`/category/${category.page_slug || category.slug}`}
                   className="text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                 >
                   #{category.name}
-                </Link>
+                </a>
               ))
             ) : (
               <div className="text-center py-4">

@@ -374,8 +374,22 @@ const DealyCouponCard = ({
                   </Button>
                 </div>
               </div>
+            ) : coupon.affiliateLink && coupon.affiliateLink !== '#' ? (
+              /* <a> for instant response (works before hydration) */
+              <a
+                href={coupon.affiliateLink}
+                target="_blank"
+                rel="noopener noreferrer nofollow sponsored"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleButtonClick();
+                }}
+                aria-describedby={affiliateRelId}
+                className="inline-flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0 cursor-pointer"
+              >
+                {getButtonText(couponType)}
+              </a>
             ) : (
-              /* Regular Layout - Standard Button */
               <Button
                 className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-full border-0"
                 onClick={handleButtonClick}
@@ -564,8 +578,22 @@ const DealyCouponCard = ({
                     </Button>
                   </div>
                 </div>
+              ) : coupon.affiliateLink && coupon.affiliateLink !== '#' ? (
+                /* Mobile <a> for instant response */
+                <a
+                  href={coupon.affiliateLink}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow sponsored"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleButtonClick();
+                  }}
+                  aria-describedby={affiliateRelId}
+                  className="inline-flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-full border-0 text-xs cursor-pointer"
+                >
+                  {getButtonText(couponType)}
+                </a>
               ) : (
-                /* Mobile Regular Layout - Standard Button */
                 <Button
                   className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-full border-0 text-xs"
                   onClick={handleButtonClick}

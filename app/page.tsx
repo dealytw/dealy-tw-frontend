@@ -6,7 +6,6 @@ import { pageMeta } from "@/seo/meta";
 import HomeCouponRailClient from "./page-client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Link from "next/link";
 import HomeHeroSearchClient from "./HomeHeroSearchClient";
 import HomeMerchantSliderClient from "./HomeMerchantSliderClient";
 import { webPageJsonLd, popularMerchantsItemListJsonLd, getDailyUpdatedTime } from "@/lib/jsonld";
@@ -112,7 +111,7 @@ function renderHomePage(homepageData: any) {
               </h2>
               <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8">
                 {homepageData.categoryBlock.categories.map((category: any) => (
-                  <Link key={category.id} href={`/special-offers/${category.slug}`} className="text-center group">
+                  <a key={category.id} href={`/special-offers/${category.slug}`} className="text-center group">
                     <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-2 md:mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                       {category.iconUrl ? (
                         <img
@@ -128,15 +127,15 @@ function renderHomePage(homepageData: any) {
                       )}
                     </div>
                     <p className="text-xs sm:text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
-                  </Link>
+                  </a>
                 ))}
               </div>
               <div className="text-center mt-6">
                 <p className="text-[10px] sm:text-xs text-gray-600 leading-tight">
                   {homepageData.categoryBlock.disclaimer}
-                  <Link href="/legal-disclaimer" className="text-blue-600 hover:underline ml-1">
+                  <a href="/legal-disclaimer" className="text-blue-600 hover:underline ml-1">
                     了解更多
-                  </Link>
+                  </a>
                 </p>
               </div>
             </div>
