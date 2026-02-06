@@ -56,7 +56,7 @@ function renderHomePage(homepageData: any) {
     <div className="min-h-screen bg-white">
       <Header />
       <main id="main-content">
-        <section className="py-16 px-4 relative overflow-x-hidden">
+        <section className="py-8 md:py-16 px-4 relative overflow-x-hidden z-10">
           {homepageData.hero?.bgUrl && (
             <div className="absolute inset-0 z-0">
               <img
@@ -71,14 +71,14 @@ function renderHomePage(homepageData: any) {
               />
             </div>
           )}
-          <div className="container mx-auto text-center relative z-10">
+          <div className="container mx-auto text-center relative z-10 overflow-x-hidden min-w-0">
             <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-800 mb-3 md:mb-4">
               {homepageData.hero?.title || "Dealy TW 台灣每日最新優惠折扣平台"}
             </h1>
             <div className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-700 mb-4 md:mb-6">
               {homepageData.hero?.subtitle || "NEVER Pay Full Price"}
             </div>
-            <div className="space-y-1.5 text-gray-700 mb-6 md:mb-8">
+            <div className="space-y-1.5 text-gray-700 mb-4 md:mb-8">
               <div className="text-xs sm:text-sm md:text-base whitespace-pre-line">
                 {"🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）"}
               </div>

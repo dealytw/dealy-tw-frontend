@@ -15,7 +15,7 @@ export default function HomeHeroSearchClient({
   const router = useRouter();
 
   return (
-    <div className="w-full max-w-[min(48rem,calc(100vw-2rem))] mx-auto relative z-50 min-w-0 px-2 sm:px-4">
+    <div className="w-full max-w-[calc(100vw-2rem)] md:max-w-2xl lg:max-w-3xl mx-auto relative z-50 min-w-0 px-2 sm:px-4">
       <div className="flex bg-white rounded-full shadow-lg overflow-visible min-w-0">
         <div className="flex items-center pl-4 pr-2 flex-shrink-0 md:pl-6 md:pr-3">
           <Search className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />

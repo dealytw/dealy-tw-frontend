@@ -433,12 +433,12 @@ export default function SearchDropdown({
         )}
       </form>
 
-      {/* Dropdown */}
+      {/* Dropdown - never exceed viewport; homepage: match search bar; header: has margins */}
       {showDropdown && query.trim() && (
         <div
           id="search-suggestions"
-          className="absolute top-full left-0 right-0 sm:left-2 sm:right-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto overflow-x-hidden"
-          style={{ maxWidth: 'min(100%, calc(100vw - 2rem))', width: '100%' }}
+          className={`absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] max-h-96 overflow-y-auto overflow-x-hidden min-w-0 ${!isHomepage ? 'sm:left-2 sm:right-2' : ''}`}
+          style={{ width: '100%', maxWidth: 'min(100%, calc(100vw - 2rem))' }}
           role="listbox"
           aria-label="Search suggestions"
         >
@@ -486,13 +486,13 @@ export default function SearchDropdown({
                       </div>
                     )}
 
-                    {/* Merchant Name - break-words so full text visible on narrow screens */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs md:text-sm font-medium text-gray-900 break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                    {/* Merchant Name + URL - min-w-0 + overflow to prevent horizontal scroll */}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="text-xs md:text-sm font-medium text-gray-900 truncate">
                         {suggestion.name}
                       </div>
                       {suggestion.type === 'merchant' && suggestion.website && (
-                        <div className="text-[10px] md:text-xs text-gray-500 break-all" style={{ overflowWrap: 'break-word' }}>
+                        <div className="text-[10px] md:text-xs text-gray-500 truncate" title={suggestion.website}>
                           {suggestion.website}
                         </div>
                       )}
