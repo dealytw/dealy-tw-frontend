@@ -636,7 +636,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                 </div>
               </div>
             </div>
-            <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-6">
+            <p className="text-[11px] md:text-xs text-gray-700 leading-relaxed mb-6">
               {merchant.description || ""}
             </p>
 
@@ -684,22 +684,19 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                             </td>
                             <td className="py-1 pr-3 align-top">
                               <div className="flex flex-wrap items-center gap-1.5">
-                                <span data-nosnippet className="font-mono text-xs bg-white border border-yellow-200 rounded px-2 py-0.5">
-                                  {c.code}
-                                </span>
                                 <button
                                   type="button"
                                   onClick={() => handleCopyCode(String(c.id), String(c.code || '').trim())}
                                   className={[
-                                    "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] transition-colors",
+                                    "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-xs transition-colors",
                                     copied
                                       ? "border-green-200 bg-green-50 text-green-800"
                                       : "border-yellow-200 bg-white hover:bg-yellow-50",
                                   ].join(" ")}
                                   title="複製優惠碼"
                                 >
-                                  <Copy className="h-3 w-3" />
-                                  {copied ? "已複製" : "複製"}
+                                  <Copy className="h-3 w-3 shrink-0" />
+                                  <span data-nosnippet>{copied ? "已複製" : c.code}</span>
                                 </button>
                                 <button
                                   type="button"
