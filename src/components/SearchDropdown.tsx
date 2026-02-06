@@ -437,8 +437,8 @@ export default function SearchDropdown({
       {showDropdown && query.trim() && (
         <div
           id="search-suggestions"
-          className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
-          style={{ minWidth: 'min(calc(100vw - 2rem), 420px)' }}
+          className="absolute top-full left-2 right-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+          style={{ minWidth: 'min(calc(100vw - 3rem), 400px)' }}
           role="listbox"
           aria-label="Search suggestions"
         >
