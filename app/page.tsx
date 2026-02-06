@@ -131,8 +131,8 @@ function renderHomePage(homepageData: any) {
                   </Link>
                 ))}
               </div>
-              <div className="text-center mt-8">
-                <p className="text-sm text-gray-600">
+              <div className="text-center mt-6">
+                <p className="text-[10px] sm:text-xs text-gray-600 leading-tight">
                   {homepageData.categoryBlock.disclaimer}
                   <Link href="/legal-disclaimer" className="text-blue-600 hover:underline ml-1">
                     了解更多
