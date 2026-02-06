@@ -767,7 +767,7 @@ export default function BlogView({ blog, shareUrl = '' }: BlogViewProps) {
                   <div>
                     <div className="font-medium text-foreground">Dealy Team</div>
                     <div className="text-sm text-muted-foreground">
-                      Last updated {formatDate(blog.updatedAt)}
+                      Last updated <span suppressHydrationWarning>{formatDate(blog.updatedAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -1358,7 +1358,7 @@ export default function BlogView({ blog, shareUrl = '' }: BlogViewProps) {
                           </p>
                         ) : (
                           <p className="text-muted-foreground text-sm">
-                            {formatDate(relatedBlog.updatedAt)}
+                            <span suppressHydrationWarning>{formatDate(relatedBlog.updatedAt)}</span>
                           </p>
                         )}
                       </div>
@@ -1413,7 +1413,7 @@ export default function BlogView({ blog, shareUrl = '' }: BlogViewProps) {
               <div className="bg-gradient-to-r from-orange-100 to-pink-100 rounded-lg border border-orange-200 overflow-hidden">
                 <div className="bg-gradient-to-r from-orange-400 to-pink-400 px-4 py-3">
                   <h3 className="font-bold text-lg text-white">📋 本文目錄</h3>
-                  <p className="text-sm text-white/90 mt-1">最後更新：{formatDate(blog.updatedAt)}</p>
+                  <p className="text-sm text-white/90 mt-1">最後更新：<span suppressHydrationWarning>{formatDate(blog.updatedAt)}</span></p>
                 </div>
                 <div className="p-4 bg-white/80">
                   <div className="space-y-2">

@@ -170,7 +170,7 @@ export default function CategoryView({
                                 <p className="text-xs text-gray-600 mb-2 line-clamp-2">{blog.subtitle}</p>
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                   <Clock className="w-3 h-3" />
-                                  <span>{formatDate(blog.publishedAt)}</span>
+                                  <span suppressHydrationWarning>{formatDate(blog.publishedAt)}</span>
                                 </div>
                               </div>
                             </article>
@@ -210,7 +210,7 @@ export default function CategoryView({
                             <p className="text-xs text-gray-600 mb-2 line-clamp-2">{blog.subtitle}</p>
                             <div className="flex items-center gap-2 text-xs text-gray-500">
                               <Clock className="w-3 h-3" />
-                              <span>{formatDate(blog.publishedAt)}</span>
+                              <span suppressHydrationWarning>{formatDate(blog.publishedAt)}</span>
                             </div>
                           </div>
                         </article>

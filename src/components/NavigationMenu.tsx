@@ -58,7 +58,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
         onClick={() => onOpenChange(false)}
         className="md:hidden absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-gray-900" />
         <span className="sr-only">Close</span>
       </button>
 
@@ -87,8 +87,8 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
               onClick={() => handleLinkClick(link.href)}
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                 isActive(link.href)
-                  ? "bg-gray-800 md:bg-gray-200 text-red-400 md:text-red-600 font-semibold"
-                  : "text-white md:text-gray-800 hover:bg-gray-800 md:hover:bg-gray-100"
+                  ? "bg-gray-100 text-red-600 font-semibold"
+                  : "text-gray-900 hover:bg-gray-100"
               }`}
             >
               {link.label}
@@ -98,8 +98,8 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
 
         {/* Mobile-only: Popular Merchants Section */}
         {popularMerchants.length > 0 && (
-          <div className="md:hidden border-t border-gray-700 pt-6 mt-6">
-            <h3 className="text-lg font-semibold text-gray-300 mb-4">
+          <div className="md:hidden border-t border-gray-200 pt-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
               台灣最新折扣優惠
             </h3>
             <div className="space-y-4">
@@ -108,7 +108,7 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                   key={merchant.id}
                   href={`/shop/${merchant.slug}`}
                   onClick={() => onOpenChange(false)}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   {merchant.logoUrl ? (
                     <img
@@ -120,12 +120,12 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
                       loading="lazy"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <span className="text-xs text-gray-400">{merchant.name.charAt(0)}</span>
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <span className="text-xs text-gray-600">{merchant.name.charAt(0)}</span>
                     </div>
                   )}
                   <div className="flex-1">
-                    <p className="font-medium text-gray-200">{merchant.name}</p>
+                    <p className="font-medium text-gray-900">{merchant.name}</p>
                   </div>
                 </Link>
               ))}
@@ -138,10 +138,10 @@ export default function NavigationMenu({ open, onOpenChange }: NavigationMenuPro
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {/* Mobile: Right side with dark theme, leaves gap on left */}
+      {/* Mobile: Right side with white background */}
       <SheetContent 
         side="right" 
-        className="md:hidden w-[calc(100%-3rem)] sm:w-[calc(100%-4rem)] h-full overflow-y-auto bg-gray-900 p-0 [&>button]:hidden"
+        className="md:hidden w-[calc(100%-3rem)] sm:w-[calc(100%-4rem)] h-full overflow-y-auto bg-white p-0 [&>button]:hidden"
       >
         {menuContent}
       </SheetContent>

@@ -181,7 +181,7 @@ export default function BlogHomeView({
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.subtitle}</p>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{formatDate(post.date)}</span>
+                      <span suppressHydrationWarning>{formatDate(post.date)}</span>
                     </div>
                   </div>
                 </article>

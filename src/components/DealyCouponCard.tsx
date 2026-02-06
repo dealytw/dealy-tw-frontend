@@ -509,6 +509,7 @@ const DealyCouponCard = ({
             <h3 
               className="text-sm font-medium text-gray-800 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
               onClick={handleTitleClick}
+              suppressHydrationWarning
             >
               {coupon.title}
             </h3>
