@@ -78,8 +78,8 @@ function renderHomePage(homepageData: any) {
             <div className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-700 mb-4 md:mb-6">
               {homepageData.hero?.subtitle || "NEVER Pay Full Price"}
             </div>
-            <div className="space-y-2 text-gray-700 mb-6 md:mb-8">
-              <div className="text-sm sm:text-base md:text-lg whitespace-pre-line">
+            <div className="space-y-1.5 text-gray-700 mb-6 md:mb-8">
+              <div className="text-xs sm:text-sm md:text-base whitespace-pre-line">
                 {"🛍 全台最新優惠情報｜每日更新 ✨\n💸 精選 100+ 熱門網店優惠：折扣、優惠碼、獨家 Promo Code 一次看透！\n✈️ 旅遊優惠｜🛒 網購優惠｜💳 信用卡優惠｜📱 支付／付款折扣（行動支付／刷卡回饋等）"}
               </div>
             </div>
