@@ -17,7 +17,7 @@ function blocksToHTML(blocks: any): string {
           let text = child.text || "";
           if (child.bold) text = `<strong>${text}</strong>`;
           if (child.italic) text = `<em>${text}</em>`;
-          if (child.code) text = `<code>${text}</code>`;
+          if (child.code) text = `<code style="overflow-wrap:anywhere;word-break:break-word;max-width:100%">${text}</code>`;
           if (child.strikethrough) text = `<s>${text}</s>`;
           if (child.underline) text = `<u>${text}</u>`;
           return text;
@@ -120,7 +120,7 @@ export default function MerchantExtraSections(props: {
                 return (
                   <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
                     <h3 className="font-medium text-pink-600 mb-2">{question}</h3>
-                    <div className="text-sm text-gray-600 ml-6 faq-answer-content" dangerouslySetInnerHTML={{ __html: answer }} />
+                    <div className="text-sm text-gray-600 ml-6 faq-answer-content break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: answer }} />
                   </div>
                 );
               })
@@ -182,7 +182,7 @@ export default function MerchantExtraSections(props: {
                   key={imgIndex}
                   src={imageUrl}
                   alt={`如何於${merchant?.name}使用優惠碼 - 步驟 ${imgIndex + 1}`}
-                  className="w-full max-w-[427px] h-auto rounded-lg border border-gray-200"
+                  className="w-full max-w-full h-auto rounded-lg border border-gray-200"
                   loading="lazy"
                   decoding="async"
                 />
@@ -237,7 +237,8 @@ export default function MerchantExtraSections(props: {
             </CardHeader>
             <CardContent>
               <div
-                className="prose prose-sm max-w-none text-gray-700"
+                className="prose prose-sm max-w-none text-gray-700 break-words"
+                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                 dangerouslySetInnerHTML={{
                   __html: typeof smallBlogSection === "string" ? smallBlogSection : blocksToHTML(smallBlogSection),
                 }}

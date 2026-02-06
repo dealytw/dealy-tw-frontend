@@ -41,7 +41,7 @@ function blocksToHTML(blocks: any): string {
         // Apply formatting
         if (child.bold) text = `<strong>${text}</strong>`;
         if (child.italic) text = `<em>${text}</em>`;
-        if (child.code) text = `<code>${text}</code>`;
+        if (child.code) text = `<code style="overflow-wrap:anywhere;word-break:break-word;max-width:100%">${text}</code>`;
         if (child.strikethrough) text = `<s>${text}</s>`;
         if (child.underline) text = `<u>${text}</u>`;
         return text;
@@ -135,7 +135,7 @@ function blockToHTML(block: any): string {
         // Apply formatting
         if (child.bold) text = `<strong>${text}</strong>`;
         if (child.italic) text = `<em>${text}</em>`;
-        if (child.code) text = `<code>${text}</code>`;
+        if (child.code) text = `<code style="overflow-wrap:anywhere;word-break:break-word;max-width:100%">${text}</code>`;
         if (child.strikethrough) text = `<s>${text}</s>`;
         if (child.underline) text = `<u>${text}</u>`;
         return text;
@@ -578,11 +578,11 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
         </div>
       </div>
       
-      <main id="main" className="container mx-auto md:px-4 px-2 py-4" itemScope itemType="https://schema.org/CreativeWork">
+      <main id="main" className="container mx-auto md:px-4 px-2 py-4 max-w-full min-w-0" itemScope itemType="https://schema.org/CreativeWork">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 min-w-0">
           {/* Left Column - Content */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 min-w-0">
             {/* Page Title */}
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center lg:hidden relative">
@@ -645,8 +645,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                 <div className="text-sm font-semibold text-gray-900">
                   最新已驗證{merchant.name}優惠碼
                 </div>
-                <div className="mt-2 overflow-x-auto">
-                  <table className="w-full text-xs border-separate border-spacing-0">
+                <div className="mt-2 overflow-x-auto w-full max-w-full min-w-0">
+                  <table className="w-full min-w-0 text-xs border-separate border-spacing-0">
                     <thead>
                       <tr className="text-left text-gray-700">
                         <th className="py-1 pr-3 font-medium">
@@ -669,12 +669,13 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                         const copied = !!verifiedCopiedById[String(c.id)];
                         return (
                           <tr key={`verified-code-${c.id}`} className="border-t border-yellow-200/60">
-                            <td className="py-1 pr-3 align-top">
+                            <td className="py-1 pr-3 align-top break-words">
                               <a
                                 href={href}
                                 target="_blank"
                                 rel="noopener noreferrer nofollow sponsored"
-                                className="inline-flex items-start hover:underline leading-snug"
+                                className="inline-flex items-start hover:underline leading-snug break-words"
+                                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                                 suppressHydrationWarning
                               >
                                 {c.coupon_title || "優惠碼"}
@@ -737,9 +738,9 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                 </h2>
                 
                 {/* Filter Section */}
-                <div className="mb-6">
-                  <div className="mb-6 overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-2 flex-nowrap">
+                <div className="mb-6 w-full max-w-full min-w-0">
+                  <div className="mb-6 overflow-x-auto scrollbar-hide w-full max-w-full min-w-0">
+                <div className="flex items-center gap-2 flex-nowrap min-w-max">
                   {filters.map(filter => {
                     // Handle "精選地區" with expandable inline region selector
                     if (filter === "精選地區") {
@@ -760,17 +761,16 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                             <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isRegionExpanded ? 'rotate-180' : ''}`} />
                           </Badge>
                           
-                          {/* Expandable region list - slides to the right, can overflow viewport */}
+                          {/* Expandable region list - contained in scrollable parent, max-width prevents page overflow */}
                           <div 
-                            className={`flex items-center gap-2 overflow-x-auto scrollbar-hide transition-all duration-300 ease-in-out ${
+                            className={`flex items-center gap-2 flex-shrink-0 overflow-x-auto scrollbar-hide transition-all duration-300 ease-in-out ${
                               isRegionExpanded 
-                                ? 'opacity-100' 
+                                ? 'opacity-100 max-w-full' 
                                 : 'max-w-0 opacity-0 overflow-hidden'
                             }`}
                             style={{
                               transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out',
-                              maxWidth: isRegionExpanded ? 'none' : '0',
-                              minWidth: isRegionExpanded ? 'auto' : '0',
+                              minWidth: isRegionExpanded ? '0' : '0',
                             }}
                           >
                             {["台灣", "日本", "韓國", "中港澳", "東南亞", "其他"].map((region) => (
@@ -1064,7 +1064,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                        <div className="mt-3 space-y-3">
                                          {display.steps && (
                                            <div className="text-xs text-gray-600">
-                                             <div className="text-gray-700 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: display.steps }}></div>
+                                             <div className="text-gray-700 whitespace-pre-line break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: display.steps }}></div>
                                            </div>
                                          )}
                                          {display.terms && (
@@ -1159,7 +1159,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                                 {parsedFaq.question}
                               </h3>
                               <div 
-                                className="text-sm text-gray-600 ml-6 faq-answer-content" 
+                                className="text-sm text-gray-600 ml-6 faq-answer-content break-words" 
+                                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                                 dangerouslySetInnerHTML={{ __html: parsedFaq.answer }}
                               />
                             </div>
@@ -1251,7 +1252,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                           key={imgIndex}
                           src={imageUrl}
                           alt={`如何於${merchant.name}使用優惠碼 - 步驟 ${imgIndex + 1}`}
-                          className="w-full max-w-[427px] h-auto rounded-lg border border-gray-200"
+                          className="w-full max-w-full h-auto rounded-lg border border-gray-200"
                           loading="lazy"
                           decoding="async"
                         />
@@ -1327,7 +1328,8 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                   </CardHeader>
                   <CardContent>
                     <div 
-                      className="prose prose-sm max-w-none text-gray-700"
+                      className="prose prose-sm max-w-none text-gray-700 break-words"
+                      style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                       dangerouslySetInnerHTML={{ 
                         __html: typeof smallBlogSection === 'string' 
                           ? smallBlogSection 
@@ -1351,7 +1353,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
           </div>
           
           {/* Right Column - Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <MerchantSidebar merchant={merchant} coupons={uniqueCoupons} expiredCoupons={uniqueExpiredCoupons} hotstoreMerchants={hotstoreMerchants} />
           </div>
         </div>

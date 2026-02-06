@@ -393,8 +393,8 @@ export default function SearchDropdown({
   const isHomepage = className.includes('homepage-search');
 
   return (
-    <div ref={searchRef} className={`relative ${className}`}>
-      <form onSubmit={handleSearchSubmit} className="relative">
+    <div ref={searchRef} className={`relative min-w-0 ${className}`}>
+      <form onSubmit={handleSearchSubmit} className="relative flex min-w-0">
         {/* Hide search icon on homepage - it's already in the parent container */}
         {!isHomepage && (
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
@@ -408,7 +408,7 @@ export default function SearchDropdown({
           onKeyDown={handleKeyDown}
           onFocus={() => setShowDropdown(true)}
           placeholder={placeholder}
-          className={`w-full ${
+          className={`flex-1 min-w-0 w-full ${
             isHomepage 
               ? 'py-4 px-2 text-lg outline-none bg-transparent' // Homepage: larger, no border/background
               : 'pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary' // Header: smaller, with border

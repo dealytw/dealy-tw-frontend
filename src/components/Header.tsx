@@ -66,10 +66,10 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Layout - Grid with centered search */}
-        <div className="md:hidden grid grid-cols-3 h-full items-center gap-2">
+        {/* Mobile Layout - Search bar gets flex-1 for full width */}
+        <div className="md:hidden flex h-full items-center gap-2 min-w-0">
           {/* Logo - Left */}
-          <div className="flex items-center justify-start">
+          <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
               <img 
                 src="/newdealylogo_120x63.png"
@@ -84,13 +84,13 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Search Bar - Center */}
-          <div className="flex items-center justify-center">
-            <SearchDropdown placeholder="搜尋超值好康" className="w-full max-w-[280px]" />
+          {/* Search Bar - Center, takes remaining space (flex-1 + min-w-0 for proper flex shrink) */}
+          <div className="flex-1 min-w-0">
+            <SearchDropdown placeholder="搜尋超值好康" className="w-full min-w-0 max-w-full" />
           </div>
 
           {/* Menu Button - Right */}
-          <div className="flex items-center justify-end">
+          <div className="flex-shrink-0">
             <Button 
               variant="ghost" 
               size="icon" 

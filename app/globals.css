@@ -142,6 +142,12 @@
     @apply border-border;
   }
 
+  /* Prevent horizontal scroll on mobile - last-resort fallback */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
     /* Use browser default system fonts - no external font loading for better performance */
@@ -209,6 +215,23 @@
   
   .faq-answer-content a {
     @apply text-link hover:text-link-hover underline;
+  }
+
+  /* Prevent long URLs/strings from causing horizontal overflow */
+  .faq-answer-content a,
+  .faq-answer-content p,
+  .faq-answer-content li {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Code blocks and long strings in content */
+  .prose code,
+  .faq-answer-content code,
+  [class*="content"] code {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
   }
   
   /* Global hyperlink styles for content areas */
