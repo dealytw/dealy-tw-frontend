@@ -571,15 +571,15 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
       <Header />
       
       {/* Affiliate Disclaimer */}
-      <div className="bg-gray-50 border-b border-gray-200 py-1 px-2">
-        <div className="max-w-full mx-auto px-2">
+      <div className="bg-gray-50 border-b border-gray-200 py-1 px-4">
+        <div className="container mx-auto">
           <p className="text-[8px] text-gray-600 text-center leading-tight">
             透過本站鏈接完成購物可享，我們可能會因此獲得佣金，而您無需額外付費。
           </p>
         </div>
       </div>
       
-      <main id="main" className="container mx-auto md:px-4 px-2 py-4 max-w-full min-w-0" itemScope itemType="https://schema.org/CreativeWork">
+      <main id="main" className="container mx-auto px-4 py-4 min-w-0" itemScope itemType="https://schema.org/CreativeWork">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 min-w-0">
           {/* Left Column - Content */}
