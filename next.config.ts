@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: { root: '.' },
   eslint: {
     // Temporarily ignore ESLint during builds until we fix the issues
     ignoreDuringBuilds: true,
@@ -16,8 +15,6 @@ const nextConfig: NextConfig = {
   },
   // Compress output
   compress: true,
-  // Optimize production builds
-  swcMinify: true,
   images: {
     remotePatterns: [
       // Strapi local dev
