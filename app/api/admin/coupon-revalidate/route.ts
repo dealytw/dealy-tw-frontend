@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { warmPaths } from '@/lib/warm';
-import { setTimeout as sleep } from 'node:timers/promises';
 
 export const preferredRegion = ['sin1'];   // near TW/Strapi
 export const dynamic = 'force-dynamic';    // never cache
@@ -108,37 +107,21 @@ export async function POST(req: NextRequest) {
   for (const t of allTags) revalidateTag(t);
   for (const p of allPaths) revalidatePath(p);
 
-  // Warm origin HTML before purge to avoid edge fetching stale
   let purged = false;
-  if (allPaths.length) {
-    const warm = await warmPaths(allPaths, {
-      origin: process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw',
-      concurrency: 3,
-      timeoutMs: 4000,
-      retries: 2,
-    });
-    if (!warm.ok) {
-      return NextResponse.json(
-        { ok: false, warmed: warm },
-        { status: 206, headers: corsHeaders }
-      );
-    }
-    // Wait 3 seconds for ISR rebuilds to complete before purging
-    await sleep(3000);
-  }
-
   if (purge && allPaths.length) {
     const base = process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw';
     await purgeCF(allPaths.map((p) => `${base}${p}`));
     purged = true;
-    
-    // Warm again after purge so Cloudflare caches the fresh pages
-    await warmPaths(allPaths, {
-      origin: process.env.PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealy.tw',
+    // Warm canonical URLs (no ?warm=1) to populate CF cache
+    const warm = await warmPaths(allPaths, {
+      origin: base,
       concurrency: 3,
-      timeoutMs: 4000,
+      timeoutMs: 10000,
       retries: 2,
     });
+    if (!warm.ok) {
+      console.error('[coupon-revalidate] Post-purge warm failed:', warm);
+    }
   }
 
   return NextResponse.json({

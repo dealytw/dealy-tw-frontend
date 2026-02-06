@@ -55,7 +55,6 @@ export async function warmPaths(paths: string[], opts: WarmOpts = {}) {
   const retries = opts.retries ?? 2
 
   const headers: Record<string, string> = {
-    'X-Warm': '1',
     'Cache-Control': 'no-cache',
     Accept: 'text/html,application/xhtml+xml',
     'Accept-Encoding': 'gzip, br',
