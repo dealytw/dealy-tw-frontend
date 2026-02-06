@@ -88,9 +88,9 @@ function renderHomePage(homepageData: any) {
         </section>
 
         {homepageData.popularMerchants && (
-          <section className="py-12 px-4">
+          <section className="py-6 md:py-12 px-4">
             <div className="container mx-auto">
-              <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-6 md:mb-12 text-gray-800">
                 {homepageData.popularMerchants?.heading || "台灣最新折扣優惠"}
               </h2>
               {homepageData.popularMerchants.items && homepageData.popularMerchants.items.length > 0 ? (
@@ -105,15 +105,15 @@ function renderHomePage(homepageData: any) {
         )}
 
         {homepageData.categoryBlock?.categories && homepageData.categoryBlock.categories.length > 0 && (
-          <section className="py-12 px-4 bg-gray-50">
+          <section className="py-6 md:py-12 px-4 bg-gray-50">
             <div className="container mx-auto">
-              <h2 className="text-2xl font-bold text-center mb-12 text-gray-800">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-6 md:mb-12 text-gray-800">
                 {homepageData.categoryBlock?.heading || "2025優惠主題一覽"}
               </h2>
-              <div className="flex flex-wrap justify-center gap-8">
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8">
                 {homepageData.categoryBlock.categories.map((category: any) => (
                   <Link key={category.id} href={`/special-offers/${category.slug}`} className="text-center group">
-                    <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
+                    <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-2 md:mb-4 overflow-hidden rounded-full shadow-lg group-hover:shadow-xl transition-shadow bg-white flex items-center justify-center">
                       {category.iconUrl ? (
                         <img
                           src={category.iconUrl}
@@ -127,7 +127,7 @@ function renderHomePage(homepageData: any) {
                         <span className="text-gray-400 text-xs">{category.name}</span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-700 font-medium leading-tight">{category.name}</p>
                   </Link>
                 ))}
               </div>

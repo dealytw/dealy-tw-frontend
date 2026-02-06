@@ -63,7 +63,7 @@ export default function HomeMerchantSliderClient({ merchants }: { merchants: Pop
     <div className="relative overflow-hidden">
       <div
         ref={scrollContainerRef}
-        className="flex gap-8 overflow-x-auto scrollbar-hide"
+        className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide"
         style={{
           scrollBehavior: "auto",
           WebkitOverflowScrolling: "touch",
@@ -79,7 +79,7 @@ export default function HomeMerchantSliderClient({ merchants }: { merchants: Pop
           <Link
             key={`${merchant.id}-${index}`}
             href={`/shop/${merchant.slug}`}
-            className="merchant-item flex-shrink-0 text-center group cursor-pointer w-[180px] flex flex-col items-center"
+            className="merchant-item flex-shrink-0 text-center group cursor-pointer w-[140px] sm:w-[160px] md:w-[180px] flex flex-col items-center"
           >
             <img
               src={merchant.logoUrl}
@@ -89,8 +89,8 @@ export default function HomeMerchantSliderClient({ merchants }: { merchants: Pop
               className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg object-cover bg-white group-hover:shadow-xl transition-shadow"
               loading={index < 6 ? "eager" : "lazy"}
             />
-            <span className="merchant-name font-semibold text-gray-800 text-sm mb-2">{merchant.name}</span>
-            <span className="coupon-title text-xs text-gray-600 leading-tight px-2">
+            <span className="merchant-name font-semibold text-gray-800 text-xs sm:text-sm mb-1 md:mb-2">{merchant.name}</span>
+            <span className="coupon-title text-xs text-gray-600 leading-tight px-1 sm:px-2">
               {merchant.topCouponTitle || ""}
             </span>
           </Link>
