@@ -242,16 +242,16 @@ const HomeCouponRailClient = ({ initialData }: HomeCouponRailClientProps) => {
     <>
       {/* Coupon Rail */}
       {initialData.couponRail?.items && initialData.couponRail.items.length > 0 && (
-        <section id="popular-coupons" className="py-12 px-4 md:px-4 px-2" aria-labelledby="popular-coupons-heading">
+        <section id="popular-coupons" className="py-6 md:py-12 px-4 md:px-4 px-2" aria-labelledby="popular-coupons-heading">
           <div className="container mx-auto md:px-4 px-0">
             {/* CMS: coupon.heading */}
-            <h2 id="popular-coupons-heading" className="text-2xl font-bold text-center mb-12 text-gray-800">
+            <h2 id="popular-coupons-heading" className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-6 md:mb-12 text-gray-800">
               {initialData.couponRail?.heading || "本日最新最受歡迎折扣碼/優惠券/Promo Code"}
             </h2>
             
-            <div className="flex gap-8">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
               {/* Main Content */}
-              <div className="flex-1 space-y-8 md:space-y-8 space-y-4">
+              <div className="flex-1 space-y-8 md:space-y-8 space-y-4 order-1">
                 {initialData.couponRail.items.map((coupon) => {
                   const transformedCoupon = transformCoupon(coupon);
                   if (!transformedCoupon) {
@@ -279,8 +279,8 @@ const HomeCouponRailClient = ({ initialData }: HomeCouponRailClientProps) => {
                   );
                 }).filter(Boolean)}
               </div>
-              {/* Sidebar */}
-              <div className="hidden lg:block">
+              {/* Sidebar - below main content on mobile, right side on desktop */}
+              <div className="order-2 lg:order-2 w-full lg:w-auto lg:flex-shrink-0">
                 <DealySidebar 
                   popularMerchants={initialData.popularMerchants}
                   sidebarCategories={initialData.sidebarCategories || { heading: "熱門分類", categories: [] }}

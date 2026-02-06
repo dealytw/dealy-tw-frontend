@@ -24,14 +24,14 @@ interface DealySidebarProps {
 
 const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps) => {
   return (
-    <div className="w-80 space-y-6">
+    <div className="w-full max-w-sm mx-auto lg:mx-0 lg:w-80 space-y-4 lg:space-y-6">
       {/* Popular Merchants */}
       {popularMerchants && (
-        <Card className="p-6">
-          <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
-            <h3 className="text-sm font-semibold text-gray-800">熱門商店</h3>
+        <Card className="p-4 lg:p-6">
+          <div className="bg-yellow-100 text-center py-1.5 lg:py-2 px-3 lg:px-4 rounded-lg mb-3 lg:mb-4">
+            <h3 className="text-xs lg:text-sm font-semibold text-gray-800">熱門商店</h3>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-4 lg:grid-cols-2 gap-2 lg:gap-4">
             {popularMerchants.items && popularMerchants.items.length > 0 ? (
               popularMerchants.items.map((merchant: any) => (
                 <Link 
@@ -39,7 +39,7 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
                   href={`/shop/${merchant.slug}`}
                   className="text-center group"
                 >
-                  <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-lg group-hover:shadow-xl transition-shadow">
+                  <div className="w-10 h-10 lg:w-16 lg:h-16 mx-auto mb-1 lg:mb-2 rounded-full overflow-hidden bg-white shadow-lg group-hover:shadow-xl transition-shadow">
                     <img 
                       src={merchant.logoUrl} 
                       alt={merchant.name}
@@ -65,17 +65,17 @@ const DealySidebar = ({ popularMerchants, sidebarCategories }: DealySidebarProps
 
       {/* Popular Categories */}
       {sidebarCategories && (
-        <Card className="p-6">
-          <div className="bg-yellow-100 text-center py-2 px-4 rounded-lg mb-4">
-            <h3 className="text-sm font-semibold text-gray-800">熱門分類</h3>
+        <Card className="p-4 lg:p-6">
+          <div className="bg-yellow-100 text-center py-1.5 lg:py-2 px-3 lg:px-4 rounded-lg mb-3 lg:mb-4">
+            <h3 className="text-xs lg:text-sm font-semibold text-gray-800">熱門分類</h3>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 lg:gap-2">
             {sidebarCategories.categories && sidebarCategories.categories.length > 0 ? (
               sidebarCategories.categories.map((category: any) => (
                 <Link
                   key={category.id}
                   href={`/category/${category.page_slug || category.slug}`}
-                  className="text-xs px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                  className="text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                 >
                   #{category.name}
                 </Link>
