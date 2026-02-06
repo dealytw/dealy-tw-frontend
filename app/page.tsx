@@ -56,7 +56,7 @@ function renderHomePage(homepageData: any) {
     <div className="min-h-screen bg-white">
       <Header />
       <main id="main-content">
-        <section className="py-16 px-4 relative">
+        <section className="py-16 px-4 relative overflow-x-hidden">
           {homepageData.hero?.bgUrl && (
             <div className="absolute inset-0 z-0">
               <img

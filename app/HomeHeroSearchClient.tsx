@@ -15,7 +15,7 @@ export default function HomeHeroSearchClient({
   const router = useRouter();
 
   return (
-    <div className="max-w-3xl mx-auto relative z-50 w-full min-w-0 px-2 sm:px-4">
+    <div className="w-full max-w-[min(48rem,calc(100vw-2rem))] mx-auto relative z-50 min-w-0 px-2 sm:px-4">
       <div className="flex bg-white rounded-full shadow-lg overflow-visible min-w-0">
         <div className="flex items-center pl-4 pr-2 flex-shrink-0 md:pl-6 md:pr-3">
           <Search className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
@@ -35,7 +35,7 @@ export default function HomeHeroSearchClient({
               router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
             }
           }}
-          className="m-1.5 md:m-2 px-4 md:px-8 py-2 text-sm bg-[#FF4790] hover:bg-[#E6397A] text-white rounded-full transition-colors flex-shrink-0"
+          className="m-1.5 md:m-2 px-3 sm:px-4 md:px-8 py-2 text-xs sm:text-sm bg-[#FF4790] hover:bg-[#E6397A] text-white rounded-full transition-colors flex-shrink-0"
         >
           搜尋
         </Button>
