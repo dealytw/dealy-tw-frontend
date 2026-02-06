@@ -2,9 +2,32 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 const DEBUG = process.env.NODE_ENV !== 'production';
-const MIN_SUBMIT_MS = 1500; // Too fast = likely bot
-const RATE_LIMIT_PER_MIN = 10;
+const MIN_SUBMIT_MS = 4000; // Too fast = likely bot (increased from 1500)
+const RATE_LIMIT_PER_MIN = 5;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+
+// Blocked email domains (disposable, test, common spam)
+const BLOCKED_EMAIL_DOMAINS = new Set([
+  'example.com', 'example.org', 'example.net', 'test.com', 'test.org',
+  'tempmail.com', 'temp-mail.org', 'guerrillamail.com', 'mailinator.com',
+  '10minutemail.com', 'throwaway.email', 'fakeinbox.com', 'trashmail.com',
+]);
+
+// SQL injection / script injection patterns (case-insensitive)
+const INJECTION_PATTERNS = [
+  /\(\s*select\s+\d+\s*\*\s*\d+\s*\)/i,
+  /dbms_pipe/i,
+  /\)\s*or\s+\d+\s*=\s*\(\s*select/i,
+  /'\s*\|\|/i,
+  /\|\|\s*dbms/i,
+  /%2527|%2522/i,
+  /union\s+select/i,
+  /;\s*drop\s+table/i,
+  /@@[a-z0-9_]+/i,
+  /\(\s*select\s+\d+\s+from/i,
+  /'\s*\)\s*\)\s*or\s+\d+/i,
+  /or\s+\d+\s*=\s*\(\s*select/i,
+];
 
 // In-memory per-IP rate limit (serverless: per-instance; sufficient for basic abuse protection)
 const ipCounts = new Map<string, { count: number; resetAt: number }>();
@@ -59,6 +82,29 @@ async function verifyTurnstile(token: string): Promise<boolean> {
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isBlockedEmailDomain(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return domain ? BLOCKED_EMAIL_DOMAINS.has(domain) : false;
+}
+
+function containsInjectionPattern(text: string): boolean {
+  const s = String(text || '');
+  return INJECTION_PATTERNS.some((re) => re.test(s));
+}
+
+function isValidOrigin(request: Request): boolean {
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+  const allowed = [
+    'https://dealy.hk', 'https://www.dealy.hk',
+    'https://dealy.tw', 'https://www.dealy.tw',
+    'http://localhost:', 'http://127.0.0.1:',
+  ];
+  if (origin && allowed.some((a) => origin.startsWith(a))) return true;
+  if (referer && allowed.some((a) => referer.startsWith(a))) return true;
+  return false;
 }
 
 export async function POST(request: Request) {
@@ -136,7 +182,24 @@ export async function POST(request: Request) {
         { status: 200 }
       );
     }
+    if (isBlockedEmailDomain(email)) {
+      if (DEBUG) console.log('[contact] Blocked: disposable/test email domain');
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
     if (String(message).length > 10000) {
+      return NextResponse.json(
+        { message: '提交成功！我們會盡快回覆您的訊息。' },
+        { status: 200 }
+      );
+    }
+
+    // Anti-spam: block SQL injection / script injection patterns in message, name, merchantName
+    const textToCheck = [String(message), String(name || ''), String(merchantName || '')].join(' ');
+    if (containsInjectionPattern(textToCheck)) {
+      if (DEBUG) console.log('[contact] Blocked: injection pattern detected');
       return NextResponse.json(
         { message: '提交成功！我們會盡快回覆您的訊息。' },
         { status: 200 }
