@@ -56,7 +56,7 @@ function renderHomePage(homepageData: any) {
     <div className="min-h-screen bg-white">
       <Header />
       <main id="main-content">
-        <section className="py-8 md:py-16 px-4 relative overflow-x-hidden z-10">
+        <section className="py-8 md:py-16 px-4 relative z-10">
           {homepageData.hero?.bgUrl && (
             <div className="absolute inset-0 z-0">
               <img
@@ -71,7 +71,7 @@ function renderHomePage(homepageData: any) {
               />
             </div>
           )}
-          <div className="container mx-auto text-center relative z-10 overflow-x-hidden min-w-0">
+          <div className="container mx-auto text-center relative z-10 min-w-0">
             <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-800 mb-3 md:mb-4">
               {homepageData.hero?.title || "Dealy TW 台灣每日最新優惠折扣平台"}
             </h1>
@@ -88,7 +88,7 @@ function renderHomePage(homepageData: any) {
         </section>
 
         {homepageData.popularMerchants && (
-          <section className="py-6 md:py-12 px-4">
+          <section className="py-6 md:py-12 px-4 relative z-0">
             <div className="container mx-auto">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-6 md:mb-12 text-gray-800">
                 {homepageData.popularMerchants?.heading || "台灣最新折扣優惠"}
