@@ -410,7 +410,7 @@ export default function SearchDropdown({
           placeholder={placeholder}
           className={`flex-1 min-w-0 w-full ${
             isHomepage 
-              ? 'py-4 px-2 text-lg outline-none bg-transparent' // Homepage: larger, no border/background
+              ? 'py-3 md:py-4 px-2 text-sm md:text-base outline-none bg-transparent' // Homepage: smaller text on mobile so placeholder fits
               : 'pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary' // Header: smaller, with border
           }`}
           aria-label="Search for merchants and coupons"
@@ -485,13 +485,13 @@ export default function SearchDropdown({
                       </div>
                     )}
 
-                    {/* Merchant Name */}
+                    {/* Merchant Name - break-words so full text visible on narrow screens */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
+                      <div className="text-xs md:text-sm font-medium text-gray-900 break-words" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
                         {suggestion.name}
                       </div>
                       {suggestion.type === 'merchant' && suggestion.website && (
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-[10px] md:text-xs text-gray-500 break-all" style={{ overflowWrap: 'break-word' }}>
                           {suggestion.website}
                         </div>
                       )}
