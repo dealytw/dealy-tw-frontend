@@ -10,7 +10,7 @@ type WarmOpts = {
 
 function absoluteUrl(origin: string, path: string) {
   const clean = path.startsWith('/') ? path : `/${path}`
-  return `${origin}${clean}${clean.includes('?') ? '&' : '?'}warm=1`
+  return `${origin}${clean}`
 }
 
 async function warmOnce(url: string, timeoutMs: number, headers: HeadersInit) {

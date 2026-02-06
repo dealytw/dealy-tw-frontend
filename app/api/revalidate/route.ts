@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { warmPaths } from '@/lib/warm';
 import { strapiFetch, qs } from '@/lib/strapi.server';
-import { setTimeout as sleep } from 'node:timers/promises';
 
 export const preferredRegion = ['sin1']; // Singapore (close to Strapi)
 export const dynamic = 'force-dynamic'; // never cache this route
@@ -10,11 +9,39 @@ export const dynamic = 'force-dynamic'; // never cache this route
 const ORIGIN = 'https://dealy.tw';
 const DAILY_MARKET = 'tw';
 
+const DAILY_KEY_PATHS = ['/', '/shop', '/special-offers', '/shop-sitemap.xml'];
+
+const WARM_TOP_PATHS = [
+  '/',
+  '/shop',
+  '/special-offers',
+  '/shop/taobao',
+  '/shop/chow-sang-sang',
+  '/shop/ugg',
+  '/shop/lg',
+  '/shop/trip-com',
+  '/shop/farfetch',
+  '/shop/it',
+  '/shop/olive-young-global',
+  '/shop/kkday',
+  '/shop/klook',
+  '/shop/agoda',
+  '/shop/adidas-hk',
+  '/shop/lenovo',
+  '/shop/casetify',
+  '/shop/fortress',
+  '/shop/sasa',
+  '/shop/end-clothing',
+  '/shop/estee-lauder',
+  '/shop/la-mer',
+  '/shop/catalog',
+];
+
 function buildDailyPaths(slugs: string[]) {
   return Array.from(
     new Set([
+      ...DAILY_KEY_PATHS,
       ...slugs.map((slug) => `/shop/${slug}`),
-      '/shop-sitemap.xml',
     ])
   );
 }
@@ -43,6 +70,9 @@ async function revalidateDailyMerchants() {
 
   revalidateTag('sitemap:merchants');
   revalidatePath('/shop-sitemap.xml');
+  revalidatePath('/');
+  revalidatePath('/shop');
+  revalidatePath('/special-offers');
 
   return { totalMerchants: slugs.length, slugs };
 }
@@ -55,9 +85,20 @@ export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret');
   const daily = req.nextUrl.searchParams.get('daily');
   const purge = req.nextUrl.searchParams.get('purge') === '1';
+  const warmTop = req.nextUrl.searchParams.get('warmTop') === '1';
 
   if (!isCronRequest(req) && secret !== process.env.REVALIDATE_SECRET) {
     return NextResponse.json({ ok: false, error: 'Invalid secret' }, { status: 401 });
+  }
+
+  if (warmTop) {
+    const warm = await warmPaths(WARM_TOP_PATHS, {
+      origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
+      concurrency: 5,
+      timeoutMs: 10000,
+      retries: 2,
+    });
+    return NextResponse.json({ ok: warm.ok, mode: 'warmTop', warmed: warm.warmed.length, failed: warm.failed.length });
   }
 
   if (daily !== '1') {
@@ -69,19 +110,11 @@ export async function GET(req: NextRequest) {
   if (purge) {
     const dailyPaths = buildDailyPaths(result.slugs || []);
     if (dailyPaths.length) {
+      await purgeCF(dailyPaths.map((path) => `${ORIGIN}${path}`));
       await warmPaths(dailyPaths, {
         origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
         concurrency: 3,
         timeoutMs: 10000,
-        retries: 2,
-      });
-
-      await purgeCF(dailyPaths.map((path) => `${ORIGIN}${path}`));
-
-      await warmPaths(dailyPaths, {
-        origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
-        concurrency: 3,
-        timeoutMs: 4000,
         retries: 2,
       });
     }
@@ -173,38 +206,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Optional: Purge Cloudflare cache for instant freshness
-  // Warm origin HTML before purge to avoid edge fetching stale
   let purged = false;
   const uniqueWarmPaths = Array.from(new Set(paths.filter((p: unknown) => typeof p === 'string' && (p as string).startsWith('/')))) as string[];
-  if (uniqueWarmPaths.length) {
-    console.log(`[REVALIDATE] Warming ${uniqueWarmPaths.length} paths to trigger ISR regeneration...`);
-    const warm = await warmPaths(uniqueWarmPaths, {
-      origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
-      concurrency: 3,
-      timeoutMs: 10000, // Increased timeout for blog pages with long revalidate times
-      retries: 2,
-    });
-    if (!warm.ok) {
-      console.error(`[REVALIDATE] Warming failed:`, warm);
-      return NextResponse.json(
-        { ok: false, warmed: warm },
-        {
-          status: 206,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        }
-      );
-    }
-    console.log(`[REVALIDATE] Warming successful, waiting for ISR rebuilds...`);
-    // Wait longer for ISR rebuilds to complete (especially for blog pages with 30-day revalidate)
-    // Blog pages may take longer to regenerate due to their long revalidate time
-    await sleep(5000); // Increased from 3s to 5s for blog pages
-    console.log(`[REVALIDATE] ISR rebuild wait complete`);
-  }
 
   if (purgeEverything) {
     await purgeCFEverything();
@@ -221,14 +224,16 @@ export async function POST(req: NextRequest) {
     const urls = uniqueWarmPaths.map(path => `${ORIGIN}${path}`);
     await purgeCF(urls);
     purged = true;
-    
-    // Warm again after purge so Cloudflare caches the fresh pages
-    await warmPaths(uniqueWarmPaths, {
+    console.log(`[REVALIDATE] Warming ${uniqueWarmPaths.length} paths (canonical URLs) to populate CF...`);
+    const warm = await warmPaths(uniqueWarmPaths, {
       origin: process.env.PUBLIC_SITE_ORIGIN || ORIGIN,
       concurrency: 3,
-      timeoutMs: 4000,
+      timeoutMs: 10000,
       retries: 2,
     });
+    if (!warm.ok) {
+      console.error(`[REVALIDATE] Post-purge warm failed:`, warm);
+    }
   }
 
   return NextResponse.json({ 
