@@ -25,7 +25,7 @@ import BlogView from './blog-view';
  */
 
 // Revalidate once per day
-export const revalidate = 2592000; // Revalidate every 30 days (1 month) - blog posts are very static
+export const revalidate = 86400; // Revalidate every 24 hours - blog posts
 // Content page: use ISR via `export const revalidate` (do not force SSR)
 
 // Generate metadata for SEO

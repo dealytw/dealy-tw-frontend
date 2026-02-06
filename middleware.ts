@@ -125,9 +125,9 @@ export function middleware(request: NextRequest) {
     else if (pathname === '/blog' || pathname.startsWith('/blog/page/') || pathname.startsWith('/blog/category/')) {
       sMaxAge = 86400; // 24 hours
     }
-    // Blog post pages: 30 days (ISR: 2592000s)
+    // Blog post pages: 24 hours (ISR: 86400s)
     else if (pathname.startsWith('/blog/')) {
-      sMaxAge = 2592000; // 30 days
+      sMaxAge = 86400; // 24 hours
     }
     // Category pages: 48 hours (ISR: 172800s)
     else if (pathname.startsWith('/category/')) {
