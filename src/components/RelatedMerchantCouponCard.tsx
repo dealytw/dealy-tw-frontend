@@ -105,11 +105,11 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
   };
 
   return (
-    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[220px] flex flex-col">
+    <article className="relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 min-h-[140px] flex flex-col">
       {/* Main Content */}
-      <div className="p-3 pb-0 flex-1 flex flex-col">
+      <div className="p-2 pb-0 flex-1 flex flex-col">
         {/* Merchant Logo - Smaller */}
-        <div className="w-12 h-12 mx-auto mb-2 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+        <div className="w-9 h-9 mx-auto mb-1 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
           {relatedMerchant.logo ? (
             <img
               src={relatedMerchant.logo}
@@ -128,7 +128,7 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
         </div>
 
         {/* Coupon Title */}
-        <h3 className="text-xs font-medium text-gray-900 mb-1.5 text-center leading-tight">
+        <h3 className="text-[10px] font-medium text-gray-900 mb-1 text-center leading-tight line-clamp-2">
           {couponTitle}
         </h3>
 
@@ -175,13 +175,13 @@ const RelatedMerchantCouponCard = ({ relatedMerchant }: RelatedMerchantCouponCar
       </div>
 
       {/* Pink Footer */}
-      <div className="bg-pink-500 px-3 py-2 flex items-center justify-between mt-0">
+      <div className="bg-pink-500 px-2 py-1.5 flex items-center justify-between mt-0">
         <div className="text-white">
-          <div className="text-base font-bold">{discountValue} 折扣</div>
+          <div className="text-xs font-bold">{discountValue} 折扣</div>
         </div>
         
         <Button 
-          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-3 py-1.5 text-sm"
+          className="bg-white text-pink-500 hover:bg-gray-50 font-medium px-2 py-1 text-[10px] h-7"
           size="sm"
           onClick={handleButtonClick}
           aria-describedby={affiliateRelId}

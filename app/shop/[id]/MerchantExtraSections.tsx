@@ -91,7 +91,7 @@ export default function MerchantExtraSections(props: {
           同類商戶折扣優惠
         </h2>
         <Card id="related-merchants-section" className="shadow-md">
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {relatedMerchants && relatedMerchants.length > 0 ? (
               relatedMerchants.map((relatedMerchant) => (
                 <RelatedMerchantCouponCard key={relatedMerchant.id} relatedMerchant={relatedMerchant} />
