@@ -9,7 +9,6 @@ import { getDomainConfig as getDomainConfigServer, getMarketLocale, localeToHtml
 import Script from "next/script";
 import CWVTracker from "@/components/CWVTracker";
 import { strapiFetch, absolutizeMedia, qs, rewriteImageUrl } from "@/lib/strapi.server";
-import { getHomePageData } from "@/lib/homepage-loader";
 
 // Default metadata (will be overridden by page-specific metadata)
 // This is just a fallback for pages that don't define their own metadata
@@ -74,18 +73,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Note: Hreflang and canonical links are handled by Next.js metadata API via pageMeta()
   // No need to add them manually in <head> to avoid duplicates
   
-  // Fetch hero background image URL for homepage preload
-  // Note: This will be added to all pages, but only affects homepage LCP
-  // The browser will only preload if the image is actually used on the page
-  let heroBgUrl: string | undefined;
-  try {
-    const homepageData = await getHomePageData(marketKey);
-    heroBgUrl = homepageData.hero?.bgUrl;
-  } catch (error) {
-    // Silently fail - homepage will handle its own data fetching
-    // This is just for preload optimization
-  }
-
   // Fetch hotstore merchants for NavigationMenu (server-side)
   let hotstoreMerchants: Array<{ id: string; name: string; slug: string; logoUrl: string | null }> = [];
   try {
@@ -206,11 +193,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://ingenious-charity-13f9502d24.media.strapiapp.com" crossOrigin="" />
         <link rel="dns-prefetch" href="//ingenious-charity-13f9502d24.media.strapiapp.com" />
         
-        {/* Preload hero background image if available (critical for LCP) */}
-        {heroBgUrl && (
-          <link rel="preload" as="image" href={heroBgUrl} fetchPriority="high" />
-        )}
-        
         {/* Favicon links - WordPress-style optimization for Google Search Results */}
         {/* PRIMARY: ICO with explicit type - Google's preferred format (MUST be first) */}
         {/* WordPress uses this exact format, which Google crawls faster */}
@@ -221,8 +203,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="shortcut icon" href="/favicon.ico" />
         {/* Apple touch icon for iOS devices only */}
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        {/* Preload favicon AFTER link tags (WordPress-style: helps Google discover faster) */}
-        <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
         {/* 
           REMOVED: SVG and redundant PNG fallbacks
           - SVG creates noise and Google prefers ICO
@@ -235,9 +215,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         
         {/* Theme Color for mobile browser address bar */}
         <meta name="theme-color" content="#ffffff" />
-        
-        {/* Preload hero background image for homepage LCP optimization - Only on homepage */}
-        {/* Note: Preload is moved to homepage component to avoid warnings on other pages */}
       </head>
       <body suppressHydrationWarning itemScope itemType="https://schema.org/WebPage">
         {/* Google Tag Manager (noscript) */}
