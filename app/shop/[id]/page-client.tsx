@@ -343,6 +343,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
   const [activeFilter, setActiveFilter] = useState("全部");
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [scrolledToCouponId, setScrolledToCouponId] = useState<string | null>(null);
+  const [expandDetailsForCouponId, setExpandDetailsForCouponId] = useState<string | null>(null);
   const [expiredCouponDetails, setExpiredCouponDetails] = useState<Record<string, boolean>>({});
   const [showAllActiveCoupons, setShowAllActiveCoupons] = useState(false);
   const [showAllExpiredCoupons, setShowAllExpiredCoupons] = useState(false);
@@ -898,6 +899,7 @@ const Merchant = ({ merchant, coupons, expiredCoupons, relatedMerchants, alterna
                           coupon={display} 
                           onClick={() => handleCouponClick(coupon)}
                           isScrolledTo={scrolledToCouponId === coupon.id}
+                          forceShowDetails={scrolledToCouponId === coupon.id || expandDetailsForCouponId === coupon.id}
                           merchantSlug={merchant.slug}
                         />
                       );
